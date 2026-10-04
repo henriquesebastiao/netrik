@@ -1,0 +1,108 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "4a1a16c2a343e23d3828afca6f6d5b3d",
+    "entities": [
+      {
+        "tableName": "oui_prefix",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`prefix` TEXT NOT NULL, `registry` TEXT NOT NULL, `organization` TEXT NOT NULL, `address` TEXT, PRIMARY KEY(`prefix`))",
+        "fields": [
+          {
+            "fieldPath": "prefix",
+            "columnName": "prefix",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "registry",
+            "columnName": "registry",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "organization",
+            "columnName": "organization",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "prefix"
+          ]
+        }
+      },
+      {
+        "tableName": "oui_meta",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `source` TEXT NOT NULL, `data_date` TEXT NOT NULL, `prefix_count` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataDate",
+            "columnName": "data_date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "prefixCount",
+            "columnName": "prefix_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "oui_history",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`hex` TEXT NOT NULL, `queried_at` INTEGER NOT NULL, PRIMARY KEY(`hex`))",
+        "fields": [
+          {
+            "fieldPath": "hex",
+            "columnName": "hex",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "queriedAt",
+            "columnName": "queried_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "hex"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4a1a16c2a343e23d3828afca6f6d5b3d')"
+    ]
+  }
+}

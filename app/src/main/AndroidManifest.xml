@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Consulta do IP público, sob demanda (botão "Mostrar IP público") -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Dados da rede atual: endereços, gateway, DNS e tipo de conexão -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Intensidade do sinal e frequência do Wi-Fi conectado; resultados de scan -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- Pedir scans de redes Wi-Fi (limitado pelo Android a 4 a cada 2 min) -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <!-- O Android só entrega a lista de redes Wi-Fi (e o SSID/BSSID da rede atual) com localização precisa -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <application
+        android:name=".NetrikApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Netrik">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

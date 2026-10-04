@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Netrik</string>
+
+    <!-- Abas da barra de navegação -->
+    <string name="tab_tools">Ferramentas</string>
+    <string name="tab_devices">Dispositivos</string>
+    <string name="tab_wifi">Wi-Fi</string>
+    <string name="tab_ssh">SSH</string>
+
+    <!-- Grupos do hub -->
+    <string name="group_diagnostics">Diagnóstico</string>
+    <string name="group_discovery">Descoberta</string>
+    <string name="group_remote_access">Acesso remoto</string>
+
+    <!-- Ferramentas -->
+    <string name="tool_ping">Ping</string>
+    <string name="tool_ping_desc">Latência e perda de pacotes</string>
+    <string name="tool_traceroute">Traceroute</string>
+    <string name="tool_traceroute_desc">Rota salto a salto até o destino</string>
+    <string name="tool_port_scanner">Port Scanner</string>
+    <string name="tool_port_scanner_desc">Portas TCP e UDP em hosts ou redes</string>
+    <string name="tool_oui">Consulta MAC/OUI</string>
+    <string name="tool_oui_desc">Fabricante pelo endereço MAC</string>
+    <string name="tool_devices_desc">Hosts ativos na rede local</string>
+    <string name="tool_wifi_desc">Redes próximas e espectro</string>
+    <string name="tool_ssh_desc">Terminal e hosts salvos</string>
+
+    <!-- Ações comuns -->
+    <string name="action_back">Voltar</string>
+    <string name="action_more">Mais opções</string>
+    <string name="action_about">Sobre</string>
+    <string name="action_close">Fechar</string>
+    <string name="action_copy">Copiar</string>
+    <string name="action_copy_all">Copiar tudo</string>
+    <string name="action_back_to_tools">Voltar às Ferramentas</string>
+    <string name="action_retry">Tentar novamente</string>
+
+    <!-- Placeholders de telas futuras -->
+    <string name="placeholder_tab">Esta tela será construída numa próxima etapa.</string>
+    <string name="placeholder_tool">Esta ferramenta será construída numa próxima etapa.</string>
+
+    <!-- Card "Rede atual" -->
+    <string name="network_current_wifi">Rede atual · Wi-Fi</string>
+    <string name="network_current_cellular">Rede atual · Dados móveis</string>
+    <string name="network_current_ethernet">Rede atual · Ethernet</string>
+    <string name="network_current_vpn">Rede atual · VPN</string>
+    <string name="network_current_other">Rede atual</string>
+    <string name="network_current_none">Rede atual</string>
+    <string name="network_title_wifi_unknown">Wi-Fi</string>
+    <string name="network_title_cellular_unknown">Dados móveis</string>
+    <string name="network_title_ethernet">Cabo de rede</string>
+    <string name="network_title_vpn">VPN ativa</string>
+    <string name="network_title_other">Conexão ativa</string>
+    <string name="network_title_none">Sem conexão</string>
+    <string name="network_ssid_requires_location">O nome da rede só aparece com a permissão de localização, concedida na aba Wi-Fi.</string>
+    <string name="network_none_body">Conecte-se a uma rede Wi-Fi ou a dados móveis para ver endereços, gateway e DNS.</string>
+    <string name="network_status_connected">Conectado</string>
+    <string name="network_status_no_internet">Sem internet</string>
+    <string name="network_status_offline">Offline</string>
+    <string name="network_signal_wifi">%1$s dBm · %2$s GHz · Canal %3$d</string>
+    <string name="network_signal_wifi_width">%1$s dBm · %2$s GHz · Canal %3$d · %4$d MHz</string>
+    <string name="network_signal_wifi_no_channel">%1$s dBm · %2$s GHz</string>
+    <string name="network_signal_rssi_only">%1$s dBm</string>
+
+    <string name="field_local_ip">IP local</string>
+    <string name="field_gateway">Gateway</string>
+    <string name="field_mask_cidr">Máscara / CIDR</string>
+    <string name="field_dns">DNS</string>
+    <string name="field_ipv6">IPv6</string>
+    <string name="field_public_ip">IP público</string>
+    <string name="field_ssid">SSID</string>
+    <string name="field_unavailable">Indisponível</string>
+
+    <string name="copied_local_ip">IP local copiado</string>
+    <string name="copied_gateway">Gateway copiado</string>
+    <string name="copied_mask">Máscara copiada</string>
+    <string name="copied_dns">DNS copiado</string>
+    <string name="copied_ipv6">IPv6 copiado</string>
+    <string name="copied_public_ip">IP público copiado</string>
+    <string name="copied_network">Dados da rede copiados</string>
+
+    <string name="public_ip_show">Mostrar IP público</string>
+    <string name="public_ip_hint">Consulta o serviço externo api.ipify.org, que fica sabendo do seu IP.</string>
+    <string name="public_ip_loading">Consultando…</string>
+    <string name="public_ip_error">Não foi possível consultar. Toque para tentar de novo.</string>
+
+    <!-- Consulta MAC/OUI -->
+    <string name="oui_field_label">Endereço MAC ou prefixo</string>
+    <string name="oui_field_placeholder">AA:BB:CC:DD:EE:FF</string>
+    <string name="oui_action_paste">Colar</string>
+    <string name="oui_action_clear">Limpar</string>
+    <string name="oui_action_lookup">Consultar</string>
+    <string name="oui_support_empty">Cole ou digite um MAC completo ou os 6 primeiros dígitos.</string>
+    <string name="oui_support_short">%1$d de 6 dígitos mínimos para o prefixo OUI</string>
+    <string name="oui_support_prefix">Prefixo válido · %1$d dígitos</string>
+    <string name="oui_support_full">MAC completo · 12 dígitos</string>
+    <string name="oui_support_invalid_char">Caractere inválido “%1$s”. Use só 0–9 e A–F.</string>
+    <string name="oui_support_too_long">Mais de 12 dígitos. Um MAC tem 6 octetos.</string>
+    <string name="oui_normalized">Normalizado: %1$s</string>
+    <string name="oui_normalized_empty">Normalizado: —</string>
+    <string name="oui_octets_prefix">Prefixo OUI · fabricante</string>
+    <string name="oui_octets_device">Identificador do dispositivo</string>
+    <string name="oui_loading">Consultando base local…</string>
+    <string name="oui_vendor">Fabricante</string>
+    <string name="oui_registry_bits">%1$s · %2$d bits</string>
+    <string name="oui_unicast">Unicast</string>
+    <string name="oui_multicast">Multicast</string>
+    <string name="oui_row_prefix">Prefixo OUI</string>
+    <string name="oui_row_queried">Endereço consultado</string>
+    <string name="oui_row_vendor_address">Endereço do fabricante</string>
+    <string name="oui_private_registration">Registro privado: o IEEE não publica o endereço.</string>
+    <string name="oui_copy_vendor">Copiar fabricante</string>
+    <string name="oui_copied_vendor">Fabricante copiado</string>
+    <string name="oui_copied_prefix">Prefixo copiado</string>
+    <string name="oui_copied_mac">MAC copiado</string>
+    <string name="oui_copied_address">Endereço copiado</string>
+    <string name="oui_copied_result">Resultado copiado</string>
+    <string name="oui_copy_result">Copiar resultado</string>
+    <string name="oui_find_in_network">Buscar na rede</string>
+    <string name="oui_random_title">Endereço administrado localmente</string>
+    <string name="oui_random_body">O 2º dígito (%1$s) indica um MAC aleatório ou definido por software, comum em celulares com MAC privado, VMs e containers. Ele não pertence a um fabricante.</string>
+    <string name="oui_not_found_title">Prefixo não encontrado</string>
+    <string name="oui_not_found_body">%1$s não está na base offline. Pode ser um registro recente do IEEE; atualize a base e tente de novo.</string>
+    <string name="oui_update_database">Atualizar base</string>
+    <string name="oui_empty_help">Aceita qualquer formato: separado por dois-pontos, hífen ou ponto, sem separador ou só o prefixo de 6 dígitos.</string>
+    <string name="oui_history_title">Consultas recentes</string>
+    <string name="oui_history_clear">Limpar</string>
+    <string name="oui_history_empty">As consultas feitas aparecem aqui.</string>
+    <string name="oui_history_remove">Remover do histórico</string>
+    <string name="oui_history_random">MAC aleatório (administrado localmente)</string>
+    <string name="oui_history_not_found">Prefixo não encontrado</string>
+    <string name="oui_history_cleared">Histórico limpo</string>
+    <string name="oui_db_title">Base offline · IEEE</string>
+    <string name="oui_db_title_old">Base offline desatualizada</string>
+    <string name="oui_db_title_preparing">Preparando base offline…</string>
+    <string name="oui_db_title_updating">Atualizando base OUI…</string>
+    <string name="oui_db_subtitle">%1$s prefixos · dados de %2$s</string>
+    <string name="oui_db_subtitle_preparing">Importando os registros MA-L, MA-M e MA-S do app</string>
+    <string name="oui_db_subtitle_downloading">Baixando %1$s (%2$d de %3$d)</string>
+    <string name="oui_db_subtitle_downloading_pct">Baixando %1$s (%2$d de %3$d) · %4$d%%</string>
+    <string name="oui_db_subtitle_installing">Instalando a base nova</string>
+    <string name="oui_db_update">Atualizar</string>
+    <string name="oui_db_updating">Atualizando</string>
+    <string name="oui_updated">Base atualizada · %1$s prefixos novos</string>
+    <string name="oui_update_network_error">Não foi possível baixar a base do IEEE. Verifique a conexão e tente de novo.</string>
+    <string name="oui_update_rejected">O servidor do IEEE recusou o download. Tente mais tarde.</string>
+    <string name="oui_update_invalid">Os arquivos do IEEE vieram num formato inesperado. A base atual foi mantida.</string>
+    <string name="oui_about_title">Sobre a base OUI</string>
+    <string name="oui_about_body">Os fabricantes vêm dos registros públicos do IEEE: MA-L (24 bits), MA-M (28 bits) e MA-S (36 bits). A consulta é feita no aparelho, sem internet. Atualizar baixa cerca de 5 MB de standards-oui.ieee.org; o servidor do IEEE costuma ser lento e o download pode levar alguns minutos.</string>
+
+    <!-- Ferramentas com execução (Ping, Traceroute) -->
+    <string name="target_label">IP ou domínio</string>
+    <string name="target_placeholder">ex.: 8.8.8.8 ou google.com</string>
+    <string name="target_required">Informe um IP ou domínio</string>
+    <string name="target_invalid">“%1$s” não é um IP ou domínio válido</string>
+    <string name="target_unresolved">Não foi possível resolver “%1$s”</string>
+    <string name="advanced_options">Opções avançadas</string>
+    <string name="action_start">Iniciar</string>
+    <string name="action_stop">Parar</string>
+    <string name="run_running">Em execução</string>
+    <string name="run_done">Concluído</string>
+    <string name="run_stopped">Interrompido</string>
+    <string name="history_clear_targets">Limpar histórico de alvos</string>
+    <string name="history_targets_cleared">Histórico de alvos limpo</string>
+    <string name="no_connection_title">Sem conexão de rede</string>
+    <string name="no_connection_body">Conecte-se a uma rede Wi-Fi ou a dados móveis para usar esta ferramenta.</string>
+    <string name="error_host_not_found">Host não encontrado</string>
+    <string name="error_host_not_found_body">Confira o endereço digitado ou o DNS da rede e tente novamente.</string>
+    <string name="error_connection_lost">Conexão perdida</string>
+    <string name="error_connection_lost_body">A rede ficou indisponível durante a execução. Verifique a conexão e tente novamente.</string>
+    <string name="error_ping_failed">O ping não pôde ser executado</string>
+    <string name="unit_seconds">s</string>
+    <string name="unit_bytes">bytes</string>
+    <string name="unit_ms">%1$s ms</string>
+
+    <!-- Ping -->
+    <string name="ping_empty">Informe um IP ou domínio e toque em Iniciar. As respostas aparecem aqui em tempo real.</string>
+    <string name="ping_mode_count">Quantidade</string>
+    <string name="ping_mode_continuous">Contínuo</string>
+    <string name="ping_field_count">Pacotes</string>
+    <string name="ping_field_interval">Intervalo</string>
+    <string name="ping_field_size">Tamanho</string>
+    <string name="ping_field_timeout">Timeout</string>
+    <string name="ping_summary_count">%1$s pacotes · %2$s s · %3$s B · timeout %4$s s</string>
+    <string name="ping_summary_continuous">Contínuo · %1$s s · %2$s B · timeout %3$s s</string>
+    <string name="ping_interval_hint">Mínimo de 0,2 s (limite do Android para apps).</string>
+    <string name="ping_progress">%1$d de %2$d pacotes</string>
+    <string name="ping_run_line">PING %1$s · %2$d B</string>
+    <string name="ping_run_line_resolved">PING %1$s (%2$s) · %3$d B</string>
+    <string name="ping_stat_sent">Enviados</string>
+    <string name="ping_stat_received">Recebidos</string>
+    <string name="ping_stat_loss">Perda</string>
+    <string name="ping_stat_jitter">Jitter</string>
+    <string name="ping_stat_min">Mínimo</string>
+    <string name="ping_stat_avg">Médio</string>
+    <string name="ping_stat_max">Máximo</string>
+    <string name="ping_chart_title">Latência (ms)</string>
+    <string name="ping_chart_continuous">contínuo · últimos 30</string>
+    <string name="ping_chart_samples">%1$d amostras</string>
+    <string name="ping_chart_limit">Limite 100 ms</string>
+    <string name="ping_chart_timeout">Timeout</string>
+    <string name="ping_table_seq">Seq</string>
+    <string name="ping_table_ttl">TTL</string>
+    <string name="ping_table_time">Tempo · recentes primeiro</string>
+    <string name="ping_timeout">Timeout</string>
+    <string name="ping_copied">Resultado copiado</string>
+
+    <!-- Traceroute -->
+    <string name="trace_empty">Informe um IP ou domínio para ver a rota salto a salto. Toque em um IP do resultado para copiá-lo.</string>
+    <string name="trace_field_max_hops">Máx. de saltos</string>
+    <string name="trace_field_hop_timeout">Timeout por salto</string>
+    <string name="trace_summary">Máx. %1$s saltos · timeout %2$s s</string>
+    <string name="trace_running">Em execução · salto %1$d</string>
+    <string name="trace_stopped">Interrompido · salto %1$d</string>
+    <string name="trace_run_line">%1$s · máx. %2$d saltos</string>
+    <string name="trace_run_line_resolved">%1$s (%2$s) · máx. %3$d saltos</string>
+    <string name="trace_no_reply">Sem resposta · timeout %1$d s</string>
+    <string name="trace_hostname_unresolved">Hostname não resolvido</string>
+    <string name="trace_waiting">Aguardando salto %1$d…</string>
+    <string name="trace_rtt_note">Tempos de cada salto medidos com um ping direto ao roteador, porque o aviso de TTL excedido não informa o tempo.</string>
+    <string name="trace_ip_copied">IP %1$s copiado</string>
+    <string name="trace_copied">Rota copiada</string>
+    <string name="trace_error_lost">Conexão perdida no salto %1$d</string>
+
+    <plurals name="trace_reached">
+        <item quantity="one">Destino alcançado · %1$d salto</item>
+        <item quantity="other">Destino alcançado · %1$d saltos</item>
+    </plurals>
+    <plurals name="trace_not_reached">
+        <item quantity="one">Destino não alcançado em %1$d salto</item>
+        <item quantity="other">Destino não alcançado em %1$d saltos</item>
+    </plurals>
+
+    <!-- Wi-Fi -->
+    <string name="wifi_refresh">Atualizar scan</string>
+    <string name="wifi_open_settings">Configurações de Wi-Fi</string>
+    <string name="wifi_view_list">Lista</string>
+    <string name="wifi_view_spectrum">Espectro</string>
+    <string name="wifi_band">%1$s GHz</string>
+    <string name="wifi_sort_signal">Sinal</string>
+    <string name="wifi_sort_channel">Canal</string>
+    <string name="wifi_sort_name">Nome</string>
+    <string name="wifi_auto_refresh">Atualização automática em %1$d s · o Android permite 4 scans a cada 2 min.</string>
+    <string name="wifi_throttled">Limite do Android atingido (4 scans a cada 2 min). Próxima atualização em %1$d s.</string>
+    <string name="wifi_throttled_toast">O Android limita a frequência de scans. Tente em %1$d s.</string>
+    <string name="wifi_refreshing">Atualizando redes…</string>
+    <string name="wifi_connected">Conectada</string>
+    <string name="wifi_nearby">Redes próximas</string>
+    <plurals name="wifi_nearby_count">
+        <item quantity="one">%1$d rede</item>
+        <item quantity="other">%1$d redes</item>
+    </plurals>
+    <string name="wifi_hidden">Rede oculta</string>
+    <string name="wifi_channel_line">Canal %1$d · %2$d MHz · %3$d MHz</string>
+    <string name="wifi_channel_line_unknown">%1$d MHz · %2$d MHz</string>
+    <string name="wifi_dbm">%1$s dBm</string>
+    <string name="wifi_vendor_unknown">Fabricante desconhecido</string>
+    <string name="wifi_vendor_local">BSSID local (AP virtual)</string>
+    <string name="wifi_bssid_copied">BSSID copiado</string>
+    <string name="wifi_empty">Nenhuma rede nesta banda. Aguardando o próximo scan…</string>
+    <string name="wifi_quality_excellent">Ótimo</string>
+    <string name="wifi_quality_good">Bom</string>
+    <string name="wifi_quality_weak">Fraco</string>
+    <string name="wifi_quality_very_weak">Muito fraco</string>
+    <string name="wifi_spectrum_signal">Sinal (dBm)</string>
+    <string name="wifi_spectrum_scroll">role para os lados →</string>
+    <string name="wifi_spectrum_tap">toque numa curva</string>
+    <string name="wifi_spectrum_channel">Canal</string>
+    <string name="wifi_spectrum_empty">Nenhuma rede em %1$s GHz no último scan.</string>
+    <string name="wifi_perm_title">Permita o acesso à localização para ver as redes Wi-Fi</string>
+    <string name="wifi_perm_body">O Android só libera a lista de redes próximas para apps com permissão de localização precisa, porque redes Wi-Fi podem indicar onde você está.</string>
+    <string name="wifi_perm_item_reads">Lê nome, BSSID, canal e intensidade do sinal das redes próximas</string>
+    <string name="wifi_perm_item_private">Não registra nem envia sua localização</string>
+    <string name="wifi_perm_item_revoke">Pode ser revogada a qualquer momento nas configurações do Android</string>
+    <string name="wifi_perm_continue">Continuar</string>
+    <string name="wifi_perm_open_settings">Abrir configurações</string>
+    <string name="wifi_perm_later">Agora não</string>
+    <string name="wifi_perm_later_toast">Sem a permissão, a lista de redes fica indisponível</string>
+    <string name="wifi_perm_coarse">A localização aproximada não basta: o Android só entrega a lista de redes Wi-Fi com localização precisa.</string>
+    <string name="wifi_perm_denied">Permissão negada. Para escanear redes, ative a localização para o Netrik nas configurações do Android.</string>
+    <string name="wifi_off_title">Wi-Fi desligado</string>
+    <string name="wifi_off_body">Ligue o Wi-Fi para ver as redes próximas.</string>
+    <string name="wifi_off_action">Ligar Wi-Fi</string>
+    <string name="location_off_title">Localização desativada</string>
+    <string name="location_off_body">O Android exige a localização do sistema ativada para entregar a lista de redes Wi-Fi, mesmo com a permissão concedida.</string>
+    <string name="location_off_action">Ativar localização</string>
+
+    <!-- Sobre -->
+    <string name="about_title">Sobre o Netrik</string>
+    <string name="about_version">Versão %1$s</string>
+    <string name="about_licenses">Fontes Roboto Flex e JetBrains Mono: SIL Open Font License 1.1.\nÍcones Material Symbols: Apache License 2.0.</string>
+</resources>
