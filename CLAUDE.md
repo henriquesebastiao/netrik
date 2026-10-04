@@ -14,7 +14,7 @@ Esse protótipo navegável é a fonte da verdade visual: siga cores, tipografia,
 - Se não conseguir acessar o design, PARE e avise. Não adivinhe nem recrie o design por conta própria.
 
 ### Decisões de design já aprovadas
-- Ícone 1a ("Traço"), seed azul-petróleo `#136B79`, hub em lista agrupada (Diagnóstico, Descoberta, Acesso remoto).
+- Ícone 2a ("Estrela": hub central com 3 nós, substitui o 1a), seed azul-petróleo `#136B79`, hub em lista agrupada (Diagnóstico, Descoberta, Acesso remoto).
 - Esquema de fallback gerado com material-color-utilities (SchemeTonalSpot) em `core/designsystem/theme/Color.kt`; success/warning em `ExtendedColors` (harmonizados com o seed).
 - Roboto Flex na interface e JetBrains Mono em todo dado técnico (`NetrikTheme.dataTypography`), embarcadas em `res/font` (subconjunto latino).
 - Ícones: Material Symbols Rounded como vector drawables em `res/drawable` (`ic_<nome>` e `ic_<nome>_filled`). Para um ícone novo: `scripts/material_symbol.py nome [--filled nome]`.
