@@ -61,3 +61,6 @@ data class SshFormRoute(
     val target: String? = null,
     val passwordRejected: Boolean = false,
 )
+
+/** Terminal SSH em tela cheia, com as abas das sessões abertas (dentro da aba SSH). */
+@Serializable data object SshTerminalRoute

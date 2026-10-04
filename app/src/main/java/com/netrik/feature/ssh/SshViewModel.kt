@@ -16,6 +16,10 @@ import com.netrik.core.ssh.SshForm
 import com.netrik.core.ssh.SshHostDraft
 import com.netrik.core.ssh.SshRepository
 import com.netrik.core.ssh.SshTarget
+import com.netrik.core.terminal.SshSessionManager
+import com.netrik.core.terminal.SshTerminal
+import com.netrik.core.terminal.TerminalFont
+import com.netrik.core.terminal.TerminalPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -39,7 +43,15 @@ class SshViewModel @Inject constructor(
     private val repository: SshRepository,
     private val connector: SshConnector,
     private val keyReader: KeyFileReader,
+    private val sessions: SshSessionManager,
+    private val terminalPrefs: TerminalPreferences,
 ) : ViewModel() {
+
+    /** Sessões de terminal abertas (faixa "sessões ativas", ponto verde nos hosts, abas do terminal). */
+    val terminals: StateFlow<List<SshTerminal>> = sessions.sessions
+    val activeTerminalId: StateFlow<Long?> = sessions.activeId
+    val fontSize: StateFlow<Int> = terminalPrefs.fontSize.stateIn(viewModelScope, SharingStarted.Eagerly, TerminalFont.DEFAULT)
+
 
     private val search = MutableStateFlow(SearchState())
     private val noGroupExpanded = MutableStateFlow(true)
@@ -139,7 +151,25 @@ class SshViewModel @Inject constructor(
         }
     }
 
-    fun connectSaved(hostId: Long) = startConnect(Pending(hostId, null, fromForm = false))
+    /** Toque num host: com sessão aberta, volta para ela; senão conecta. */
+    fun connectSaved(hostId: Long) {
+        val open = sessions.forHost(hostId)
+        if (open != null) {
+            sessions.setActive(open.id)
+            viewModelScope.launch { _events.send(SshEvent.OpenTerminal) }
+        } else {
+            startConnect(Pending(hostId, null, fromForm = false))
+        }
+    }
+
+    // Terminal
+
+    fun selectTerminal(id: Long) = sessions.setActive(id)
+    fun closeTerminal(id: Long) = sessions.close(id)
+    fun disconnectActive() = activeTerminalId.value?.let { sessions.close(it, disconnect = true) }
+    fun changeFontSize(delta: Int) {
+        viewModelScope.launch { terminalPrefs.setFontSize(fontSize.value + delta) }
+    }
 
     // Formulário
 
@@ -289,8 +319,8 @@ class SshViewModel @Inject constructor(
         pending = attempt
         connectJob = viewModelScope.launch {
             val target = attempt.hostId?.let { repository.target(it) } ?: attempt.draft?.toTarget() ?: return@launch
+            val name = attempt.hostId?.let { repository.host(it)?.name } ?: attempt.draft?.name ?: target.host
             val label = "${target.username}@${target.host}:${target.port}"
-            val who = "${target.username}@${target.host}"
             val host = target.host
             val port = target.port
             val user = target.username
@@ -299,12 +329,11 @@ class SshViewModel @Inject constructor(
             _dialog.value = SshDialog.Connecting(label)
             when (val result = connector.connect(target)) {
                 is SshConnectResult.Connected -> {
-                    // Nesta etapa a sessão só prova que conexão, chave do host e credenciais estão certas.
-                    result.session.close()
+                    sessions.open(result.session, attempt.hostId, name, label)
                     _dialog.value = null
                     pending = null
                     if (attempt.fromForm) _events.send(SshEvent.CloseForm)
-                    _events.send(SshEvent.Message(SshMessage.Authenticated(who)))
+                    _events.send(SshEvent.OpenTerminal)
                 }
                 is SshConnectResult.UnknownHostKey -> _dialog.value = SshDialog.Fingerprint(hostIdLabel(host, port), result.key)
                 is SshConnectResult.ChangedHostKey ->
@@ -389,6 +418,17 @@ class SshViewModel @Inject constructor(
         privateKey = key?.bytes?.copyOf(),
         keyPassphrase = keyPassphrase?.copyOf(),
     )
+
+    init {
+        // Fim de sessão (aba fechada, "Desconectar", exit ou queda): aviso, e volta à lista se acabaram.
+        viewModelScope.launch {
+            sessions.ended.collect { end ->
+                // Fecha o terminal antes do aviso: quem mostra o aviso é a lista, que continua na tela.
+                if (sessions.sessions.value.isEmpty()) _events.send(SshEvent.CloseTerminal)
+                _events.send(SshEvent.Message(if (end.disconnect) SshMessage.Disconnected(end.name) else SshMessage.SessionClosed(end.name)))
+            }
+        }
+    }
 
     override fun onCleared() {
         connectJob?.cancel()

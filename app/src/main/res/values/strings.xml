@@ -452,7 +452,40 @@
     <string name="ssh_host_delete_body">A conexão e as credenciais salvas dela serão apagadas deste aparelho.</string>
     <string name="ssh_host_deleted">Host excluído</string>
     <string name="ssh_connecting">Conectando a %1$s…</string>
-    <string name="ssh_authenticated">Autenticado como %1$s. O terminal chega na próxima etapa.</string>
+    <string name="ssh_session_closed">Sessão com %1$s encerrada</string>
+    <string name="ssh_disconnected">Desconectado de %1$s</string>
+    <!-- SSH: terminal -->
+    <plurals name="ssh_sessions_active">
+        <item quantity="one">%1$d sessão ativa</item>
+        <item quantity="other">%1$d sessões ativas</item>
+    </plurals>
+    <string name="ssh_sessions_open">Abrir</string>
+    <string name="ssh_host_session_active">Sessão ativa</string>
+    <string name="ssh_term_hosts">Hosts</string>
+    <string name="ssh_term_connected">Conectado</string>
+    <string name="ssh_term_connecting">Conectando…</string>
+    <string name="ssh_term_negotiating">negociando chaves…</string>
+    <string name="ssh_term_close_session">Fechar sessão</string>
+    <string name="ssh_term_new_session">Nova sessão</string>
+    <string name="ssh_term_copy_output">Copiar saída</string>
+    <string name="ssh_term_output_copied">Saída copiada</string>
+    <string name="ssh_term_paste">Colar</string>
+    <string name="ssh_term_font">Fonte</string>
+    <string name="ssh_term_font_down">Diminuir fonte</string>
+    <string name="ssh_term_font_up">Aumentar fonte</string>
+    <string name="ssh_term_disconnect">Desconectar</string>
+    <string name="ssh_key_up">Seta para cima</string>
+    <string name="ssh_key_down">Seta para baixo</string>
+    <string name="ssh_key_left">Seta para a esquerda</string>
+    <string name="ssh_key_right">Seta para a direita</string>
+    <string name="ssh_term_screen">Terminal de %1$s</string>
+    <!-- SSH: notificação do serviço -->
+    <string name="ssh_notification_channel">Sessões SSH</string>
+    <plurals name="ssh_notification_title">
+        <item quantity="one">%1$d sessão SSH ativa</item>
+        <item quantity="other">%1$d sessões SSH ativas</item>
+    </plurals>
+    <string name="ssh_notification_disconnect_all">Desconectar todas</string>
     <!-- SSH: grupos -->
     <string name="ssh_group_dialog_new">Novo grupo</string>
     <string name="ssh_group_dialog_rename">Renomear grupo</string>
@@ -541,5 +574,5 @@
     <!-- Sobre -->
     <string name="about_title">Sobre o Netrik</string>
     <string name="about_version">Versão %1$s</string>
-    <string name="about_licenses">Fontes Roboto Flex e JetBrains Mono: SIL Open Font License 1.1.\nÍcones Material Symbols: Apache License 2.0.\nFabricantes: registros MA-L, MA-M e MA-S do IEEE.\nPortas mais comuns: ranking do projeto Nmap (só os números). Nomes de serviço: registro de portas da IANA.\nSSH: JSch (fork mwiede, licença BSD) e Bouncy Castle (licença MIT).</string>
+    <string name="about_licenses">Fontes Roboto Flex e JetBrains Mono: SIL Open Font License 1.1.\nÍcones Material Symbols: Apache License 2.0.\nFabricantes: registros MA-L, MA-M e MA-S do IEEE.\nPortas mais comuns: ranking do projeto Nmap (só os números). Nomes de serviço: registro de portas da IANA.\nSSH: JSch (fork mwiede, licença BSD) e Bouncy Castle (licença MIT).\nTerminal: emulador e renderizador do Termux (terminal-emulator e terminal-view, Apache License 2.0).</string>
 </resources>

@@ -101,10 +101,15 @@ sealed interface SshEvent {
     data object CloseForm : SshEvent
     /** "Editar dados" depois de uma senha recusada, a partir da lista. */
     data class EditHost(val hostId: Long, val passwordRejected: Boolean) : SshEvent
+    /** Autenticou (ou tocou num host com sessão aberta): mostrar o terminal. */
+    data object OpenTerminal : SshEvent
+    /** A última sessão acabou: sair do terminal. */
+    data object CloseTerminal : SshEvent
 }
 
 sealed interface SshMessage {
-    data class Authenticated(val who: String) : SshMessage
+    data class SessionClosed(val name: String) : SshMessage
+    data class Disconnected(val name: String) : SshMessage
     data class GroupCreated(val name: String) : SshMessage
     data object GroupRenamed : SshMessage
     data object GroupDeleted : SshMessage

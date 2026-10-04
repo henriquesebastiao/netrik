@@ -2,6 +2,7 @@ package com.netrik.navigation
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -33,10 +34,12 @@ fun NetrikApp() {
 
     CompositionLocalProvider(LocalSnackbarHostState provides snackbarHostState) {
         Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) },
+            // imePadding: com o teclado aberto (terminal SSH) o aviso aparece acima dele.
+            snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.imePadding()) },
             bottomBar = {
-                // O formulário SSH ocupa a tela toda, como no protótipo.
-                if (backStackEntry?.destination?.hasRoute<SshFormRoute>() != true) NetrikNavigationBar(
+                // Formulário e terminal SSH ocupam a tela toda, como no protótipo.
+                val fullScreen = backStackEntry?.destination?.let { it.hasRoute<SshFormRoute>() || it.hasRoute<SshTerminalRoute>() } == true
+                if (!fullScreen) NetrikNavigationBar(
                     current = currentTab,
                     onSelect = { tab ->
                         if (tab == currentTab) {

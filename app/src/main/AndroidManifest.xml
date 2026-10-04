@@ -16,6 +16,11 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
     <!-- Android 17+: comunicação com aparelhos da rede local (TCP/UDP para IPs da LAN, mDNS). Runtime, grupo Dispositivos próximos -->
     <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
+    <!-- Sessões SSH abertas continuam vivas com o app em segundo plano (serviço em primeiro plano com notificação) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- Notificação "N sessões SSH ativas" (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".NetrikApplication"
@@ -35,6 +40,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".core.terminal.SshSessionService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Sessões SSH interativas abertas pelo usuário: o terminal remoto precisa continuar conectado com o app em segundo plano." />
+        </service>
     </application>
 
 </manifest>

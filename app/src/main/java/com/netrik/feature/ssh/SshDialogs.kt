@@ -280,7 +280,8 @@ private fun GroupEditDialog(dialog: SshDialog.GroupEdit, viewModel: SshViewModel
 
 /** Texto dos avisos (Snackbar) da aba SSH. */
 fun sshMessageText(context: Context, message: SshMessage): String = when (message) {
-    is SshMessage.Authenticated -> context.getString(R.string.ssh_authenticated, message.who)
+    is SshMessage.SessionClosed -> context.getString(R.string.ssh_session_closed, message.name)
+    is SshMessage.Disconnected -> context.getString(R.string.ssh_disconnected, message.name)
     is SshMessage.GroupCreated -> context.getString(R.string.ssh_group_created, message.name)
     SshMessage.GroupRenamed -> context.getString(R.string.ssh_group_renamed)
     SshMessage.GroupDeleted -> context.getString(R.string.ssh_group_deleted)

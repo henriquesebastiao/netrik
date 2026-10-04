@@ -117,6 +117,8 @@ class SshConnector @Inject constructor(
         val handle = currentCoroutineContext().job.invokeOnCompletion { cause -> if (cause != null) session.disconnect() }
         return try {
             session.connect(TIMEOUT_MS)
+            // Mantém a conexão viva atrás de NAT/firewall enquanto o terminal fica parado.
+            session.setServerAliveInterval(KEEPALIVE_MS)
             SshConnectResult.Connected(SshSession(session, hostKeys.presented))
         } catch (e: JSchException) {
             session.disconnect()
@@ -168,6 +170,7 @@ class SshConnector @Inject constructor(
     companion object {
         /** O design fala em "sem resposta após 10 s". */
         const val TIMEOUT_MS = 10_000
+        private const val KEEPALIVE_MS = 30_000
 
         fun classify(e: Throwable): SshFailure {
             val cause = generateSequence(e) { it.cause }.drop(1).firstOrNull()

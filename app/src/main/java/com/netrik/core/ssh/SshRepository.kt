@@ -92,17 +92,17 @@ class SshRepository @Inject constructor(
             username = entity.username,
             auth = auth,
             password = if (auth == SshAuth.Password) {
-                overrides?.password?.copyOf() ?: entity.passwordEnc?.let(cipher::decrypt)
+                overrides?.password?.copyOf() ?: entity.passwordEnc?.let(::decryptOrNull)
             } else {
                 null
             },
             privateKey = if (auth == SshAuth.Key) {
-                overrides?.key?.bytes?.copyOf() ?: entity.keyEnc?.let(cipher::decrypt)
+                overrides?.key?.bytes?.copyOf() ?: entity.keyEnc?.let(::decryptOrNull)
             } else {
                 null
             },
             keyPassphrase = if (auth == SshAuth.Key) {
-                overrides?.keyPassphrase?.takeIf { it.isNotEmpty() }?.copyOf() ?: entity.keyPassphraseEnc?.let(cipher::decrypt)
+                overrides?.keyPassphrase?.takeIf { it.isNotEmpty() }?.copyOf() ?: entity.keyPassphraseEnc?.let(::decryptOrNull)
             } else {
                 null
             },
@@ -122,6 +122,18 @@ class SshRepository @Inject constructor(
     suspend fun trust(hostId: String, key: HostKey) = dao.upsertKnownHost(
         KnownHostEntity(hostId, key.type, key.blob, key.fingerprint, clock.millis()),
     )
+
+    /**
+     * Segredo que não decifra mais (ex.: banco restaurado de backup em outro aparelho, onde a chave do
+     * Keystore não existe): tratado como ausente, e a conexão pede para editar os dados.
+     */
+    private fun decryptOrNull(sealed: ByteArray): ByteArray? = try {
+        cipher.decrypt(sealed)
+    } catch (_: java.security.GeneralSecurityException) {
+        null
+    } catch (_: IllegalArgumentException) {
+        null
+    }
 
     private fun SshHostEntity.toModel() = SshHost(
         id = id,

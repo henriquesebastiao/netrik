@@ -5,7 +5,10 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -39,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -62,8 +66,11 @@ fun SshHostsScreen(
     viewModel: SshViewModel,
     onNewHost: () -> Unit,
     onEditHost: (hostId: Long, passwordRejected: Boolean) -> Unit,
+    onOpenTerminal: () -> Unit,
 ) {
     val state by viewModel.list.collectAsStateWithLifecycle()
+    val terminals by viewModel.terminals.collectAsStateWithLifecycle()
+    val activeHosts = terminals.mapNotNull { it.hostId }.toSet()
     val dialog by viewModel.dialog.collectAsStateWithLifecycle()
     val snackbar = LocalSnackbarHostState.current
     val context = LocalContext.current
@@ -74,7 +81,8 @@ fun SshHostsScreen(
             when (event) {
                 is SshEvent.Message -> launch { snackbar.showSnackbar(sshMessageText(context, event.text)) }
                 is SshEvent.EditHost -> onEditHost(event.hostId, event.passwordRejected)
-                SshEvent.CloseForm -> Unit
+                SshEvent.OpenTerminal -> onOpenTerminal()
+                SshEvent.CloseForm, SshEvent.CloseTerminal -> Unit
             }
         }
     }
@@ -119,6 +127,9 @@ fun SshHostsScreen(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 96.dp),
         ) {
+            if (terminals.isNotEmpty() && state.query.isBlank()) {
+                item(key = "sessions") { ActiveSessionsBanner(terminals.size, terminals.joinToString(" · ") { it.name }, onOpenTerminal) }
+            }
             if (state.isEmpty) {
                 item { ToolEmptyState(icon = R.drawable.ic_terminal, text = stringResource(R.string.ssh_empty)) }
             }
@@ -138,6 +149,7 @@ fun SshHostsScreen(
                             host = host,
                             index = index,
                             count = group.hosts.size,
+                            sessionActive = host.id in activeHosts,
                             onClick = { viewModel.connectSaved(host.id) },
                             onEdit = { onEditHost(host.id, false) },
                             onDelete = { viewModel.deleteHost(host.id, host.name) },
@@ -260,7 +272,7 @@ private fun GroupHeader(group: HostGroupUi, searching: Boolean, onToggle: () -> 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun HostRow(host: SshHost, index: Int, count: Int, onClick: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit) {
+private fun HostRow(host: SshHost, index: Int, count: Int, sessionActive: Boolean, onClick: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     var menu by remember { mutableStateOf(false) }
     Box(modifier = Modifier.padding(bottom = 2.dp)) {
@@ -277,9 +289,39 @@ private fun HostRow(host: SshHost, index: Int, count: Int, onClick: () -> Unit, 
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                IconAvatar(icon = R.drawable.ic_dns)
+                Box {
+                    IconAvatar(icon = R.drawable.ic_dns)
+                    if (sessionActive) {
+                        // Ponto verde com contorno da cor do item, no canto do avatar.
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .offset(2.dp, 2.dp)
+                                .size(14.dp)
+                                .background(colors.surfaceContainer, CircleShape)
+                                .padding(2.dp)
+                                .background(NetrikTheme.extendedColors.success, CircleShape),
+                        )
+                    }
+                }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(host.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            host.name,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false),
+                        )
+                        if (sessionActive) {
+                            Text(
+                                stringResource(R.string.ssh_host_session_active),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = NetrikTheme.extendedColors.success,
+                            )
+                        }
+                    }
                     Text(
                         host.address,
                         style = NetrikTheme.dataTypography.dataSmall.copy(fontSize = 12.5.sp, lineHeight = 18.sp),
@@ -348,5 +390,43 @@ private fun EmptyGroup() {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(16.dp),
         )
+    }
+}
+
+/** Faixa "N sessões ativas" no topo da lista, com os nomes e "Abrir". */
+@Composable
+private fun ActiveSessionsBanner(count: Int, names: String, onOpen: () -> Unit) {
+    val ext = NetrikTheme.extendedColors
+    Surface(
+        onClick = onOpen,
+        shape = RoundedCornerShape(16.dp),
+        color = ext.successContainer,
+        contentColor = ext.onSuccessContainer,
+        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+    ) {
+        Row(
+            modifier = Modifier.heightIn(min = 64.dp).padding(start = 16.dp, end = 12.dp, top = 12.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Icon(painterResource(R.drawable.ic_terminal_filled), contentDescription = null)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    pluralStringResource(R.plurals.ssh_sessions_active, count, count),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    names,
+                    style = NetrikTheme.dataTypography.dataSmall.copy(fontSize = 12.sp, lineHeight = 16.sp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.ssh_sessions_open), style = MaterialTheme.typography.labelLarge)
+                Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null, modifier = Modifier.size(20.dp))
+            }
+        }
     }
 }

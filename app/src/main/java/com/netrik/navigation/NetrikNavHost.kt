@@ -26,6 +26,7 @@ import com.netrik.feature.traceroute.TracerouteScreen
 import com.netrik.feature.wifi.WifiScreen
 import com.netrik.feature.ssh.SshFormScreen
 import com.netrik.feature.ssh.SshHostsScreen
+import com.netrik.feature.ssh.SshTerminalScreen
 import com.netrik.feature.ssh.SshViewModel
 import com.netrik.feature.placeholder.ToolPlaceholderScreen
 
@@ -64,7 +65,11 @@ fun NetrikNavHost(navController: NavHostController, modifier: Modifier = Modifie
                     viewModel = sshViewModel(navController, entry),
                     onNewHost = { navController.navigate(SshFormRoute()) },
                     onEditHost = { id, rejected -> navController.navigate(SshFormRoute(hostId = id, passwordRejected = rejected)) },
+                    onOpenTerminal = { navController.navigate(SshTerminalRoute) { launchSingleTop = true } },
                 )
+            }
+            composable<SshTerminalRoute> { entry ->
+                SshTerminalScreen(viewModel = sshViewModel(navController, entry), onBack = { navController.popBackStack(SshRoute, inclusive = false) })
             }
             composable<SshFormRoute> { entry ->
                 val route = entry.toRoute<SshFormRoute>()
