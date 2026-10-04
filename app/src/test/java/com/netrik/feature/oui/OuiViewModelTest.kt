@@ -9,6 +9,7 @@ import com.netrik.core.oui.OuiRegistry
 import com.netrik.core.oui.OuiRepository
 import com.netrik.core.oui.OuiUpdateEvent
 import com.netrik.core.oui.OuiUpdateState
+import com.netrik.feature.devices.PendingDeviceSearch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -58,7 +59,7 @@ class OuiViewModelTest {
     fun tearDown() = Dispatchers.resetMain()
 
     private fun TestScope.viewModel(mac: String? = null): OuiViewModel {
-        val vm = OuiViewModel(repo, Clock.systemUTC(), SavedStateHandle(mapOf("mac" to mac)))
+        val vm = OuiViewModel(repo, Clock.systemUTC(), PendingDeviceSearch(), SavedStateHandle(mapOf("mac" to mac)))
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         return vm
     }

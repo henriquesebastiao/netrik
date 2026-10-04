@@ -12,6 +12,10 @@
     <!-- O Android só entrega a lista de redes Wi-Fi (e o SSID/BSSID da rede atual) com localização precisa -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Receber respostas multicast de mDNS e SSDP durante a varredura da rede local (permissão normal) -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <!-- Android 17+: comunicação com aparelhos da rede local (TCP/UDP para IPs da LAN, mDNS). Runtime, grupo Dispositivos próximos -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
 
     <application
         android:name=".NetrikApplication"

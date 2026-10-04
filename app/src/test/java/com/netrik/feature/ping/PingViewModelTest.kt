@@ -5,6 +5,7 @@ import com.netrik.core.database.TargetHistoryDao
 import com.netrik.core.database.TargetHistoryEntity
 import com.netrik.core.database.TargetHistoryRepository
 import com.netrik.core.network.CurrentNetwork
+import com.netrik.core.network.LocalNetworkAccess
 import com.netrik.core.network.NetworkInfoRepository
 import com.netrik.core.network.ping.HostResolver
 import com.netrik.core.network.ping.OptionField
@@ -56,8 +57,11 @@ class PingViewModelTest {
         }
     }
     private val resolver = object : HostResolver {
-        override suspend fun resolve(target: String) =
-            if (target.endsWith(".invalid")) null else ResolvedHost(target, "8.8.8.8", ipv6 = false)
+        override suspend fun resolve(target: String) = when {
+            target.endsWith(".invalid") -> null
+            target.first().isDigit() -> ResolvedHost(target, target, ipv6 = false)
+            else -> ResolvedHost(target, "8.8.8.8", ipv6 = false)
+        }
         override suspend fun reverse(address: String): String? = null
     }
     private val historyDao = object : TargetHistoryDao {
@@ -68,6 +72,9 @@ class PingViewModelTest {
         override suspend fun clear(tool: String) { saved.value = emptyList() }
     }
 
+    private var localGranted = false
+    private val localNetwork = LocalNetworkAccess { localGranted }
+
     @Before
     fun setUp() = Dispatchers.setMain(UnconfinedTestDispatcher())
 
@@ -76,7 +83,7 @@ class PingViewModelTest {
 
     private fun TestScope.viewModel(): PingViewModel {
         val vm = PingViewModel(
-            runner, resolver, TargetHistoryRepository(historyDao, Clock.systemUTC()),
+            runner, resolver, TargetHistoryRepository(historyDao, Clock.systemUTC()), localNetwork,
             object : NetworkInfoRepository { override val currentNetwork = network },
             SavedStateHandle(),
         )
@@ -126,6 +133,28 @@ class PingViewModelTest {
         assertEquals(RunPhase.Failed, state.phase)
         assertEquals(RunFailure.HostNotFound, state.failure)
         assertEquals(TargetError.Unresolved("exemplo.invalid"), state.targetError)
+    }
+
+    @Test
+    fun `alvo na rede local sem permissão pede a permissão em vez de rodar`() = runTest {
+        val vm = viewModel()
+        vm.onTargetChange("192.168.0.1")
+        vm.onStart()
+        assertEquals(RunFailure.LocalNetworkPermission, vm.uiState.value.failure)
+        assertTrue(lastCommand.isEmpty())
+
+        localGranted = true
+        vm.onStart()
+        assertEquals(RunPhase.Running, vm.uiState.value.phase)
+    }
+
+    @Test
+    fun `alvo público não precisa da permissão de rede local`() = runTest {
+        // O resolver de teste devolve 8.8.8.8 para nomes: alvo público não precisa da permissão.
+        val vm = viewModel()
+        vm.onTargetChange("google.com")
+        vm.onStart()
+        assertEquals(RunPhase.Running, vm.uiState.value.phase)
     }
 
     @Test

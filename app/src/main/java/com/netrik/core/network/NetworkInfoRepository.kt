@@ -114,6 +114,7 @@ class AndroidNetworkInfoRepository @Inject constructor(
             ipv6 = ipv6,
             wifi = if (transport == CurrentNetwork.Transport.Wifi) wifiDetails(caps) else null,
             carrierName = if (transport == CurrentNetwork.Transport.Cellular) carrierName() else null,
+            interfaceName = props?.interfaceName,
         )
     }
 

@@ -1,6 +1,7 @@
 package com.netrik.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
@@ -12,9 +13,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.toRoute
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.netrik.feature.devices.DeviceDetailScreen
+import com.netrik.feature.devices.DevicesScreen
+import com.netrik.feature.devices.DevicesViewModel
 import com.netrik.feature.hub.HubScreen
 import com.netrik.feature.oui.OuiScreen
 import com.netrik.feature.ping.PingScreen
+import com.netrik.feature.portscan.PortScanScreen
 import com.netrik.feature.traceroute.TracerouteScreen
 import com.netrik.feature.wifi.WifiScreen
 import com.netrik.feature.placeholder.TabPlaceholderScreen
@@ -29,7 +35,21 @@ fun NetrikNavHost(navController: NavHostController, modifier: Modifier = Modifie
             }
         }
         navigation<DevicesGraph>(startDestination = DevicesRoute) {
-            composable<DevicesRoute> { TabPlaceholder(TopLevelDestination.Devices, navController) }
+            // Lista e detalhes compartilham o ViewModel do grafo: a varredura sobrevive à navegação.
+            composable<DevicesRoute> { entry ->
+                DevicesScreen(
+                    viewModel = devicesViewModel(navController, entry),
+                    onOpenDevice = { ip -> navController.navigate(DeviceDetailRoute(ip)) },
+                )
+            }
+            composable<DeviceDetailRoute> { entry ->
+                DeviceDetailScreen(
+                    ip = entry.toRoute<DeviceDetailRoute>().ip,
+                    viewModel = devicesViewModel(navController, entry),
+                    onBack = { navController.popBackStack() },
+                    onAction = { tool, ip -> navController.openTool(tool, TopLevelDestination.Devices, ip) },
+                )
+            }
         }
         navigation<WifiGraph>(startDestination = WifiRoute) {
             composable<WifiRoute> { WifiScreen() }
@@ -45,11 +65,18 @@ fun NetrikNavHost(navController: NavHostController, modifier: Modifier = Modifie
         }
         composable<PingRoute> { PingScreen(onBack = { navController.popBackStack() }) }
         composable<TracerouteRoute> { TracerouteScreen(onBack = { navController.popBackStack() }) }
+        composable<PortScanRoute> { PortScanScreen(onBack = { navController.popBackStack() }) }
         composable<ToolRoute> { entry ->
             val route = entry.toRoute<ToolRoute>()
             ToolPlaceholderScreen(tool = route.tool, onBack = { navController.popBackStack() })
         }
     }
+}
+
+@Composable
+private fun devicesViewModel(navController: NavController, entry: NavBackStackEntry): DevicesViewModel {
+    val parent = remember(entry) { navController.getBackStackEntry(DevicesGraph) }
+    return hiltViewModel(parent)
 }
 
 @Composable
@@ -83,6 +110,7 @@ fun NavController.openTool(tool: NetrikTool, origin: TopLevelDestination, target
         tool == NetrikTool.Oui -> navigate(OuiRoute(origin = origin, mac = target))
         tool == NetrikTool.Ping -> navigate(PingRoute(origin = origin, target = target))
         tool == NetrikTool.Traceroute -> navigate(TracerouteRoute(origin = origin, target = target))
+        tool == NetrikTool.PortScanner -> navigate(PortScanRoute(origin = origin, target = target))
         else -> navigate(ToolRoute(tool = tool, origin = origin, target = target))
     }
 }
@@ -93,6 +121,7 @@ fun NavBackStackEntry.topLevelDestination(): TopLevelDestination? {
     if (destination.hasRoute<OuiRoute>()) return toRoute<OuiRoute>().origin
     if (destination.hasRoute<PingRoute>()) return toRoute<PingRoute>().origin
     if (destination.hasRoute<TracerouteRoute>()) return toRoute<TracerouteRoute>().origin
+    if (destination.hasRoute<PortScanRoute>()) return toRoute<PortScanRoute>().origin
     return TopLevelDestination.entries.firstOrNull { tab ->
         destination.hierarchy.any { it.hasRoute(tab.graphClass) }
     }

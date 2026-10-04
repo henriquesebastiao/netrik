@@ -20,6 +20,9 @@ Esse protótipo navegável é a fonte da verdade visual: siga cores, tipografia,
 - Ícones: Material Symbols Rounded como vector drawables em `res/drawable` (`ic_<nome>` e `ic_<nome>_filled`). Para um ícone novo: `scripts/material_symbol.py nome [--filled nome]`.
 - Tema segue o sistema; o botão de tema do protótipo não vai para o app.
 - IP público: só consultado quando o usuário toca em "Mostrar IP público" (api.ipify.org).
+- Rede local (Android 17+): com targetSdk 37, qualquer TCP/UDP para IPs da LAN (e o mDNS) exige a permissão de execução `ACCESS_LOCAL_NETWORK` (grupo Dispositivos próximos); sem ela o tráfego é descartado em silêncio (timeout/EPERM), inclusive o ping. Use `LocalNetworkAccess`/`LocalAddress` antes de falar com a LAN e `rememberLocalNetworkPermissionRequest` para pedir. Vale para Port Scanner e SSH.
+- MACs na LAN: o app não lê `/proc/net/arp` nem `ip neigh` (negado pelo SELinux). MAC só quando o próprio dispositivo anuncia (NetBIOS, mDNS); senão "MAC indisponível".
+- Portas: `assets/ports/top-tcp.txt` e `top-udp.txt` têm só os números das 1000 portas mais comuns na ordem do Nmap (o arquivo `nmap-services` é NPSL e não é embutido); nomes de serviço vêm do registro da IANA (`services.tsv.gzip`). Fontes em `assets/ports/SOURCES.txt`.
 - OUI: a base IEEE vai em `assets/oui/*.csv.gzip` (extensão `.gzip`, não `.gz`: o AGP descompacta `.gz` no build) e é importada no Room no primeiro uso. Downloads do IEEE precisam de User-Agent próprio (`Netrik/<versão>`): o padrão do Android leva HTTP 418. Os CSVs do IEEE não têm data de registro, então ela não é exibida.
 
 ## Regras de Git (OBRIGATÓRIAS)
@@ -79,5 +82,7 @@ Trabalhe UMA etapa por vez. Ao fim de cada uma: garanta build e testes passando,
 - Etapa 0 — Fundação: concluída.
 - Etapa 1 — OUI Lookup: concluída.
 - Etapa 2 — Ping e Traceroute: concluída. O traceroute ainda precisa de validação num aparelho físico: no emulador o ICMP é simulado (TTL sempre 255, sem "TTL excedido").
-- Etapa 3 — Scanner Wi-Fi: concluída (aguardando commit/aprovação). O emulador só tem a rede "AndroidWifi" (2,4 GHz, sem 6 GHz).
-- Próxima: Etapa 4 — Scanner de dispositivos LAN. Comece relendo `NetrikDevices.dc.html` no design e apresente o plano antes de codar.
+- Etapa 3 — Scanner Wi-Fi: concluída. O emulador só tem a rede "AndroidWifi" (2,4 GHz, sem 6 GHz).
+- Etapa 4 — Scanner de dispositivos LAN: concluída. No emulador a rede é simulada: sem nomes nem MACs reais; mDNS/NetBIOS/UPnP precisam de validação num aparelho físico.
+- Etapa 5 — Port Scanner: concluída (aguardando commit/aprovação). No emulador, 10.0.2.2 é o loopback do PC: serve de gabarito para portas TCP abertas.
+- Próxima: Etapa 6 — SSH. Comece relendo `NetrikSSH.dc.html` no design e apresente o plano antes de codar.

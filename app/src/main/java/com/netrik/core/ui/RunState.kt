@@ -30,6 +30,8 @@ sealed interface RunFailure {
     /** A rede caiu durante a execução; [step] é o salto/etapa em que parou, quando houver. */
     data class ConnectionLost(val step: Int? = null) : RunFailure
     data class ToolFailed(val message: String?) : RunFailure
+    /** Alvo na rede local sem a permissão `ACCESS_LOCAL_NETWORK` (Android 17+). */
+    data object LocalNetworkPermission : RunFailure
 }
 
 @Composable
@@ -46,6 +48,7 @@ fun failureText(failure: RunFailure): Pair<String, String> = when (failure) {
     is RunFailure.ConnectionLost -> (failure.step?.let { stringResource(R.string.trace_error_lost, it) } ?: stringResource(R.string.error_connection_lost)) to
         stringResource(R.string.error_connection_lost_body)
     is RunFailure.ToolFailed -> stringResource(R.string.error_ping_failed) to (failure.message ?: "")
+    RunFailure.LocalNetworkPermission -> stringResource(R.string.error_local_network_title) to stringResource(R.string.error_local_network_body)
 }
 
 /** Menu ⋮ com "Limpar histórico de alvos". */

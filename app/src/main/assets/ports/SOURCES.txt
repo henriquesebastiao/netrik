@@ -1,0 +1,12 @@
+Fontes dos dados de portas do Netrik
+
+top-tcp.txt / top-udp.txt
+  Números das 1000 portas TCP e UDP mais encontradas, na ordem de frequência
+  publicada pelo projeto Nmap (https://nmap.org/). Só os números de porta são
+  usados; o arquivo nmap-services, suas frequências e comentários não são
+  incluídos.
+
+services.tsv.gzip
+  Nome de serviço por porta e protocolo (primeiro nome registrado), do
+  Service Name and Transport Protocol Port Number Registry da IANA
+  (https://www.iana.org/assignments/service-names-port-numbers/).

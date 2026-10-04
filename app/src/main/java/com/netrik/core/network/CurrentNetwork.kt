@@ -16,6 +16,8 @@ sealed interface CurrentNetwork {
         val wifi: WifiDetails?,
         /** Nome da operadora, só para dados móveis. */
         val carrierName: String?,
+        /** Interface do sistema (ex.: wlan0). */
+        val interfaceName: String? = null,
     ) : CurrentNetwork
 
     enum class Transport { Wifi, Cellular, Ethernet, Vpn, Other }

@@ -10,7 +10,6 @@ import android.provider.Settings
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,18 +19,13 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
@@ -45,7 +39,6 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,7 +49,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -73,6 +65,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.netrik.R
 import com.netrik.core.designsystem.component.NetrikTopAppBar
+import com.netrik.core.designsystem.component.PermissionRationale
 import com.netrik.core.designsystem.component.PlaceholderContent
 import com.netrik.core.designsystem.component.groupedItemShape
 import com.netrik.core.designsystem.theme.NetrikTheme
@@ -387,59 +380,25 @@ private fun SelectedNetworkCard(network: WifiNetwork, color: Color) {
 
 @Composable
 private fun PermissionContent(permission: LocationPermission, onContinue: () -> Unit, onLater: () -> Unit) {
-    val colors = MaterialTheme.colorScheme
-    Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 24.dp, end = 24.dp, top = 40.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Surface(shape = RoundedCornerShape(24.dp), color = colors.primaryContainer, contentColor = colors.onPrimaryContainer, modifier = Modifier.size(72.dp)) {
-                Box(contentAlignment = Alignment.Center) { Icon(painterResource(R.drawable.ic_location_on), contentDescription = null, modifier = Modifier.size(36.dp)) }
-            }
-            Text(stringResource(R.string.wifi_perm_title), style = MaterialTheme.typography.headlineSmall)
-            Text(stringResource(R.string.wifi_perm_body), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
-        }
-        val items = listOf(
-            R.drawable.ic_wifi_find to R.string.wifi_perm_item_reads,
-            R.drawable.ic_location_off to R.string.wifi_perm_item_private,
-            R.drawable.ic_settings to R.string.wifi_perm_item_revoke,
-        )
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            items.forEachIndexed { i, (icon, text) -> PermissionItem(icon, stringResource(text), groupedItemShape(i, items.size)) }
-        }
-        val note = when (permission) {
-            LocationPermission.CoarseOnly -> R.string.wifi_perm_coarse
-            LocationPermission.PermanentlyDenied -> R.string.wifi_perm_denied
+    PermissionRationale(
+        icon = R.drawable.ic_location_on,
+        title = stringResource(R.string.wifi_perm_title),
+        body = stringResource(R.string.wifi_perm_body),
+        items = listOf(
+            R.drawable.ic_wifi_find to stringResource(R.string.wifi_perm_item_reads),
+            R.drawable.ic_location_off to stringResource(R.string.wifi_perm_item_private),
+            R.drawable.ic_settings to stringResource(R.string.wifi_perm_item_revoke),
+        ),
+        note = when (permission) {
+            LocationPermission.CoarseOnly -> stringResource(R.string.wifi_perm_coarse)
+            LocationPermission.PermanentlyDenied -> stringResource(R.string.wifi_perm_denied)
             else -> null
-        }
-        if (note != null) {
-            val ext = NetrikTheme.extendedColors
-            Surface(shape = RoundedCornerShape(12.dp), color = ext.warningContainer, contentColor = ext.onWarningContainer, modifier = Modifier.fillMaxWidth()) {
-                Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Icon(painterResource(R.drawable.ic_warning_filled), contentDescription = null, modifier = Modifier.size(20.dp))
-                    Text(stringResource(note), style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-        }
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = onContinue, modifier = Modifier.fillMaxWidth().height(48.dp)) {
-                Text(stringResource(if (permission == LocationPermission.PermanentlyDenied) R.string.wifi_perm_open_settings else R.string.wifi_perm_continue))
-            }
-            TextButton(onClick = onLater, modifier = Modifier.fillMaxWidth().height(48.dp)) {
-                Text(stringResource(R.string.wifi_perm_later))
-            }
-        }
-    }
-}
-
-@Composable
-private fun PermissionItem(@DrawableRes icon: Int, text: String, shape: Shape) {
-    Surface(shape = shape, color = MaterialTheme.colorScheme.surfaceContainer, modifier = Modifier.fillMaxWidth()) {
-        Row(modifier = Modifier.heightIn(min = 64.dp).padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Icon(painterResource(icon), contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(text, style = MaterialTheme.typography.bodyMedium)
-        }
-    }
+        },
+        primaryLabel = stringResource(if (permission == LocationPermission.PermanentlyDenied) R.string.wifi_perm_open_settings else R.string.wifi_perm_continue),
+        onPrimary = onContinue,
+        laterLabel = stringResource(R.string.wifi_perm_later),
+        onLater = onLater,
+    )
 }
 
 @Composable

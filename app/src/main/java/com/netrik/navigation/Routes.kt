@@ -39,3 +39,14 @@ data class TracerouteRoute(
     val origin: TopLevelDestination,
     val target: String? = null,
 )
+
+/** Detalhes de um dispositivo encontrado na varredura (dentro da aba Dispositivos). */
+@Serializable
+data class DeviceDetailRoute(val ip: String)
+
+/** Port Scanner; [target] pré-preenche o host (ex.: ação rápida dos detalhes de um dispositivo). */
+@Serializable
+data class PortScanRoute(
+    val origin: TopLevelDestination,
+    val target: String? = null,
+)

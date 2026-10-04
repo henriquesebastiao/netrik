@@ -58,6 +58,7 @@ import com.netrik.core.ui.RunFailure
 import com.netrik.core.ui.RunPhase
 import com.netrik.core.ui.failureText
 import com.netrik.core.ui.rememberCopyAction
+import com.netrik.core.ui.rememberLocalNetworkPermissionRequest
 import com.netrik.core.ui.targetErrorText
 import com.netrik.feature.ping.ms
 
@@ -65,6 +66,7 @@ import com.netrik.feature.ping.ms
 fun TracerouteScreen(onBack: () -> Unit, viewModel: TracerouteViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val copy = rememberCopyAction()
+    val requestLocalNetwork = rememberLocalNetworkPermissionRequest(onGranted = viewModel::onStart)
     val routeCopied = stringResource(R.string.trace_copied)
     val noReply = stringResource(R.string.trace_no_reply, state.runHopTimeout)
 
@@ -171,7 +173,11 @@ fun TracerouteScreen(onBack: () -> Unit, viewModel: TracerouteViewModel = hiltVi
                     if (failure != null) {
                         item(key = "failure") {
                             val (title, body) = failureText(failure)
-                            ErrorCard(title, body, onRetry = if (state.connected) viewModel::onStart else null)
+                            if (failure == RunFailure.LocalNetworkPermission) {
+                                ErrorCard(title, body, onRetry = requestLocalNetwork, retryLabel = stringResource(R.string.action_allow), retryIcon = R.drawable.ic_lan)
+                            } else {
+                                ErrorCard(title, body, onRetry = if (state.connected) viewModel::onStart else null)
+                            }
                         }
                     }
                 }

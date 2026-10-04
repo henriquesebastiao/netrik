@@ -121,7 +121,10 @@ fun OuiScreen(
         onHistoryRemove = viewModel::onHistoryRemove,
         onClearHistory = viewModel::onClearHistory,
         onUpdateDatabase = viewModel::onUpdateDatabase,
-        onFindInNetwork = onFindInNetwork,
+        onFindInNetwork = { prefix ->
+            viewModel.onFindInNetwork(prefix)
+            onFindInNetwork()
+        },
     )
 }
 
@@ -136,7 +139,7 @@ fun OuiContent(
     onHistoryRemove: (String) -> Unit,
     onClearHistory: () -> Unit,
     onUpdateDatabase: () -> Unit,
-    onFindInNetwork: () -> Unit,
+    onFindInNetwork: (prefix: String) -> Unit,
 ) {
     var showAbout by rememberSaveable { mutableStateOf(false) }
     val copy = rememberCopyAction()
@@ -384,7 +387,7 @@ private fun ResultSection(
     copy: CopyAction,
     onInputChange: (String) -> Unit,
     onUpdateDatabase: () -> Unit,
-    onFindInNetwork: () -> Unit,
+    onFindInNetwork: (prefix: String) -> Unit,
 ) {
     val result = state.result
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -411,7 +414,7 @@ private fun LoadingCard() {
 }
 
 @Composable
-private fun MatchCard(match: OuiMatch, multicast: Boolean, copy: CopyAction, onFindInNetwork: () -> Unit) {
+private fun MatchCard(match: OuiMatch, multicast: Boolean, copy: CopyAction, onFindInNetwork: (prefix: String) -> Unit) {
     val record = match.record
     val prefix = MacAddresses.format(record.prefix)
     val queried = paddedMac(match.queriedHex)
@@ -475,7 +478,7 @@ private fun MatchCard(match: OuiMatch, multicast: Boolean, copy: CopyAction, onF
                     Icon(painterResource(R.drawable.ic_copy_all), contentDescription = null, modifier = Modifier.size(18.dp))
                     Text(stringResource(R.string.oui_copy_result), modifier = Modifier.padding(start = 8.dp))
                 }
-                OutlinedButton(onClick = onFindInNetwork) {
+                OutlinedButton(onClick = { onFindInNetwork(MacAddresses.format(record.prefix.take(6))) }) {
                     Icon(painterResource(R.drawable.ic_lan), contentDescription = null, modifier = Modifier.size(18.dp))
                     Text(stringResource(R.string.oui_find_in_network), modifier = Modifier.padding(start = 8.dp))
                 }

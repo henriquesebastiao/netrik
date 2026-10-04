@@ -8,6 +8,7 @@ import com.netrik.core.oui.MacInput
 import com.netrik.core.oui.OuiDbStatus
 import com.netrik.core.oui.OuiRepository
 import com.netrik.core.oui.OuiUpdateEvent
+import com.netrik.feature.devices.PendingDeviceSearch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -29,6 +30,7 @@ import javax.inject.Inject
 class OuiViewModel @Inject constructor(
     private val repository: OuiRepository,
     private val clock: Clock,
+    private val pendingDeviceSearch: PendingDeviceSearch,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -135,6 +137,11 @@ class OuiViewModel @Inject constructor(
     }
 
     fun onUpdateDatabase() = repository.updateFromIeee()
+
+    /** "Buscar na rede": Dispositivos abre já filtrado pelo prefixo do fabricante. */
+    fun onFindInNetwork(prefix: String) {
+        pendingDeviceSearch.query.value = prefix
+    }
 
     private suspend fun lookup(hex: String, record: Boolean = true) {
         query.value = query.value.copy(showShortError = false, result = OuiResult.Loading(hex))

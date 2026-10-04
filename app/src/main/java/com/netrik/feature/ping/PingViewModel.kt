@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.netrik.core.database.TargetHistoryRepository
 import com.netrik.core.network.CurrentNetwork
+import com.netrik.core.network.LocalAddress
+import com.netrik.core.network.LocalNetworkAccess
 import com.netrik.core.network.NetworkInfoRepository
 import com.netrik.core.network.ping.HostResolver
 import com.netrik.core.network.ping.OptionField
@@ -65,6 +67,7 @@ class PingViewModel @Inject constructor(
     private val runner: PingRunner,
     private val resolver: HostResolver,
     private val history: TargetHistoryRepository,
+    private val localNetwork: LocalNetworkAccess,
     networkInfo: NetworkInfoRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -140,6 +143,10 @@ class PingViewModel @Inject constructor(
             val host = resolver.resolve(target)
             if (host == null) {
                 state.update { it.copy(phase = RunPhase.Failed, failure = RunFailure.HostNotFound, targetError = TargetError.Unresolved(target)) }
+                return@launch
+            }
+            if (LocalAddress.isLocal(host.address) && !localNetwork.isGranted()) {
+                state.update { it.copy(phase = RunPhase.Failed, failure = RunFailure.LocalNetworkPermission) }
                 return@launch
             }
             history.record(TOOL, target)

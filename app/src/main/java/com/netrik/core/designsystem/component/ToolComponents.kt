@@ -284,7 +284,7 @@ private fun RunningChip(label: String) {
 
 /** Card de erro com ação "Tentar novamente" (errorContainer). */
 @Composable
-fun ErrorCard(title: String, body: String, onRetry: (() -> Unit)?) {
+fun ErrorCard(title: String, body: String, onRetry: (() -> Unit)?, retryLabel: String? = null, @DrawableRes retryIcon: Int = R.drawable.ic_refresh) {
     Surface(
         shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.errorContainer,
@@ -309,8 +309,8 @@ fun ErrorCard(title: String, body: String, onRetry: (() -> Unit)?) {
                         ),
                         contentPadding = PaddingValues(start = 12.dp, end = 16.dp),
                     ) {
-                        Icon(painterResource(R.drawable.ic_refresh), contentDescription = null, modifier = Modifier.size(18.dp))
-                        Text(stringResource(R.string.action_retry), modifier = Modifier.padding(start = 8.dp))
+                        Icon(painterResource(retryIcon), contentDescription = null, modifier = Modifier.size(18.dp))
+                        Text(retryLabel ?: stringResource(R.string.action_retry), modifier = Modifier.padding(start = 8.dp))
                     }
                 }
             }

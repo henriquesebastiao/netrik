@@ -24,4 +24,7 @@ abstract class NetworkModule {
 
     @Binds
     abstract fun bindHostResolver(impl: SystemHostResolver): HostResolver
+
+    @Binds
+    abstract fun bindLocalNetworkAccess(impl: AndroidLocalNetworkAccess): LocalNetworkAccess
 }
