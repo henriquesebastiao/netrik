@@ -86,6 +86,8 @@ dependencies {
     implementation(libs.termux.terminal.view)
     // Preferences (settings and terminal font size)
     implementation(libs.androidx.datastore.preferences)
+    // App lock: fingerprint/face unlock through the system BiometricPrompt
+    implementation(libs.androidx.biometric)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.core)

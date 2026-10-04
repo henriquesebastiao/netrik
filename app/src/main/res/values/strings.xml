@@ -611,6 +611,41 @@
     <string name="settings_licenses">Open source licenses</string>
     <string name="settings_no_browser">No app to open the link</string>
 
+    <!-- App lock -->
+    <string name="lock_title">Enter your PIN</string>
+    <string name="lock_wrong">Wrong PIN</string>
+    <plurals name="lock_wrong_left">
+        <item quantity="one">Wrong PIN. %1$d attempt left before a wait.</item>
+        <item quantity="other">Wrong PIN. %1$d attempts left before a wait.</item>
+    </plurals>
+    <string name="lock_wait">Too many attempts. Try again in %1$s.</string>
+    <string name="lock_use_fingerprint">Use fingerprint</string>
+    <string name="lock_delete">Delete</string>
+    <string name="lock_biometric_title">Unlock Netrik</string>
+    <string name="lock_biometric_negative">Use PIN</string>
+    <string name="lock_forgot">Forgot PIN?</string>
+    <string name="lock_forgot_title">Forgot your PIN?</string>
+    <string name="lock_forgot_body">For your security, the PIN can\'t be recovered or reset from inside the app. The only way out is to clear Netrik\'s data in Android settings (Storage → Clear storage), which erases saved SSH hosts, keys, passwords and settings.</string>
+    <string name="lock_open_app_settings">Open app settings</string>
+    <string name="pin_create">Create a 4-digit PIN</string>
+    <string name="pin_new">Enter the new PIN</string>
+    <string name="pin_confirm">Enter the PIN again</string>
+    <string name="pin_current">Enter your current PIN</string>
+    <string name="pin_mismatch">The PINs don\'t match. Start again.</string>
+    <string name="pin_enabled">App lock on</string>
+    <string name="pin_disabled">App lock off</string>
+    <string name="pin_changed">PIN changed</string>
+    <string name="settings_section_security">Security</string>
+    <string name="settings_app_lock">App lock</string>
+    <string name="settings_app_lock_on">Asks for your PIN when you open Netrik and after the device locks</string>
+    <string name="settings_app_lock_off">Off: anyone who unlocks your phone can open Netrik</string>
+    <string name="settings_change_pin">Change PIN</string>
+    <string name="settings_biometric">Unlock with fingerprint</string>
+    <string name="settings_biometric_sub">Uses the fingerprint or face enrolled on this device; the PIN keeps working</string>
+    <string name="settings_biometric_unavailable">No fingerprint or face enrolled on this device</string>
+    <string name="settings_biometric_needs_lock">Turn on the app lock first</string>
+    <string name="biometric_enable_title">Confirm your fingerprint</string>
+
     <!-- Open source licenses (Settings) -->
     <string name="about_licenses">Roboto Flex and JetBrains Mono fonts: SIL Open Font License 1.1.\nMaterial Symbols icons: Apache License 2.0.\nVendors: IEEE MA-L, MA-M and MA-S registries.\nMost common ports: Nmap project ranking (numbers only). Service names: IANA port registry.\nSSH: JSch (mwiede fork, BSD license) and Bouncy Castle (MIT license).\nTerminal: Termux emulator and renderer (terminal-emulator and terminal-view, Apache License 2.0).</string>
 </resources>

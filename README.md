@@ -17,7 +17,7 @@ Available in English and Brazilian Portuguese.
 | **MAC/OUI Lookup** | Vendor of a MAC address from the offline IEEE database (MA-L, MA-M and MA-S), updatable from the official files. |
 | **SSH** | Saved hosts in groups, password or key authentication (Ed25519, RSA, ECDSA), host key verification and an xterm terminal with tabs, extra keys and background sessions. |
 
-Settings let you pick the theme (system, light or dark), use your wallpaper colors (Material You) or the Netrik colors, enable pure black for AMOLED screens and choose the app language.
+Settings let you lock Netrik with a 4-digit PIN or your fingerprint, pick the theme (system, light or dark), use your wallpaper colors (Material You) or the Netrik colors, enable pure black for AMOLED screens and choose the app language.
 
 ## Privacy and security
 

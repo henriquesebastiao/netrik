@@ -10,15 +10,16 @@ The short version: **everything stays on your device, secrets are encrypted with
 2. [Reporting a vulnerability](#reporting-a-vulnerability)
 3. [What Netrik stores](#what-netrik-stores)
 4. [How SSH credentials are protected](#how-ssh-credentials-are-protected)
-5. [SSH connections and host key verification](#ssh-connections-and-host-key-verification)
-6. [Network activity](#network-activity)
-7. [Permissions](#permissions)
-8. [Logging, clipboard and screenshots](#logging-clipboard-and-screenshots)
-9. [Backups](#backups)
-10. [Known limitations](#known-limitations)
-11. [Recommendations for users](#recommendations-for-users)
-12. [Responsible use](#responsible-use)
-13. [Third-party components](#third-party-components)
+5. [App lock (PIN and fingerprint)](#app-lock-pin-and-fingerprint)
+6. [SSH connections and host key verification](#ssh-connections-and-host-key-verification)
+7. [Network activity](#network-activity)
+8. [Permissions](#permissions)
+9. [Logging, clipboard and screenshots](#logging-clipboard-and-screenshots)
+10. [Backups](#backups)
+11. [Known limitations](#known-limitations)
+12. [Recommendations for users](#recommendations-for-users)
+13. [Responsible use](#responsible-use)
+14. [Third-party components](#third-party-components)
 
 ---
 
@@ -83,6 +84,7 @@ All data lives in the app's private storage on your device. Netrik has **no acco
 | Trusted SSH host keys (known_hosts) | App database | Private app storage |
 | Recent targets (Ping, Traceroute, Port Scanner) and MAC lookups | App database | Private app storage |
 | IEEE vendor (OUI) database | App database | Public data |
+| App lock PIN | Never stored; only a keyed verifier (see below) | HMAC-SHA256 with an Android Keystore key |
 | Settings (theme, language, terminal font size) | DataStore / preferences | Private app storage |
 | Device scan, Wi-Fi scan and port scan results | Memory only | Gone when the app process ends |
 | SSH session output (terminal scrollback) | Memory only | Gone when the session closes |
@@ -98,6 +100,20 @@ All data lives in the app's private storage on your device. Netrik has **no acco
 - **Private keys are validated before use.** The app reads OpenSSH, PEM/PKCS#8 and PuTTY keys (Ed25519, ECDSA, RSA), checks an encrypted key's passphrase locally before going to the network, and rejects files that aren't private keys or are larger than 64 KB.
 - **Picking a key doesn't grant broad file access.** Key files are chosen through the system file picker (Storage Access Framework); Netrik doesn't request storage permissions and only reads the file you select, once, to store an encrypted copy.
 - **"Save connection" is optional.** If you turn it off, the connection is made once and nothing is stored.
+
+## App lock (PIN and fingerprint)
+
+Settings → Security → **App lock** protects Netrik with a 4-digit PIN, optionally unlocked with a fingerprint or face.
+
+- **When it locks:** every time Netrik starts, and whenever the device screen turns off (that is, when the device locks). Switching to another app without locking the device doesn't lock Netrik.
+- **The PIN is never stored.** Netrik keeps a random salt and an HMAC-SHA256 of the PIN computed with a **non-exportable Android Keystore key**. A 4-digit PIN has only 10,000 values; because the key never leaves the device, a copy of the app data is useless for guessing it, and every guess has to go through the app on that device.
+- **Attempt limit:** after 5 wrong PINs, the app waits 30 s, doubling on every further mistake, up to 15 min. The counter is stored, so closing the app or rebooting doesn't reset it. PINs are compared in constant time.
+- **Biometrics:** only Class 3 ("strong") biometrics through the system `BiometricPrompt`. Biometric data never reaches the app; the system only reports whether the person was recognized. Turning it on requires a successful scan, and the PIN always keeps working.
+- **What stays hidden:** while locked, the lock screen is a window above everything else in the app (including open dialogs), takes the keyboard focus and hides the app from accessibility services. The app's state (open screens, running tools) is kept underneath.
+- **Changing or turning off the lock** requires the current PIN, counted against the same attempt limit.
+- **What keeps running:** open SSH sessions stay connected while the app is locked, and **Disconnect all** in the notification works without unlocking (it only reduces exposure).
+- **Forgotten PIN:** there is no recovery or reset inside the app, on purpose. The only way out is clearing Netrik's data in Android settings, which erases everything the app stored.
+- The recent apps preview isn't hidden, so the last screen before locking may show there.
 
 ## SSH connections and host key verification
 
@@ -159,7 +175,8 @@ Android may include app data in device backups (Google backup or device-to-devic
 
 Being honest about what Netrik doesn't do:
 
-- No app lock (PIN/biometrics) yet: anyone who can unlock your phone can open Netrik and connect to saved servers.
+- The app lock is off by default. Without it, anyone who can unlock your phone can open Netrik and connect to saved servers. With it, a 4-digit PIN is the last line of defense; the attempt limit slows guessing but doesn't make it impossible.
+- A dialog that appears while the app is locked (e.g. the result of an SSH connection started just before locking) may show above the lock screen.
 - Secrets are protected at rest, but while connecting they're in the app's memory, like in any SSH client.
 - Keyboard-interactive authentication with several prompts (e.g. password + one-time code) isn't supported.
 - There is no SSH agent forwarding, port forwarding, X11 forwarding or SFTP. This reduces the attack surface.
@@ -169,7 +186,7 @@ Being honest about what Netrik doesn't do:
 
 - Prefer **key authentication** over passwords, and protect your private keys with a passphrase.
 - **Check fingerprints** with the server administrator (or `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` on the server) before trusting a host. Never accept a changed key without knowing why it changed.
-- Use a **screen lock** on your phone and keep Android and Netrik updated.
+- Use a **screen lock** on your phone, turn on Netrik's **app lock**, and keep Android and Netrik updated.
 - Use dedicated keys for your phone, so you can revoke them on the servers if the phone is lost.
 - If your phone is lost or stolen, revoke its keys (`authorized_keys`) and change the passwords saved in Netrik.
 

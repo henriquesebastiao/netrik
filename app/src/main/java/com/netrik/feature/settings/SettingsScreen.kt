@@ -53,6 +53,13 @@ import com.netrik.core.designsystem.component.SectionHeader
 import com.netrik.core.designsystem.component.groupedItemShape
 import com.netrik.core.designsystem.theme.NetrikTheme
 import com.netrik.core.settings.AppLanguage
+import com.netrik.core.ui.LocalSnackbarHostState
+import com.netrik.feature.applock.Biometrics
+import com.netrik.feature.applock.PinFlow
+import com.netrik.feature.applock.PinFlowDialog
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import kotlinx.coroutines.launch
 import com.netrik.core.settings.AppLanguages
 import com.netrik.core.settings.ThemeMode
 import java.util.Locale
@@ -73,6 +80,18 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
     var showLanguage by rememberSaveable { mutableStateOf(false) }
     var showLicenses by rememberSaveable { mutableStateOf(false) }
     val language = remember(showLanguage) { AppLanguages.current(context) }
+    val lock by viewModel.lock.collectAsStateWithLifecycle()
+    var pinFlow by rememberSaveable { mutableStateOf<PinFlow?>(null) }
+    val snackbar = LocalSnackbarHostState.current
+    val scope = rememberCoroutineScope()
+    val biometricTitle = stringResource(R.string.biometric_enable_title)
+    val biometricNegative = stringResource(R.string.action_cancel)
+    // Re-checked when coming back from the system settings (a fingerprint may have been enrolled).
+    var biometricAvailable by remember { mutableStateOf(Biometrics.available(context)) }
+    LifecycleResumeEffect(Unit) {
+        biometricAvailable = Biometrics.available(context)
+        onPauseOrDispose { }
+    }
 
     Scaffold(topBar = { NetrikTopAppBar(title = stringResource(R.string.settings_title), onBack = onBack) }) { padding ->
         LazyColumn(
@@ -105,6 +124,46 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                         subtitle = stringResource(R.string.settings_amoled_sub),
                         checked = appearance.amoled,
                         onCheckedChange = viewModel::setAmoled,
+                        index = 2,
+                        count = 3,
+                    )
+                }
+            }
+            item(key = "security") {
+                SettingsSection(stringResource(R.string.settings_section_security)) {
+                    SwitchRow(
+                        icon = R.drawable.ic_lock,
+                        title = stringResource(R.string.settings_app_lock),
+                        subtitle = stringResource(if (lock.enabled) R.string.settings_app_lock_on else R.string.settings_app_lock_off),
+                        checked = lock.enabled,
+                        onCheckedChange = { pinFlow = if (it) PinFlow.Enable else PinFlow.Disable },
+                        index = 0,
+                        count = 3,
+                    )
+                    SettingsRow(
+                        icon = R.drawable.ic_pin,
+                        title = stringResource(R.string.settings_change_pin),
+                        enabled = lock.enabled,
+                        index = 1,
+                        count = 3,
+                        onClick = { pinFlow = PinFlow.Change },
+                    )
+                    SwitchRow(
+                        icon = R.drawable.ic_fingerprint,
+                        title = stringResource(R.string.settings_biometric),
+                        subtitle = stringResource(
+                            when {
+                                !lock.enabled -> R.string.settings_biometric_needs_lock
+                                !biometricAvailable -> R.string.settings_biometric_unavailable
+                                else -> R.string.settings_biometric_sub
+                            },
+                        ),
+                        checked = lock.enabled && lock.biometric && biometricAvailable,
+                        enabled = lock.enabled && biometricAvailable,
+                        onCheckedChange = { on ->
+                            // Turning it on needs a successful scan, so it isn't enabled by someone else's finger.
+                            if (on) Biometrics.prompt(context, biometricTitle, biometricNegative) { viewModel.setBiometric(true) } else viewModel.setBiometric(false)
+                        },
                         index = 2,
                         count = 3,
                     )
@@ -177,6 +236,24 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
         )
     }
     if (showLicenses) LicensesDialog(onDismiss = { showLicenses = false })
+    pinFlow?.let { flow ->
+        val done = stringResource(
+            when (flow) {
+                PinFlow.Enable -> R.string.pin_enabled
+                PinFlow.Change -> R.string.pin_changed
+                PinFlow.Disable -> R.string.pin_disabled
+            },
+        )
+        PinFlowDialog(
+            flow = flow,
+            actions = viewModel,
+            onDone = {
+                pinFlow = null
+                scope.launch { snackbar.showSnackbar(done) }
+            },
+            onDismiss = { pinFlow = null },
+        )
+    }
 }
 
 @Composable

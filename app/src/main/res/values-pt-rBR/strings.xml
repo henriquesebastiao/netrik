@@ -615,6 +615,42 @@
     <string name="settings_licenses">Licenças de código aberto</string>
     <string name="settings_no_browser">Nenhum app para abrir o link</string>
 
+    <!-- App lock -->
+    <string name="lock_title">Digite seu PIN</string>
+    <string name="lock_wrong">PIN incorreto</string>
+    <plurals name="lock_wrong_left">
+        <item quantity="one">PIN incorreto. Resta %1$d tentativa antes de uma espera.</item>
+        <item quantity="many">PIN incorreto. Restam %1$d tentativas antes de uma espera.</item>
+        <item quantity="other">PIN incorreto. Restam %1$d tentativas antes de uma espera.</item>
+    </plurals>
+    <string name="lock_wait">Muitas tentativas. Tente de novo em %1$s.</string>
+    <string name="lock_use_fingerprint">Usar digital</string>
+    <string name="lock_delete">Apagar</string>
+    <string name="lock_biometric_title">Desbloquear o Netrik</string>
+    <string name="lock_biometric_negative">Usar PIN</string>
+    <string name="lock_forgot">Esqueceu o PIN?</string>
+    <string name="lock_forgot_title">Esqueceu o PIN?</string>
+    <string name="lock_forgot_body">Por segurança, o PIN não pode ser recuperado nem redefinido dentro do app. A única saída é apagar os dados do Netrik nas configurações do Android (Armazenamento → Limpar armazenamento), o que apaga hosts SSH, chaves, senhas e configurações salvos.</string>
+    <string name="lock_open_app_settings">Abrir configurações do app</string>
+    <string name="pin_create">Crie um PIN de 4 dígitos</string>
+    <string name="pin_new">Digite o novo PIN</string>
+    <string name="pin_confirm">Digite o PIN de novo</string>
+    <string name="pin_current">Digite o PIN atual</string>
+    <string name="pin_mismatch">Os PINs não conferem. Comece de novo.</string>
+    <string name="pin_enabled">Bloqueio do app ativado</string>
+    <string name="pin_disabled">Bloqueio do app desativado</string>
+    <string name="pin_changed">PIN alterado</string>
+    <string name="settings_section_security">Segurança</string>
+    <string name="settings_app_lock">Bloqueio do app</string>
+    <string name="settings_app_lock_on">Pede o PIN ao abrir o Netrik e depois que o aparelho é bloqueado</string>
+    <string name="settings_app_lock_off">Desligado: quem desbloquear o celular abre o Netrik</string>
+    <string name="settings_change_pin">Trocar PIN</string>
+    <string name="settings_biometric">Desbloquear com digital</string>
+    <string name="settings_biometric_sub">Usa a digital ou o rosto cadastrados no aparelho; o PIN continua valendo</string>
+    <string name="settings_biometric_unavailable">Nenhuma digital ou rosto cadastrado neste aparelho</string>
+    <string name="settings_biometric_needs_lock">Ative o bloqueio do app antes</string>
+    <string name="biometric_enable_title">Confirme sua digital</string>
+
     <!-- Open source licenses (Settings) -->
     <string name="about_licenses">Fontes Roboto Flex e JetBrains Mono: SIL Open Font License 1.1.\nÍcones Material Symbols: Apache License 2.0.\nFabricantes: registros MA-L, MA-M e MA-S do IEEE.\nPortas mais comuns: ranking do projeto Nmap (só os números). Nomes de serviço: registro de portas da IANA.\nSSH: JSch (fork mwiede, licença BSD) e Bouncy Castle (licença MIT).\nTerminal: emulador e renderizador do Termux (terminal-emulator e terminal-view, Apache License 2.0).</string>
 </resources>
