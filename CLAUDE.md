@@ -15,7 +15,7 @@ That clickable prototype is the visual source of truth: follow its colors, typog
 - Screens that don't exist in the design (e.g. Settings) are built from the existing design system components; call that out in the report.
 
 ### Approved design decisions
-- Icon 2a ("Star": central hub with 3 nodes, replaces 1a), petrol blue seed `#136B79`, hub as a grouped list (Diagnostics, Discovery, Remote access).
+- Icon 2b ("Ping": a node emitting two waves, replaces 2a), petrol blue seed `#136B79`, hub as a grouped list (Diagnostics, Discovery, Remote access).
 - Fallback scheme generated with material-color-utilities (SchemeTonalSpot) in `core/designsystem/theme/Color.kt`; success/warning in `ExtendedColors` (harmonized with the seed).
 - Roboto Flex for the UI and JetBrains Mono for all technical data (`NetrikTheme.dataTypography`), bundled in `res/font` (Latin subset).
 - Icons: Material Symbols Rounded as vector drawables in `res/drawable` (`ic_<name>` and `ic_<name>_filled`). For a new icon: `scripts/material_symbol.py name [--filled name]`.

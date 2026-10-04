@@ -1,22 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Netrik · icon 2a ("Star": central hub with 3 nodes) · foreground layer · 108dp canvas, 66dp safe zone -->
+<!-- Netrik · icon 2b ("Ping": a node emitting two waves) · foreground layer · 108dp canvas, 66dp safe zone -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- links from the hub to the nodes -->
+    <!-- the two waves -->
     <path
-        android:pathData="M54,54L54,33M54,54L35.8,64.5M54,54L72.2,64.5"
-        android:strokeWidth="4"
+        android:pathData="M44,50A16,16 0 0,1 60,66M44,38A28,28 0 0,1 72,66"
+        android:strokeWidth="5.5"
         android:strokeColor="#FFFFFFFF"
         android:strokeLineCap="round" />
-    <!-- nodes -->
+    <!-- source node -->
     <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M47.5,33a6.5,6.5 0,1 0,13.0,0a6.5,6.5 0,1 0,-13.0,0ZM29.3,64.5a6.5,6.5 0,1 0,13.0,0a6.5,6.5 0,1 0,-13.0,0ZM65.7,64.5a6.5,6.5 0,1 0,13.0,0a6.5,6.5 0,1 0,-13.0,0Z" />
-    <!-- hub central -->
-    <path
-        android:fillColor="#FF8FE3EE"
-        android:pathData="M45,54a9,9 0,1 0,18,0a9,9 0,1 0,-18,0Z" />
+        android:fillColor="#FF7FD8E6"
+        android:pathData="M37,66a7,7 0,1 0,14,0a7,7 0,1 0,-14,0Z" />
 </vector>

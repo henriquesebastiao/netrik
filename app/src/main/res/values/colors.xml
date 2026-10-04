@@ -3,5 +3,5 @@
     <!-- surface of the light scheme (seed #136B79) -->
     <color name="window_background">#FFF5FAFC</color>
     <!-- Adaptive icon background -->
-    <color name="ic_launcher_background">#FF0F5E6B</color>
+    <color name="ic_launcher_background">#FF0A3A44</color>
 </resources>
