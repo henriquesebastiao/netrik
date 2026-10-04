@@ -1,8 +1,8 @@
 package com.netrik.core.network
 
 /**
- * Endereços de rede local (privados e link-local). No Android 17+, falar com eles exige a permissão
- * `ACCESS_LOCAL_NETWORK`; sem ela o sistema descarta o tráfego e tudo vira timeout.
+ * Local network addresses (private and link-local). On Android 17+, talking to them requires the
+ * `ACCESS_LOCAL_NETWORK` permission; without it the system drops the traffic and everything times out.
  */
 object LocalAddress {
 

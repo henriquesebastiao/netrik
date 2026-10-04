@@ -12,13 +12,13 @@ import java.util.zip.GZIPInputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Listas Top 100/1000 (ranking do Nmap, só números) e nomes de serviço (registro IANA). */
+/** Top 100/1000 lists (Nmap ranking, numbers only) and service names (IANA registry). */
 interface PortCatalog {
     suspend fun top(protocol: Protocol, count: Int): List<Int>
     suspend fun serviceNames(protocol: Protocol): Map<Int, String>
 }
 
-/** Leitura pura dos arquivos de assets; testada contra os arquivos reais. */
+/** Pure reading of the asset files; tested against the real files. */
 object PortCatalogFiles {
     fun parseTop(reader: Reader): List<Int> = reader.readLines().mapNotNull { it.trim().toIntOrNull() }
 

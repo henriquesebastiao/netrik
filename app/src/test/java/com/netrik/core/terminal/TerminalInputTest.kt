@@ -15,13 +15,13 @@ class TerminalInputTest {
     private val alt = StickyModifiers(alt = true)
 
     @Test
-    fun `texto simples vai em UTF-8 e Enter vira CR`() {
+    fun `plain text goes as UTF-8 and Enter becomes CR`() {
         assertArrayEquals("ls -la\r".toByteArray(), TerminalInput.encodeText("ls -la\n"))
         assertArrayEquals("ç".toByteArray(Charsets.UTF_8), TerminalInput.encodeText("ç"))
     }
 
     @Test
-    fun `Ctrl gera caracteres de controle`() {
+    fun `Ctrl produces control characters`() {
         assertArrayEquals(bytes(3), TerminalInput.encodeText("c", ctrl))
         assertArrayEquals(bytes(3), TerminalInput.encodeText("C", ctrl))
         assertArrayEquals(bytes(4), TerminalInput.encodeText("d", ctrl))
@@ -29,18 +29,18 @@ class TerminalInputTest {
         assertArrayEquals(bytes(0), TerminalInput.encodeText(" ", ctrl))
         assertArrayEquals(bytes(27), TerminalInput.encodeText("[", ctrl))
         assertArrayEquals(bytes(127), TerminalInput.encodeText("?", ctrl))
-        // Só o primeiro caractere leva o modificador.
+        // Only the first character takes the modifier.
         assertArrayEquals(bytes(3) + "x".toByteArray(), TerminalInput.encodeText("cx", ctrl))
     }
 
     @Test
-    fun `Alt manda ESC na frente`() {
+    fun `Alt sends ESC in front`() {
         assertArrayEquals(bytes(0x1b) + "b".toByteArray(), TerminalInput.encodeText("b", alt))
         assertArrayEquals(bytes(0x1b, 0x1b), TerminalInput.encodeExtraKey(ExtraKey.Esc, alt, false))
     }
 
     @Test
-    fun `teclas da barra extra`() {
+    fun `extra bar keys`() {
         assertArrayEquals(bytes(0x1b), TerminalInput.encodeExtraKey(ExtraKey.Esc, none, false))
         assertArrayEquals("\t".toByteArray(), TerminalInput.encodeExtraKey(ExtraKey.Tab, none, false))
         assertArrayEquals("|".toByteArray(), TerminalInput.encodeExtraKey(ExtraKey.Pipe, none, false))
@@ -50,16 +50,16 @@ class TerminalInputTest {
     }
 
     @Test
-    fun `setas respeitam o modo de cursor da aplicação`() {
+    fun `arrows honor the application cursor mode`() {
         assertArrayEquals("\u001b[A".toByteArray(), TerminalInput.encodeExtraKey(ExtraKey.Up, none, cursorKeysApplicationMode = false))
         assertArrayEquals("\u001bOA".toByteArray(), TerminalInput.encodeExtraKey(ExtraKey.Up, none, cursorKeysApplicationMode = true))
         assertArrayEquals("\u001b[D".toByteArray(), TerminalInput.encodeExtraKey(ExtraKey.Left, none, false))
-        // Ctrl+→ (pular palavra) no formato xterm.
+        // Ctrl+→ (jump word) in xterm format.
         assertArrayEquals("\u001b[1;5C".toByteArray(), TerminalInput.encodeExtraKey(ExtraKey.Right, ctrl, false))
     }
 
     @Test
-    fun `Ctrl e Alt presos se alternam`() {
+    fun `sticky Ctrl and Alt toggle each other`() {
         val ctrlOn = StickyModifiers().toggle(ExtraKey.Ctrl)
         assertTrue(ctrlOn.ctrl)
         val altOn = ctrlOn.toggle(ExtraKey.Alt)
@@ -70,12 +70,12 @@ class TerminalInputTest {
     }
 
     @Test
-    fun `aba ativa depois de fechar uma`() {
-        // Fechar a ativa (a última): passa para a anterior.
+    fun `active tab after closing one`() {
+        // Closing the active one (the last): moves to the previous one.
         assertEquals(1, activeAfterClose(active = 2, closed = 2, remaining = 2))
-        // Fechar uma antes da ativa: o índice da ativa recua.
+        // Closing one before the active: the active index moves back.
         assertEquals(1, activeAfterClose(active = 2, closed = 0, remaining = 2))
-        // Fechar uma depois da ativa: nada muda.
+        // Closing one after the active: nothing changes.
         assertEquals(0, activeAfterClose(active = 0, closed = 1, remaining = 2))
         assertEquals(0, activeAfterClose(active = 0, closed = 0, remaining = 0))
     }

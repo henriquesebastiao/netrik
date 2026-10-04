@@ -1,21 +1,21 @@
 package com.netrik.core.lan
 
 /**
- * NetBIOS "node status" (NBSTAT, RFC 1002 §4.2.17–18): pergunta a um host Windows/Samba os nomes
- * registrados e o MAC ("unit ID"). Só a montagem e a leitura dos pacotes; o envio fica no scanner.
+ * NetBIOS "node status" (NBSTAT, RFC 1002 §4.2.17–18): asks a Windows/Samba host for its registered
+ * names and MAC ("unit ID"). Only building and reading the packets; sending is up to the scanner.
  */
 object Netbios {
     const val PORT = 137
 
     data class NodeStatus(
-        /** Nome da máquina (tipo 0x00, não grupo); null se não houver. */
+        /** Machine name (type 0x00, not a group); null if there is none. */
         val computerName: String?,
         val workgroup: String?,
-        /** Null quando o host responde com zeros (Samba em algumas configurações). */
+        /** Null when the host answers with zeros (Samba in some setups). */
         val mac: String?,
     )
 
-    /** Pacote de consulta para o nome curinga "*". */
+    /** Query packet for the wildcard name "*". */
     fun nodeStatusRequest(transactionId: Int): ByteArray {
         val header = byteArrayOf(
             (transactionId shr 8).toByte(), transactionId.toByte(),
@@ -23,7 +23,7 @@ object Netbios {
             0x00, 0x01, // 1 pergunta
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         )
-        // "*" seguido de 15 bytes 0x00, codificado em "first-level encoding" (cada nibble + 'A').
+        // "*" followed by 15 0x00 bytes, in "first-level encoding" (each nibble + 'A').
         val raw = ByteArray(16).also { it[0] = '*'.code.toByte() }
         val encoded = ByteArray(32)
         raw.forEachIndexed { i, b ->
@@ -35,11 +35,11 @@ object Netbios {
         return header + question
     }
 
-    /** Lê a resposta; null se não for uma resposta NBSTAT válida. */
+    /** Reads the reply; null if it isn't a valid NBSTAT reply. */
     fun parseNodeStatus(packet: ByteArray): NodeStatus? {
         if (packet.size < 57) return null
         var pos = 12
-        // Nome da resposta: rótulo de 32 bytes + terminador
+        // Reply name: 32-byte label + terminator
         val labelLength = packet[pos].toInt() and 0xFF
         pos += 1 + labelLength + 1
         if (pos + 10 > packet.size) return null

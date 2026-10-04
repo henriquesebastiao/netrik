@@ -43,7 +43,7 @@ import com.netrik.core.ssh.SshAuth
 import com.netrik.core.ssh.SshFailure
 import com.netrik.core.ui.rememberLocalNetworkPermissionRequest
 
-/** Diálogos da aba SSH, comuns à lista de hosts e ao formulário. */
+/** SSH tab dialogs, shared by the host list and the form. */
 @Composable
 fun SshDialogHost(dialog: SshDialog?, viewModel: SshViewModel) {
     val requestLocalNetwork = rememberLocalNetworkPermissionRequest(onGranted = viewModel::retry)
@@ -164,8 +164,8 @@ private fun FailureDialog(dialog: SshDialog.Failure, viewModel: SshViewModel, re
 }
 
 /**
- * Diálogo no estilo do protótipo: ícone, título centralizado, texto, bloco opcional de dados
- * em fonte monoespaçada e botões de texto. [confirm] nulo mostra só o botão de fechar.
+ * Dialog in the prototype style: icon, centered title, text, optional block of data
+ * in a monospaced font and text buttons. A null [confirm] shows only the close button.
  */
 @Composable
 private fun SshAlert(
@@ -278,7 +278,7 @@ private fun GroupEditDialog(dialog: SshDialog.GroupEdit, viewModel: SshViewModel
     )
 }
 
-/** Texto dos avisos (Snackbar) da aba SSH. */
+/** Text of the SSH tab notices (Snackbar). */
 fun sshMessageText(context: Context, message: SshMessage): String = when (message) {
     is SshMessage.SessionClosed -> context.getString(R.string.ssh_session_closed, message.name)
     is SshMessage.Disconnected -> context.getString(R.string.ssh_disconnected, message.name)

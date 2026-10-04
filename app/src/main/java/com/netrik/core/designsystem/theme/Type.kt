@@ -11,8 +11,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.netrik.R
 
-// Fontes variáveis embarcadas (subconjunto latino, só o eixo wght), para funcionar offline
-// e sem depender do Google Play Services.
+// Bundled variable fonts (Latin subset, wght axis only), so they work offline
+// and without depending on Google Play Services.
 private fun robotoFlex(weight: FontWeight) = Font(
     resId = R.font.roboto_flex,
     weight = weight,
@@ -38,7 +38,7 @@ val JetBrainsMono = FontFamily(
     jetBrainsMono(FontWeight.Medium),
 )
 
-/** Escala M3 com Roboto Flex; os tamanhos usados pelo design são os padrões do M3. */
+/** M3 scale with Roboto Flex; the sizes used by the design are the M3 defaults. */
 internal val NetrikTypography: Typography = Typography().run {
     fun TextStyle.flex() = copy(fontFamily = RobotoFlex)
     Typography(
@@ -61,8 +61,8 @@ internal val NetrikTypography: Typography = Typography().run {
 }
 
 /**
- * Estilos para dados técnicos (IPs, MACs, portas, dBm, RTT) em JetBrains Mono, com algarismos
- * tabulares para colunas alinharem.
+ * Styles for technical data (IPs, MACs, ports, dBm, RTT) in JetBrains Mono, with tabular
+ * figures so columns line up.
  */
 @Immutable
 data class DataTypography(

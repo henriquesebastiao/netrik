@@ -10,20 +10,20 @@ class AddressParsingTest {
 
     @Test
     fun `SSID perde as aspas`() {
-        assertEquals("Escritório-5G", cleanSsid("\"Escritório-5G\""))
+        assertEquals("Café-5G", cleanSsid("\"Café-5G\""))
     }
 
     @Test
-    fun `SSID oculto pelo Android vira null`() {
+    fun `SSID hidden by Android becomes null`() {
         assertNull(cleanSsid("<unknown ssid>"))
         assertNull(cleanSsid("\"\""))
     }
 
     @Test
-    fun `resposta do serviço de IP público é validada`() {
+    fun `public IP service reply is validated`() {
         assertTrue(looksLikeIpAddress("177.92.14.203"))
         assertTrue(looksLikeIpAddress("2804:14d:5c83:8a10::1f3a"))
-        assertFalse(looksLikeIpAddress("<html>erro</html>"))
+        assertFalse(looksLikeIpAddress("<html>error</html>"))
         assertFalse(looksLikeIpAddress(""))
     }
 }

@@ -86,11 +86,11 @@ class OuiViewModel @Inject constructor(
                         }
                     },
                 )
-                // Base trocada: refaz a consulta exibida com os dados novos.
+                // Database replaced: redo the displayed lookup with the new data.
                 if (event is OuiUpdateEvent.Success) query.value.result?.let { lookup(it.hex, record = false) }
             }
         }
-        // Argumento "mac" de OuiRoute: pré-preenche e consulta quando a tela é aberta com um MAC.
+        // "mac" argument of OuiRoute: prefills and looks up when the screen opens with a MAC.
         savedStateHandle.get<String>("mac")?.let(::onPaste)
     }
 
@@ -98,7 +98,7 @@ class OuiViewModel @Inject constructor(
         val input = text.uppercase()
         lookupJob?.cancel()
         query.value = Query(input = input)
-        // MAC completo é consultado sozinho, após uma pausa curta na digitação.
+        // A full MAC is looked up on its own, after a short pause in typing.
         if (MacAddresses.parse(input) is MacInput.Full) {
             lookupJob = viewModelScope.launch {
                 delay(AUTO_LOOKUP_DELAY_MS)
@@ -117,7 +117,7 @@ class OuiViewModel @Inject constructor(
         lookupJob = viewModelScope.launch { lookup(parsed.hex) }
     }
 
-    /** Colar consulta na hora, inclusive prefixos (que normalmente esperam o botão). */
+    /** Pasting looks up right away, prefixes included (which normally wait for the button). */
     fun onPaste(text: String) {
         onInputChange(text.trim())
         if (MacAddresses.parse(query.value.input).isQueryable) onSubmit()
@@ -138,7 +138,7 @@ class OuiViewModel @Inject constructor(
 
     fun onUpdateDatabase() = repository.updateFromIeee()
 
-    /** "Buscar na rede": Dispositivos abre já filtrado pelo prefixo do fabricante. */
+    /** "Find on network": Devices opens already filtered by the vendor prefix. */
     fun onFindInNetwork(prefix: String) {
         pendingDeviceSearch.query.value = prefix
     }

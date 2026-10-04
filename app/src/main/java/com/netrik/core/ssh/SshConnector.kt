@@ -23,7 +23,7 @@ import java.net.UnknownHostException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Por que uma conexão falhou, já no vocabulário da interface. */
+/** Why a connection failed, already in UI vocabulary. */
 sealed interface SshFailure {
     data object Timeout : SshFailure
     data object Refused : SshFailure
@@ -40,14 +40,14 @@ sealed interface SshFailure {
 
 sealed interface SshConnectResult {
     class Connected(val session: SshSession) : SshConnectResult
-    /** Primeira conexão a este host:porta: pedir confirmação da impressão digital. */
+    /** First connection to this host:port: ask to confirm the fingerprint. */
     data class UnknownHostKey(val key: HostKey) : SshConnectResult
-    /** A chave mudou desde a última conexão: possível ataque man-in-the-middle. */
+    /** The key changed since the last connection: possible man-in-the-middle attack. */
     data class ChangedHostKey(val stored: HostKey, val presented: HostKey) : SshConnectResult
     data class Failed(val failure: SshFailure) : SshConnectResult
 }
 
-/** Sessão SSH autenticada. O terminal (Etapa 7) abre canais nela. */
+/** Authenticated SSH session. The terminal opens channels on it. */
 class SshSession internal constructor(internal val session: Session, val hostKey: HostKey?) {
     val serverVersion: String? get() = session.serverVersion
     val isConnected: Boolean get() = session.isConnected
@@ -61,10 +61,10 @@ class SshConnector @Inject constructor(
     @param:IoDispatcher private val io: CoroutineDispatcher,
 ) {
     /**
-     * Conecta e autentica. A chave do servidor é conferida com as chaves confiadas antes de
-     * qualquer credencial ser enviada; se for desconhecida ou tiver mudado, a conexão é
-     * encerrada e o resultado traz a chave para o usuário decidir. Os segredos de [target]
-     * são apagados ao final.
+     * Connects and authenticates. The server key is checked against the trusted keys before
+     * any credential is sent; if it is unknown or has changed, the connection is
+     * closed and the result carries the key for the user to decide. The secrets of [target]
+     * are wiped at the end.
      */
     suspend fun connect(target: SshTarget): SshConnectResult = withContext(io) {
         try {
@@ -113,11 +113,11 @@ class SshConnector @Inject constructor(
         target.password?.let { session.setPassword(it.copyOf()) }
         session.userInfo = NoPrompts
 
-        // Cancelar a coroutine (sair da tela, "Cancelar") derruba o socket e destrava o connect.
+        // Cancelling the coroutine (leaving the screen, "Cancel") drops the socket and unblocks connect.
         val handle = currentCoroutineContext().job.invokeOnCompletion { cause -> if (cause != null) session.disconnect() }
         return try {
             session.connect(TIMEOUT_MS)
-            // Mantém a conexão viva atrás de NAT/firewall enquanto o terminal fica parado.
+            // Keeps the connection alive behind NAT/firewalls while the terminal sits idle.
             session.setServerAliveInterval(KEEPALIVE_MS)
             SshConnectResult.Connected(SshSession(session, hostKeys.presented))
         } catch (e: JSchException) {
@@ -134,7 +134,7 @@ class SshConnector @Inject constructor(
         }
     }
 
-    /** known_hosts com uma única entrada: a chave confiada deste host:porta (se houver). */
+    /** known_hosts with a single entry: the trusted key of this host:port (if any). */
     private class SingleHostKeyRepository(private val stored: HostKey?) : HostKeyRepository {
         @Volatile var presented: HostKey? = null
 
@@ -157,7 +157,7 @@ class SshConnector @Inject constructor(
         override fun getHostKey(host: String?, type: String?): Array<com.jcraft.jsch.HostKey> = emptyArray()
     }
 
-    /** Sem perguntas interativas: tudo o que o usuário decide passa pela interface antes. */
+    /** No interactive prompts: everything the user decides goes through the UI first. */
     private object NoPrompts : UserInfo {
         override fun getPassphrase(): String? = null
         override fun getPassword(): String? = null
@@ -168,7 +168,7 @@ class SshConnector @Inject constructor(
     }
 
     companion object {
-        /** O design fala em "sem resposta após 10 s". */
+        /** The design says "no reply after 10 s". */
         const val TIMEOUT_MS = 10_000
         private const val KEEPALIVE_MS = 30_000
 

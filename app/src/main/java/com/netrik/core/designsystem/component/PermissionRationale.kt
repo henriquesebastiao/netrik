@@ -29,8 +29,8 @@ import com.netrik.R
 import com.netrik.core.designsystem.theme.NetrikTheme
 
 /**
- * Tela de explicação antes de uma permissão do sistema (padrão da aba Wi-Fi no design):
- * ícone, título, motivo, itens do que é e não é feito, aviso opcional e ações.
+ * Explanation screen shown before a system permission (pattern from the Wi-Fi tab in the design):
+ * icon, title, reason, items about what is and isn't done, optional notice and actions.
  */
 @Composable
 fun PermissionRationale(

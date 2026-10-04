@@ -3,18 +3,18 @@ package com.netrik.core.network.ping
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-/** Um pacote do ping: [timeMs] null = sem resposta (timeout). */
+/** A ping packet: [timeMs] null = no reply (timeout). */
 data class PingSample(val seq: Int, val ttl: Int?, val timeMs: Double?)
 
 data class PingStats(
     val sent: Int,
     val received: Int,
-    /** Perda em % inteiro, arredondada. */
+    /** Loss as a rounded whole percentage. */
     val lossPercent: Int,
     val minMs: Double?,
     val avgMs: Double?,
     val maxMs: Double?,
-    /** Média da diferença absoluta entre respostas consecutivas (RFC 3550, sem suavização). */
+    /** Mean absolute difference between consecutive replies (RFC 3550, without smoothing). */
     val jitterMs: Double?,
 ) {
     companion object {

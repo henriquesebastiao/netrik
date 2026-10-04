@@ -48,17 +48,17 @@ data class PingUiState(
     val optionErrors: Set<OptionField> = emptySet(),
     val phase: RunPhase = RunPhase.Idle,
     val failure: RunFailure? = null,
-    /** Alvo e IP da execução atual (o campo pode ser editado depois). */
+    /** Target and IP of the current run (the field may be edited afterwards). */
     val runTarget: String? = null,
     val runAddress: String? = null,
     val runPayload: Int = 56,
-    /** Pacotes planejados; null = contínuo. */
+    /** Planned packets; null = continuous. */
     val plannedCount: Int? = null,
     val samples: List<PingSample> = emptyList(),
     val connected: Boolean = true,
 ) {
     val running: Boolean get() = phase == RunPhase.Running || phase == RunPhase.Resolving
-    /** Estatísticas da sessão inteira, calculadas uma vez por estado. */
+    /** Statistics of the whole session, computed once per state. */
     val stats: PingStats by lazy { PingStats.of(samples) }
 }
 
@@ -82,7 +82,7 @@ class PingViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), state.value)
 
     init {
-        // Rede caiu no meio da execução: interrompe e mostra o erro em vez de acumular timeouts.
+        // The network dropped mid-run: stop and show the error instead of piling up timeouts.
         viewModelScope.launch {
             connected.collect { online ->
                 if (!online && state.value.running) {
@@ -183,19 +183,19 @@ class PingViewModel @Inject constructor(
         state.update { it.copy(phase = RunPhase.Stopped) }
     }
 
-    /** Resposta substitui um timeout anterior do mesmo pacote (resposta atrasada). */
+    /** A reply replaces an earlier timeout of the same packet (late reply). */
     private fun addSample(sample: PingSample) = state.update { s -> s.copy(samples = s.samples.upsert(sample, replace = true)) }
 
     private fun addTimeout(seq: Int) = state.update { s -> s.copy(samples = s.samples.upsert(PingSample(seq, null, null), replace = false)) }
 
-    /** O último pacote sem resposta só aparece no resumo final: completa os que faltam como timeout. */
+    /** The last packet without a reply only shows up in the final summary: fills the missing ones as timeouts. */
     private fun fillMissing(transmitted: Int) = state.update { s ->
         val seen = s.samples.mapTo(HashSet()) { it.seq }
         val missing = (1..transmitted).filter { it !in seen }.map { PingSample(it, null, null) }
         if (missing.isEmpty()) s else s.copy(samples = (s.samples + missing).sortedBy { it.seq }.takeLast(MAX_SAMPLES))
     }
 
-    /** Os pacotes chegam quase sempre em ordem: o caso comum só acrescenta no fim. */
+    /** Packets almost always arrive in order: the common case just appends at the end. */
     private fun List<PingSample>.upsert(sample: PingSample, replace: Boolean): List<PingSample> {
         if (isEmpty() || last().seq < sample.seq) return (this + sample).let { if (it.size > MAX_SAMPLES) it.drop(it.size - MAX_SAMPLES) else it }
         val index = indexOfLast { it.seq == sample.seq }
@@ -211,7 +211,7 @@ class PingViewModel @Inject constructor(
 
     companion object {
         const val TOOL = "ping"
-        /** Limite de memória do modo contínuo (~28 h a 1 pacote/s); acima disso descarta os mais antigos. */
+        /** Memory limit of continuous mode (~28 h at 1 packet/s); beyond that the oldest are dropped. */
         const val MAX_SAMPLES = 100_000
     }
 }

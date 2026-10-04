@@ -211,6 +211,6 @@ private fun detectionLabel(detection: Detection): String = when (detection) {
     Detection.Netbios -> stringResource(R.string.device_detection_netbios)
 }
 
-/** Abaixo de 1 ms o RTT vira "<1 ms", como no design. */
+/** Below 1 ms the RTT becomes "<1 ms", as in the design. */
 private fun rtt(value: Double): String = if (value < 1) "<1 ms" else ms(value).replace(".0 ms", " ms")
 

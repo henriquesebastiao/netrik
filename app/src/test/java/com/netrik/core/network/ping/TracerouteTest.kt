@@ -12,7 +12,7 @@ class TracerouteTest {
 
     private val host = ResolvedHost("google.com", "142.250.79.46", ipv6 = false)
 
-    /** Simula o ping: responde por TTL (sondas) ou por IP (medição de RTT do salto). */
+    /** Fakes ping: answers by TTL (probes) or by IP (hop RTT measurement). */
     private class FakeRunner(
         private val byTtl: Map<Int, List<String>>,
         private val byAddress: Map<String, List<String>> = emptyMap(),
@@ -30,7 +30,7 @@ class TracerouteTest {
     }
 
     @Test
-    fun `descobre os saltos até o destino`() = runTest {
+    fun `discovers the hops up to the destination`() = runTest {
         val runner = FakeRunner(
             byTtl = mapOf(
                 1 to listOf("From 192.168.0.1 icmp_seq=1 Time to live exceeded"),
@@ -40,7 +40,7 @@ class TracerouteTest {
             ),
             byAddress = mapOf(
                 "192.168.0.1" to listOf("64 bytes from 192.168.0.1: icmp_seq=1 ttl=64 time=1.2 ms"),
-                "187.16.212.9" to emptyList(), // roteador que não responde a ping direto
+                "187.16.212.9" to emptyList(), // router that doesn't answer a direct ping
             ),
         )
         val resolver = FakeResolver(mapOf("192.168.0.1" to "router.lan", "142.250.79.46" to "gru14s23-in-f14.1e100.net"))
@@ -63,7 +63,7 @@ class TracerouteTest {
     }
 
     @Test
-    fun `para no máximo de saltos sem alcançar o destino`() = runTest {
+    fun `stops at max hops without reaching the destination`() = runTest {
         val runner = FakeRunner(byTtl = emptyMap())
         val events = Traceroute(runner, FakeResolver(emptyMap())).run(host, TracerouteOptions(3, 1)).toList()
         assertEquals(3, events.filterIsInstance<TraceEvent.Hop>().count { it.address == null })
@@ -71,7 +71,7 @@ class TracerouteTest {
     }
 
     @Test
-    fun `destino inalcançável encerra a rota`() = runTest {
+    fun `unreachable destination ends the route`() = runTest {
         val runner = FakeRunner(
             byTtl = mapOf(
                 1 to listOf("From 192.168.0.1 icmp_seq=1 Time to live exceeded"),
@@ -83,7 +83,7 @@ class TracerouteTest {
     }
 
     @Test
-    fun `falha do ping interrompe com erro`() = runTest {
+    fun `ping failure stops with an error`() = runTest {
         val runner = FakeRunner(byTtl = mapOf(1 to listOf("connect: Network is unreachable")))
         val events = Traceroute(runner, FakeResolver(emptyMap())).run(host, TracerouteOptions(30, 1)).toList()
         assertEquals(TraceEvent.Failed(1, "Network is unreachable"), events.last())

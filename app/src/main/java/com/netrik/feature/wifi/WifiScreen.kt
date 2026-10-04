@@ -51,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -80,6 +81,7 @@ import com.netrik.core.wifi.nearby
 fun WifiScreen(viewModel: WifiViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val resources = LocalResources.current
     val activity = LocalActivity.current
     val snackbar = LocalSnackbarHostState.current
 
@@ -103,7 +105,7 @@ fun WifiScreen(viewModel: WifiViewModel = hiltViewModel()) {
         )
     }
 
-    // Ao voltar das configurações, reavalia; não desfaz "negada de vez" se nada mudou.
+    // When coming back from settings, re-check; doesn't undo "denied for good" if nothing changed.
     LifecycleResumeEffect(Unit) {
         val now = currentPermission()
         if (now == LocationPermission.Granted || state.permission != LocationPermission.PermanentlyDenied) {
@@ -115,9 +117,9 @@ fun WifiScreen(viewModel: WifiViewModel = hiltViewModel()) {
     LaunchedEffect(viewModel) {
         viewModel.messages.collect { message ->
             val text = when (message) {
-                is WifiMessage.Throttled -> context.getString(R.string.wifi_throttled_toast, message.seconds)
-                WifiMessage.Refreshing -> context.getString(R.string.wifi_refreshing)
-                WifiMessage.PermissionLater -> context.getString(R.string.wifi_perm_later_toast)
+                is WifiMessage.Throttled -> resources.getString(R.string.wifi_throttled_toast, message.seconds)
+                WifiMessage.Refreshing -> resources.getString(R.string.wifi_refreshing)
+                WifiMessage.PermissionLater -> resources.getString(R.string.wifi_perm_later_toast)
             }
             snackbar.currentSnackbarData?.dismiss()
             snackbar.showSnackbar(text)
@@ -430,7 +432,7 @@ private fun sortLabel(sort: WifiSort) = stringResource(
     },
 )
 
-/** 8 cores bem distintas para as curvas, ajustadas ao tema. */
+/** 8 clearly distinct colors for the curves, adjusted to the theme. */
 @Composable
 private fun chartPalette(): List<Color> {
     val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
@@ -443,7 +445,7 @@ private fun chartPalette(): List<Color> {
     }
 }
 
-/** Cor estável por rede: ordena por BSSID para não trocar de cor a cada scan. */
+/** Stable color per network: sorts by BSSID so colors don't change on every scan. */
 private fun assignColors(networks: List<WifiNetwork>, palette: List<Color>): Map<String, Color> =
     networks.map { it.bssid }.sorted().mapIndexed { i, bssid -> bssid to palette[i % palette.size] }.toMap()
 

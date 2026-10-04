@@ -53,7 +53,7 @@ class HubViewModelTest {
     fun tearDown() = Dispatchers.resetMain()
 
     @Test
-    fun `IP público só é consultado quando o usuário pede`() = runTest {
+    fun `public IP is only queried when the user asks`() = runTest {
         val vm = HubViewModel(networkRepo, publicIpRepo, noWifiScan)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
 
@@ -69,12 +69,12 @@ class HubViewModelTest {
     }
 
     @Test
-    fun `falha na consulta é mostrada e permite tentar de novo`() = runTest {
+    fun `lookup failure is shown and allows retrying`() = runTest {
         val vm = HubViewModel(networkRepo, publicIpRepo, noWifiScan)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
 
         vm.onShowPublicIp()
-        publicIpResponse.complete(Result.failure(IOException("sem rota")))
+        publicIpResponse.complete(Result.failure(IOException("no route")))
         assertEquals(PublicIpUi.Failed, vm.uiState.value.publicIp)
 
         publicIpResponse = CompletableDeferred()
@@ -84,7 +84,7 @@ class HubViewModelTest {
     }
 
     @Test
-    fun `trocar de rede esconde o IP público consultado na rede anterior`() = runTest {
+    fun `changing network hides the public IP queried on the previous one`() = runTest {
         val vm = HubViewModel(networkRepo, publicIpRepo, noWifiScan)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
 
@@ -101,7 +101,7 @@ class HubViewModelTest {
     }
 
     @Test
-    fun `sem conexão não dispara consulta`() = runTest {
+    fun `no connection does not trigger a lookup`() = runTest {
         network.value = CurrentNetwork.Disconnected
         val vm = HubViewModel(networkRepo, publicIpRepo, noWifiScan)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }

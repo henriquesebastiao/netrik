@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
-/** Ícone de 24dp num círculo de 40dp (primaryContainer por padrão), usado em itens de lista e cards. */
+/** 24dp icon in a 40dp circle (primaryContainer by default), used in list items and cards. */
 @Composable
 fun IconAvatar(
     @DrawableRes icon: Int,

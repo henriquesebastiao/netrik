@@ -11,7 +11,7 @@ import java.time.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Alvos usados recentemente por ferramenta ("ping", "traceroute", ...), para os chips de histórico. */
+/** Targets recently used per tool ("ping", "traceroute", ...), for the history chips. */
 @Entity(tableName = "target_history", primaryKeys = ["tool", "target"])
 data class TargetHistoryEntity(
     val tool: String,

@@ -24,7 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.netrik.R
 
-/** Barra de busca que substitui a Top App Bar: campo em pílula com voltar e limpar. */
+/** Search bar that replaces the Top App Bar: pill-shaped field with back and clear. */
 @Composable
 fun SearchTopBar(
     query: String,

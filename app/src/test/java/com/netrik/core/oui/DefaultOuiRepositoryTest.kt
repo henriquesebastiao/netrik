@@ -42,7 +42,7 @@ class DefaultOuiRepositoryTest {
     )
 
     @Test
-    fun `importa a base embarcada no primeiro uso`() = runTest {
+    fun `imports the bundled database on first use`() = runTest {
         val dao = FakeOuiDao()
         val repo = repository(dao, FakeSource())
 
@@ -56,10 +56,10 @@ class DefaultOuiRepositoryTest {
     }
 
     @Test
-    fun `o prefixo mais específico vence`() = runTest {
+    fun `the most specific prefix wins`() = runTest {
         val repo = repository(FakeOuiDao(), FakeSource())
 
-        // 8C1F64 é MA-L do próprio IEEE, mas 8C1F64AFA é um MA-S de outra empresa.
+        // 8C1F64 is the IEEE's own MA-L, but 8C1F64AFA is an MA-S of another company.
         val ms = repo.lookup("8C1F64AFA123")!!
         assertEquals(OuiRegistry.MaS, ms.record.registry)
         assertEquals("DATA ELECTRONIC DEVICES, INC", ms.record.organization)
@@ -72,7 +72,7 @@ class DefaultOuiRepositoryTest {
     }
 
     @Test
-    fun `consulta em lote`() = runTest {
+    fun `batch lookup`() = runTest {
         val repo = repository(FakeOuiDao(), FakeSource())
         val result = repo.lookupMany(listOf("3C22FB000001", "8C1F64AFA000", "DAA1196E035C"))
         assertEquals(setOf("3C22FB000001", "8C1F64AFA000"), result.keys)
@@ -80,7 +80,7 @@ class DefaultOuiRepositoryTest {
     }
 
     @Test
-    fun `atualização do IEEE troca a base e conta os prefixos novos`() = runTest {
+    fun `IEEE update swaps the database and counts the new prefixes`() = runTest {
         val dao = FakeOuiDao()
         val downloaded = bundled.toMutableMap()
         downloaded[OuiRegistry.MaL] = downloaded.getValue(OuiRegistry.MaL) + "MA-L,001132,Synology Incorporated,Taipei TW\n"
@@ -91,7 +91,7 @@ class DefaultOuiRepositoryTest {
         repo.updateFromIeee()
         advanceUntilIdle()
 
-        // 5 prefixos reais + as linhas sintéticas de preenchimento, todas novas.
+        // 5 real prefixes + the synthetic padding lines, all new.
         assertEquals(OuiUpdateEvent.Success(total = 5 + PADDING, added = 1 + PADDING), event.await())
         assertEquals("ieee", dao.meta()?.source)
         assertEquals("2026-10-04", dao.meta()?.dataDate)
@@ -99,9 +99,9 @@ class DefaultOuiRepositoryTest {
     }
 
     @Test
-    fun `falha no download mantém a base atual`() = runTest {
+    fun `download failure keeps the current database`() = runTest {
         val dao = FakeOuiDao()
-        val repo = repository(dao, FakeSource(downloadError = IOException("sem rede")))
+        val repo = repository(dao, FakeSource(downloadError = IOException("no network")))
         repo.lookup("3C22FB")
         val before = dao.meta()
 
@@ -115,7 +115,7 @@ class DefaultOuiRepositoryTest {
     }
 
     @Test
-    fun `servidor que recusa o download é reportado`() = runTest {
+    fun `server refusing the download is reported`() = runTest {
         val repo = repository(FakeOuiDao(), FakeSource(downloadError = HttpStatusException(418)))
         val event = nextEvent(repo)
         repo.updateFromIeee()
@@ -124,9 +124,9 @@ class DefaultOuiRepositoryTest {
     }
 
     @Test
-    fun `arquivo com poucos registros é rejeitado sem tocar na base`() = runTest {
+    fun `file with too few records is rejected without touching the database`() = runTest {
         val dao = FakeOuiDao()
-        // minimumOk = false: o repositório real exige dezenas de milhares de linhas.
+        // minimumOk = false: the real repository requires tens of thousands of lines.
         val repo = repository(dao, FakeSource(downloads = bundled, minimumOk = false))
         repo.lookup("3C22FB")
 
@@ -139,7 +139,7 @@ class DefaultOuiRepositoryTest {
     }
 
     @Test
-    fun `reimporta quando o APK traz uma base mais nova`() = runTest {
+    fun `reimports when the APK carries a newer database`() = runTest {
         val dao = FakeOuiDao()
         dao.upsertMeta(OuiMetaEntity(source = "ieee", dataDate = "2025-01-01", prefixCount = 0))
         val repo = repository(dao, FakeSource())
@@ -148,7 +148,7 @@ class DefaultOuiRepositoryTest {
     }
 
     @Test
-    fun `histórico guarda a consulta e traz o fabricante atual`() = runTest {
+    fun `history keeps the lookup and brings the current vendor`() = runTest {
         val repo = repository(FakeOuiDao(), FakeSource())
         repo.recordQuery("3C22FB9A107E")
         repo.recordQuery("DAA1196E035C")
@@ -164,7 +164,7 @@ class DefaultOuiRepositoryTest {
         assertTrue(repo.history.first().isEmpty())
     }
 
-    /** Começa a escutar antes de disparar a atualização, para não perder o evento. */
+    /** Starts listening before triggering the update, so the event isn't missed. */
     private fun TestScope.nextEvent(repo: DefaultOuiRepository) =
         backgroundScope.async(UnconfinedTestDispatcher(testScheduler)) { repo.updateEvents.first() }
 
@@ -176,7 +176,7 @@ class DefaultOuiRepositoryTest {
         appScope = backgroundScope,
     )
 
-    /** Fonte falsa: assets em memória e downloads gravados em arquivos temporários. */
+    /** Fake source: in-memory assets and downloads written to temporary files. */
     private inner class FakeSource(
         private val downloads: Map<OuiRegistry, String> = bundled,
         private val minimumOk: Boolean = true,
@@ -189,7 +189,7 @@ class DefaultOuiRepositoryTest {
         override fun download(registry: OuiRegistry, onProgress: (Long, Long) -> Unit): File {
             downloadError?.let { throw it }
             val body = downloads.getValue(registry)
-            // Para simular um arquivo do tamanho real, repete linhas válidas até passar do mínimo.
+            // To fake a real-size file, repeats valid lines until it passes the minimum.
             val padded = if (minimumOk) body + padding(registry) else body
             onProgress(padded.length.toLong(), padded.length.toLong())
             return File.createTempFile("oui-test", ".csv").apply {
@@ -198,18 +198,18 @@ class DefaultOuiRepositoryTest {
             }
         }
 
-        /** Linhas extras com prefixos sintéticos (fora dos usados nos testes) só para passar a validação de tamanho. */
+        /** Extra lines with synthetic prefixes (outside the ones used in the tests) just to pass the size check. */
         private fun padding(registry: OuiRegistry): String = buildString {
             val count = if (registry == OuiRegistry.MaL) 30_000 else 3_000
             repeat(count) { i ->
                 val prefix = "F" + i.toString(16).uppercase().padStart(registry.hexDigits - 1, '0')
-                append("${registry.label},$prefix,Sintético $i,\n")
+                append("${registry.label},$prefix,Synthetic $i,\n")
             }
         }
     }
 }
 
-/** DAO em memória com o mesmo contrato do Room usado pelo repositório. */
+/** In-memory DAO with the same contract as the Room DAO used by the repository. */
 private class FakeOuiDao : OuiDao {
     private val prefixes = MutableStateFlow<Map<String, OuiPrefixEntity>>(emptyMap())
     private val metaFlow = MutableStateFlow<OuiMetaEntity?>(null)

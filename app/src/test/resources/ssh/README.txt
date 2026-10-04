@@ -1,2 +1,2 @@
-Chaves geradas só para os testes unitários (ssh-keygen). Não dão acesso a nada.
-Senha das cifradas: netrik-teste
+Keys generated only for the unit tests (ssh-keygen). They give access to nothing.
+Passphrase of the encrypted ones: netrik-teste

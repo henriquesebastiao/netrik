@@ -10,7 +10,7 @@ import org.junit.Test
 class WifiLogicTest {
 
     @Test
-    fun `segurança a partir de capabilities reais`() {
+    fun `security from real capabilities`() {
         assertEquals(WifiSecurity.Wpa2, WifiSecurity.fromCapabilities("[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]"))
         assertEquals(WifiSecurity.Wpa2Wpa3, WifiSecurity.fromCapabilities("[RSN-PSK+SAE-CCMP][ESS][MFPC]"))
         assertEquals(WifiSecurity.Wpa3, WifiSecurity.fromCapabilities("[RSN-SAE-CCMP][ESS][MFPR][MFPC]"))
@@ -25,7 +25,7 @@ class WifiLogicTest {
     }
 
     @Test
-    fun `faixas de qualidade do design`() {
+    fun `quality bands from the design`() {
         assertEquals(SignalQuality.Excellent, SignalQuality.of(-48))
         assertEquals(SignalQuality.Excellent, SignalQuality.of(-60))
         assertEquals(SignalQuality.Good, SignalQuality.of(-61))
@@ -35,50 +35,50 @@ class WifiLogicTest {
     }
 
     @Test
-    fun `largura e centro do canal`() {
+    fun `channel width and center`() {
         assertEquals(20, WifiChannelWidth.toMhz(0))
         assertEquals(80, WifiChannelWidth.toMhz(2))
         assertEquals(160, WifiChannelWidth.toMhz(4))
         assertEquals(320, WifiChannelWidth.toMhz(5))
-        // canal 36 com 80 MHz ocupa 36–48, centro em 5210
+        // channel 36 at 80 MHz covers 36–48, center at 5210
         assertEquals(5210, WifiChannelWidth.center(5180, 80, 5210))
         assertEquals(5180, WifiChannelWidth.center(5180, 20, 0))
         assertEquals(5180, WifiChannelWidth.center(5180, 80, 0))
     }
 
     @Test
-    fun `eixo de 2,4 GHz`() {
+    fun `2_4 GHz axis`() {
         val axis = SpectrumAxis.forBand(WifiBand.GHz2_4)
         assertEquals(13, axis.ticks.size)
-        // canal 6 (2437) com 20 MHz ocupa 2427–2447
+        // channel 6 (2437) at 20 MHz covers 2427–2447
         val (start, end) = axis.span(2437, 20)!!
         assertEquals(1.5f, start, 1e-4f)
         assertEquals(2.5f, end, 1e-4f)
     }
 
     @Test
-    fun `eixo de 5 GHz comprime os vãos entre blocos`() {
+    fun `5 GHz axis compresses the gaps between blocks`() {
         val axis = SpectrumAxis.forBand(WifiBand.GHz5)
         // 36–64 (8 canais) + 100–144 (12) + 149–177 (8)
         assertEquals(28f, axis.slots, 1e-4f)
         assertEquals(listOf(8f, 20f), axis.separators)
         assertEquals(0.5f, axis.position(5180.0)!!, 1e-4f) // canal 36
         assertEquals(8.5f, axis.position(5500.0)!!, 1e-4f) // canal 100
-        assertNull(axis.position(5400.0)) // vão entre UNII-2A e UNII-2C
-        // 80 MHz centrado em 5210 (36–48): 4 slots
+        assertNull(axis.position(5400.0)) // gap between UNII-2A and UNII-2C
+        // 80 MHz centered at 5210 (36–48): 4 slots
         val (start, end) = axis.span(5210, 80)!!
         assertEquals(4f, end - start, 1e-4f)
     }
 
     @Test
-    fun `eixo de 6 GHz`() {
+    fun `6 GHz axis`() {
         val axis = SpectrumAxis.forBand(WifiBand.GHz6)
         assertEquals(59f, axis.slots, 1e-4f)
         assertEquals(1 to 0.5f, axis.ticks.first())
     }
 
     @Test
-    fun `limite de 4 scans a cada 2 minutos`() {
+    fun `limit of 4 scans every 2 minutes`() {
         val t = ScanThrottle()
         repeat(4) { i ->
             assertTrue(t.canScan(i * 1_000L))
@@ -90,7 +90,7 @@ class WifiLogicTest {
     }
 
     @Test
-    fun `scan recusado pelo sistema bloqueia até abrir a janela`() {
+    fun `scan refused by the system blocks until the window opens`() {
         val t = ScanThrottle()
         t.markRejected(5_000)
         assertFalse(t.canScan(6_000))
@@ -98,7 +98,7 @@ class WifiLogicTest {
     }
 
     @Test
-    fun `lista próxima filtra bandas, tira a conectada e ordena`() {
+    fun `nearby list filters bands, drops the connected one and sorts`() {
         fun net(ssid: String?, bssid: String, dbm: Int, band: WifiBand, ch: Int, connected: Boolean = false) =
             WifiNetwork(ssid, bssid, dbm, 0, band, ch, 20, 0, WifiSecurity.Wpa2, connected)
         val all = listOf(

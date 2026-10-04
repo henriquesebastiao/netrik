@@ -39,7 +39,7 @@ data class OuiDbStatus(
 
 sealed interface OuiUpdateState {
     data object Idle : OuiUpdateState
-    /** Importando a base embarcada no primeiro uso. */
+    /** Importing the bundled database on first use. */
     data object Preparing : OuiUpdateState
     data class Downloading(val registry: OuiRegistry, val step: Int, val steps: Int, val fraction: Float?) : OuiUpdateState
     data object Installing : OuiUpdateState
@@ -54,19 +54,19 @@ sealed interface OuiUpdateEvent {
 
 data class OuiHistoryEntry(val hex: String, val queriedAt: Long, val match: OuiMatch?)
 
-/** Base OUI compartilhada pela consulta MAC e pelos scanners de LAN e Wi-Fi. */
+/** OUI database shared by the MAC lookup and the LAN and Wi-Fi scanners. */
 interface OuiRepository {
     val status: Flow<OuiDbStatus>
     val updateEvents: SharedFlow<OuiUpdateEvent>
     val history: Flow<List<OuiHistoryEntry>>
 
-    /** Registro mais específico (MA-S > MA-M > MA-L) para um MAC ou prefixo em hexadecimal. */
+    /** Most specific registration (MA-S > MA-M > MA-L) for a MAC or prefix in hexadecimal. */
     suspend fun lookup(hex: String): OuiMatch?
 
-    /** Consulta em lote; a chave é o hexadecimal informado. Ausente = sem registro. */
+    /** Batch lookup; the key is the given hexadecimal. Missing = no registration. */
     suspend fun lookupMany(hexes: Collection<String>): Map<String, OuiMatch>
 
-    /** Baixa os três registros do IEEE e troca a base se todos forem válidos. Ignorado se já estiver rodando. */
+    /** Downloads the three IEEE registries and swaps the database if all are valid. Ignored if already running. */
     fun updateFromIeee()
 
     suspend fun recordQuery(hex: String)
@@ -147,7 +147,7 @@ class DefaultOuiRepository @Inject constructor(
 
     override suspend fun clearHistory() = dao.clearHistory()
 
-    /** Importa a base embarcada no primeiro uso, ou quando o APK traz dados mais novos que os instalados. */
+    /** Imports the bundled database on first use, or when the APK carries newer data than the installed one. */
     private suspend fun ensureLoaded() {
         if (!loaded) loadLock.withLock { if (!loaded) loadBundledIfNeeded() }
     }
@@ -182,7 +182,7 @@ class DefaultOuiRepository @Inject constructor(
             val records = mutableListOf<OuiRecord>()
             OuiRegistry.entries.forEachIndexed { index, registry ->
                 updateState.value = OuiUpdateState.Downloading(registry, index + 1, OuiRegistry.entries.size, null)
-                // runInterruptible: cancelar a coroutine interrompe a leitura bloqueante da rede.
+                // runInterruptible: cancelling the coroutine interrupts the blocking network read.
                 val file = runInterruptible(ioDispatcher) {
                     source.download(registry) { read, total ->
                         val fraction = if (total > 0) (read.toFloat() / total).coerceIn(0f, 1f) else null

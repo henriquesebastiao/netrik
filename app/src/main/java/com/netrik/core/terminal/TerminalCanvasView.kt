@@ -24,9 +24,9 @@ import kotlin.math.abs
 import kotlin.math.max
 
 /**
- * View do terminal: desenha o [com.termux.terminal.TerminalEmulator] da sessão com o
- * [TerminalRenderer] do Termux e traduz teclado (IME e teclas físicas), rolagem e toque.
- * Os modificadores presos da barra extra entram por [stickyModifiers] e são soltos após uma tecla.
+ * Terminal View: draws the session's [com.termux.terminal.TerminalEmulator] with the Termux
+ * [TerminalRenderer] and translates keyboard (IME and hardware keys), scrolling and touch.
+ * The extra bar's sticky modifiers come in through [stickyModifiers] and are released after one key.
  */
 @SuppressLint("ViewConstructor")
 class TerminalCanvasView(
@@ -39,7 +39,7 @@ class TerminalCanvasView(
     private var renderer = TerminalRenderer(spToPx(TerminalFont.DEFAULT), typeface)
     private var fontSize = TerminalFont.DEFAULT
 
-    /** Linha do topo: 0 = tela atual; negativo = rolando o histórico. */
+    /** Top row: 0 = current screen; negative = scrolling the scrollback. */
     private var topRow = 0
     private var scrollRemainder = 0f
 
@@ -56,7 +56,7 @@ class TerminalCanvasView(
         TerminalTheme.install()
         isFocusable = true
         isFocusableInTouchMode = true
-        // Sem o véu cinza que o Android desenha em Views focadas ao usar teclado físico/eventos de tecla.
+        // No grey veil that Android draws on focused Views when using a hardware keyboard/key events.
         defaultFocusHighlightEnabled = false
         setBackgroundColor(TerminalTheme.BACKGROUND)
     }
@@ -69,7 +69,7 @@ class TerminalCanvasView(
         invalidate()
     }
 
-    /** Chamado quando chega saída nova: mantém a posição se o usuário estiver lendo o histórico. */
+    /** Called when new output arrives: keeps the position if the user is reading the scrollback. */
     fun onOutput() {
         val emulator = terminal?.emulator ?: return
         val scrolled = emulator.scrollCounter
@@ -93,7 +93,7 @@ class TerminalCanvasView(
         val cellWidth = renderer.fontWidth
         val cellHeight = renderer.fontLineSpacing
         val columns = max(MIN_SIZE, (width / cellWidth).toInt())
-        // Linhas: só as que cabem de verdade, senão a linha do cursor fica escondida (paisagem + teclado).
+        // Rows: only the ones that really fit, otherwise the cursor row gets hidden (landscape + keyboard).
         val rows = max(1, height / cellHeight)
         terminal.resize(columns, rows, cellWidth.toInt(), cellHeight)
     }
@@ -106,7 +106,7 @@ class TerminalCanvasView(
         canvas.restore()
     }
 
-    // Toque: tocar abre o teclado; arrastar rola o histórico (ou manda setas em programas de tela cheia).
+    // Touch: tapping opens the keyboard; dragging scrolls the scrollback (or sends arrows in full-screen programs).
 
     private val gestures = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
         override fun onDown(e: MotionEvent) = true
@@ -123,7 +123,7 @@ class TerminalCanvasView(
             if (lines == 0) return true
             scrollRemainder -= lines * renderer.fontLineSpacing
             if (emulator.isAlternateBufferActive) {
-                // vim, less, htop...: o histórico é do programa, então a rolagem vira setas.
+                // vim, less, htop...: the scrollback belongs to the program, so scrolling turns into arrows.
                 val key = if (lines > 0) KeyEvent.KEYCODE_DPAD_DOWN else KeyEvent.KEYCODE_DPAD_UP
                 repeat(abs(lines)) {
                     TerminalInput.special(key, StickyModifiers(), emulator.isCursorKeysApplicationMode)?.let { terminal?.send(it) }
@@ -144,7 +144,7 @@ class TerminalCanvasView(
     override fun onCheckIsTextEditor(): Boolean = true
 
     override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection {
-        // Sem sugestões nem autocorreção: cada tecla vai direto para o servidor.
+        // No suggestions or autocorrect: each key goes straight to the server.
         outAttrs.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or
             InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN or EditorInfo.IME_FLAG_NO_EXTRACT_UI or EditorInfo.IME_ACTION_NONE
@@ -163,7 +163,7 @@ class TerminalCanvasView(
 
             override fun deleteSurroundingText(beforeLength: Int, afterLength: Int): Boolean {
                 if (editable.isNullOrEmpty()) {
-                    // Nada em composição: o backspace vai para o servidor.
+                    // Nothing being composed: backspace goes to the server.
                     repeat(beforeLength.coerceAtLeast(1)) { sendBytes(byteArrayOf(DEL)) }
                     return true
                 }
@@ -225,12 +225,12 @@ class TerminalCanvasView(
     }
 }
 
-/** Paleta do terminal do design: sempre escura, nos temas claro e escuro do app. */
+/** Terminal palette from the design: always dark, in both the light and dark app themes. */
 object TerminalTheme {
     const val BACKGROUND = 0xFF0A1112.toInt()
     @Volatile private var installed = false
 
-    /** Ajusta o esquema global do Termux antes de criar emuladores (vale também após um reset do terminal). */
+    /** Sets the global Termux scheme before creating emulators (also holds after a terminal reset). */
     fun install() {
         if (installed) return
         synchronized(this) {

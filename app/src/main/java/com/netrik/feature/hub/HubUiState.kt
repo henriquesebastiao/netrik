@@ -16,7 +16,7 @@ sealed interface NetworkCardState {
 
     data class Connected(
         val transport: CurrentNetwork.Transport,
-        /** SSID (Wi-Fi) ou operadora (dados móveis); null quando o Android não informa. */
+        /** SSID (Wi-Fi) or carrier (mobile data); null when Android doesn't report it. */
         val name: String?,
         val hasInternet: Boolean,
         val signal: WifiSignal?,
@@ -27,7 +27,7 @@ sealed interface NetworkCardState {
         /** "1.1.1.1, 8.8.8.8" */
         val dns: String?,
         val ipv6: String?,
-        /** Identifica a rede; o IP público consultado só vale enquanto ela não mudar. */
+        /** Identifies the network; a queried public IP is only valid while it doesn't change. */
         val networkKey: String,
     ) : NetworkCardState {
         val ssidHidden: Boolean get() = transport == CurrentNetwork.Transport.Wifi && name == null
@@ -44,8 +44,8 @@ sealed interface PublicIpUi {
 }
 
 /**
- * Converte o retrato da rede no estado do card "Rede atual". Lógica pura.
- * [channelWidths]: largura (MHz) por BSSID vinda do scan Wi-Fi; a conexão em si não informa a largura.
+ * Turns the network snapshot into the state of the "Current network" card. Pure logic.
+ * [channelWidths]: width (MHz) per BSSID from the Wi-Fi scan; the connection itself doesn't report the width.
  */
 fun CurrentNetwork.toCardState(channelWidths: Map<String, Int> = emptyMap()): NetworkCardState = when (this) {
     CurrentNetwork.Disconnected -> NetworkCardState.Disconnected

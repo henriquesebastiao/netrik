@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- surface do esquema claro (seed #136B79) -->
+    <!-- surface of the light scheme (seed #136B79) -->
     <color name="window_background">#FFF5FAFC</color>
-    <!-- Fundo do ícone adaptativo (direção 1a) -->
+    <!-- Adaptive icon background -->
     <color name="ic_launcher_background">#FF0F5E6B</color>
 </resources>

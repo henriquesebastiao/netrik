@@ -2,10 +2,10 @@ package com.netrik.core.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Gerado com material-color-utilities 0.4.0 (SchemeTonalSpot, contraste padrão) a partir do
-// seed #136B79 aprovado no design. Mesmo algoritmo do Material Theme Builder.
-// success/warning: cores-base #3B8A3E e #B5651D harmonizadas com o seed (Blend.harmonize),
-// tons 40/100/90/30 no claro e 80/20/30/90 no escuro.
+// Generated with material-color-utilities 0.4.0 (SchemeTonalSpot, default contrast) from the
+// #136B79 seed approved in the design. Same algorithm as the Material Theme Builder.
+// success/warning: base colors #3B8A3E and #B5651D harmonized with the seed (Blend.harmonize),
+// tones 40/100/90/30 in light and 80/20/30/90 in dark.
 
 internal val primaryLight = Color(0xFF006877)
 internal val onPrimaryLight = Color(0xFFFFFFFF)

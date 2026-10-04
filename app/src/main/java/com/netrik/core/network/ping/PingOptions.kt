@@ -1,6 +1,6 @@
 package com.netrik.core.network.ping
 
-/** Opções do ping já validadas. [count] null = contínuo. */
+/** Already validated ping options. [count] null = continuous. */
 data class PingOptions(
     val count: Int?,
     val intervalSeconds: Double,
@@ -12,13 +12,13 @@ data class TracerouteOptions(val maxHops: Int, val hopTimeoutSeconds: Int)
 
 enum class OptionField { Count, Interval, Size, Timeout, MaxHops, HopTimeout }
 
-/** Valida o texto dos campos avançados. Limites do ping do Android para app sem root. */
+/** Validates the text of the advanced fields. Limits of Android's ping for non-root apps. */
 object PingOptionsValidator {
 
     const val MIN_INTERVAL_SECONDS = 0.2
     const val MAX_PAYLOAD_BYTES = 65_507
 
-    /** [count] null = modo contínuo. */
+    /** [count] null = continuous mode. */
     fun ping(count: String?, interval: String, size: String, timeout: String): Result<PingOptions, Set<OptionField>> {
         val errors = mutableSetOf<OptionField>()
         val c = count?.let { errors.check(OptionField.Count, it.int()?.takeIf { n -> n in 1..100_000 }) }
@@ -44,7 +44,7 @@ object PingOptionsValidator {
 
     private fun String.int(): Int? = trim().toIntOrNull()
 
-    /** Aceita vírgula decimal ("0,5"). */
+    /** Accepts a decimal comma ("0,5"). */
     private fun String.decimal(): Double? = trim().replace(',', '.').toDoubleOrNull()
 
     sealed interface Result<out T, out E> {
@@ -53,13 +53,13 @@ object PingOptionsValidator {
     }
 }
 
-/** Monta a linha de comando do ping. Pura, para ser testada. */
+/** Builds the ping command line. Pure, so it can be tested. */
 object PingCommand {
 
     fun build(address: String, ipv6: Boolean, options: PingOptions): List<String> = buildList {
         add(if (ipv6) "/system/bin/ping6" else "/system/bin/ping")
-        add("-n") // sem DNS reverso na saída: o app resolve à parte
-        add("-O") // reporta pacotes sem resposta
+        add("-n") // no reverse DNS in the output: the app resolves separately
+        add("-O") // reports packets without a reply
         options.count?.let { add("-c"); add(it.toString()) }
         add("-i"); add(formatInterval(options.intervalSeconds))
         add("-s"); add(options.payloadBytes.toString())
@@ -67,7 +67,7 @@ object PingCommand {
         add(address)
     }
 
-    /** Um único pacote com TTL limitado, para descobrir o salto [ttl] do traceroute. */
+    /** A single packet with a limited TTL, to discover hop [ttl] of the traceroute. */
     fun probe(address: String, ipv6: Boolean, ttl: Int?, timeoutSeconds: Int): List<String> = buildList {
         add(if (ipv6) "/system/bin/ping6" else "/system/bin/ping")
         add("-n")

@@ -21,7 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
-/** Estado centralizado com ícone, título e texto de apoio (telas futuras, estados vazios). */
+/** Centered state with icon, title and supporting text (future screens, empty states). */
 @Composable
 fun PlaceholderContent(
     @DrawableRes icon: Int,

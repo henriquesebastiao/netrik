@@ -3,9 +3,9 @@ package com.netrik.core.wifi
 import com.netrik.core.network.WifiBand
 import com.netrik.core.network.WifiChannels
 
-/** Segurança anunciada pela rede, do mais fraco ao mais forte. */
+/** Security announced by the network, from weakest to strongest. */
 enum class WifiSecurity(val label: String, val weak: Boolean) {
-    Open("Aberta", weak = true),
+    Open("Open", weak = true),
     Owe("OWE", weak = false),
     Wep("WEP", weak = true),
     Wpa("WPA", weak = true),
@@ -18,7 +18,7 @@ enum class WifiSecurity(val label: String, val weak: Boolean) {
     companion object {
         /**
          * Interpreta `ScanResult.capabilities`, ex.: "[WPA2-PSK-CCMP][RSN-SAE-CCMP][ESS][MFPC]".
-         * WPA3-Personal aparece como SAE; Enhanced Open como OWE; Enterprise como EAP.
+         * WPA3-Personal shows up as SAE; Enhanced Open as OWE; Enterprise as EAP.
          */
         fun fromCapabilities(capabilities: String): WifiSecurity {
             val caps = capabilities.uppercase()
@@ -38,12 +38,12 @@ enum class WifiSecurity(val label: String, val weak: Boolean) {
     }
 }
 
-/** Faixas de qualidade do design. */
-enum class SignalQuality(val label: String) {
-    Excellent("Ótimo"),
-    Good("Bom"),
-    Weak("Fraco"),
-    VeryWeak("Muito fraco"),
+/** Quality bands from the design. */
+enum class SignalQuality {
+    Excellent,
+    Good,
+    Weak,
+    VeryWeak,
     ;
 
     companion object {
@@ -56,31 +56,31 @@ enum class SignalQuality(val label: String) {
     }
 }
 
-/** Uma rede vista no scan, já interpretada. */
+/** A network seen in the scan, already interpreted. */
 data class WifiNetwork(
-    /** Null para rede oculta. */
+    /** Null for a hidden network. */
     val ssid: String?,
     val bssid: String,
     val rssiDbm: Int,
-    /** Frequência do canal primário (onde está o beacon). */
+    /** Frequency of the primary channel (where the beacon is). */
     val frequencyMhz: Int,
     val band: WifiBand?,
     val channel: Int?,
     val widthMhz: Int,
-    /** Centro do canal inteiro (para 40/80/160 MHz difere do primário). */
+    /** Center of the whole channel (for 40/80/160 MHz it differs from the primary). */
     val centerMhz: Int,
     val security: WifiSecurity,
     val connected: Boolean = false,
-    /** Fabricante pelo OUI do BSSID; null se não encontrado. */
+    /** Vendor from the BSSID OUI; null if not found. */
     val vendor: String? = null,
-    /** BSSID administrado localmente (AP virtual, MAC aleatório): não tem fabricante no IEEE. */
+    /** Locally administered BSSID (virtual AP, random MAC): has no IEEE vendor. */
     val bssidLocal: Boolean = false,
 ) {
     val quality: SignalQuality get() = SignalQuality.of(rssiDbm)
 }
 
 object WifiChannelWidth {
-    /** `ScanResult.CHANNEL_WIDTH_*` → MHz. 80+80 conta como 160. */
+    /** `ScanResult.CHANNEL_WIDTH_*` → MHz. 80+80 counts as 160. */
     fun toMhz(channelWidth: Int): Int = when (channelWidth) {
         0 -> 20
         1 -> 40
@@ -90,14 +90,14 @@ object WifiChannelWidth {
         else -> 20
     }
 
-    /** Centro do canal ocupado: centerFreq0 vale para larguras > 20 MHz quando informado. */
+    /** Center of the occupied channel: centerFreq0 applies to widths > 20 MHz when reported. */
     fun center(frequencyMhz: Int, widthMhz: Int, centerFreq0: Int): Int =
         if (widthMhz > 20 && centerFreq0 > 0) centerFreq0 else frequencyMhz
 }
 
 enum class WifiSort { Signal, Channel, Name }
 
-/** Filtro de bandas e ordenação da lista. Rede conectada fica fora: aparece em destaque. */
+/** Band filter and list sorting. The connected network stays out: it's shown highlighted. */
 fun List<WifiNetwork>.nearby(bands: Set<WifiBand>, sort: WifiSort): List<WifiNetwork> =
     filter { !it.connected && it.band in bands }.sortedWith(
         when (sort) {

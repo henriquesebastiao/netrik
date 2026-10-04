@@ -22,10 +22,10 @@ import com.netrik.core.designsystem.theme.NetrikTheme
 
 enum class StatusTone { Success, Warning, Error, Neutral, Running }
 
-/** Tamanho 32dp: estado de execução. 24dp: atributo de um item. */
+/** 32dp size: run state. 24dp: attribute of an item. */
 enum class StatusChipSize { Large, Small }
 
-/** Chip de status: sempre cor + ícone + rótulo, iguais nos dois temas. */
+/** Status chip: always color + icon + label, the same in both themes. */
 @Composable
 fun StatusChip(
     label: String,

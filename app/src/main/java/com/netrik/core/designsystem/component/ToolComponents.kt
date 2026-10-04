@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.netrik.R
 import com.netrik.core.designsystem.theme.NetrikTheme
 
-/** Campo "IP ou domínio" com limpar, validação e ação de teclado. */
+/** "IP or domain" field with clear, validation and keyboard action. */
 @Composable
 fun TargetField(
     value: String,
@@ -88,7 +88,7 @@ fun TargetField(
     )
 }
 
-/** Chips de alvos recentes, roláveis na horizontal, encostando nas bordas da tela. */
+/** Recent target chips, scrolling horizontally up to the screen edges. */
 @Composable
 fun RecentTargets(targets: List<String>, enabled: Boolean, onSelect: (String) -> Unit) {
     if (targets.isEmpty()) return
@@ -123,7 +123,7 @@ fun RecentTargets(targets: List<String>, enabled: Boolean, onSelect: (String) ->
     }
 }
 
-/** Painel recolhível "Opções avançadas" com resumo das opções atuais. */
+/** Collapsible "Advanced options" panel with a summary of the current options. */
 @Composable
 fun AdvancedOptionsPanel(
     summary: String,
@@ -163,7 +163,7 @@ fun AdvancedOptionsPanel(
     }
 }
 
-/** Campo numérico compacto das opções avançadas. */
+/** Compact numeric field for the advanced options. */
 @Composable
 fun NumberOptionField(
     label: String,
@@ -189,7 +189,7 @@ fun NumberOptionField(
     )
 }
 
-/** Ação principal: Iniciar (primary) ou Parar (errorContainer), 48dp e largura total. */
+/** Main action: Start (primary) or Stop (errorContainer), 48dp and full width. */
 @Composable
 fun RunButton(running: Boolean, enabled: Boolean, onStart: () -> Unit, onStop: () -> Unit) {
     Button(
@@ -214,7 +214,7 @@ fun RunButton(running: Boolean, enabled: Boolean, onStart: () -> Unit, onStop: (
     }
 }
 
-/** Estado vazio de uma ferramenta: ícone em círculo e orientação. */
+/** Empty state of a tool: icon in a circle and guidance. */
 @Composable
 fun ToolEmptyState(@DrawableRes icon: Int, text: String) {
     Column(
@@ -236,7 +236,7 @@ fun ToolEmptyState(@DrawableRes icon: Int, text: String) {
     }
 }
 
-/** Cabeçalho da execução: chip de estado, botão Copiar e linha com alvo e parâmetros. */
+/** Run header: state chip, Copy button and a line with the target and parameters. */
 @Composable
 fun RunHeader(
     chipLabel: String,
@@ -282,7 +282,7 @@ private fun RunningChip(label: String) {
     }
 }
 
-/** Card de erro com ação "Tentar novamente" (errorContainer). */
+/** Error card with a "Try again" action (errorContainer). */
 @Composable
 fun ErrorCard(title: String, body: String, onRetry: (() -> Unit)?, retryLabel: String? = null, @DrawableRes retryIcon: Int = R.drawable.ic_refresh) {
     Surface(
@@ -318,7 +318,7 @@ fun ErrorCard(title: String, body: String, onRetry: (() -> Unit)?, retryLabel: S
     }
 }
 
-/** Aviso de rede ausente: as ferramentas de rede ficam indisponíveis. */
+/** No network notice: the network tools are unavailable. */
 @Composable
 fun NoConnectionCard() {
     Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh, modifier = Modifier.fillMaxWidth()) {
@@ -332,7 +332,7 @@ fun NoConnectionCard() {
     }
 }
 
-/** Estende o conteúdo [margin] para fora dos dois lados (ex.: lista horizontal até a borda da tela). */
+/** Extends the content [margin] beyond both sides (e.g. a horizontal list reaching the screen edge). */
 fun Modifier.bleedHorizontal(margin: Dp): Modifier = layout { measurable, constraints ->
     val extra = (margin * 2).roundToPx()
     val placeable = measurable.measure(constraints.copy(minWidth = constraints.maxWidth + extra, maxWidth = constraints.maxWidth + extra))

@@ -92,7 +92,7 @@ class PingViewModelTest {
     }
 
     @Test
-    fun `execução por quantidade completa timeouts pelo resumo`() = runTest {
+    fun `count run fills timeouts from the summary`() = runTest {
         val vm = viewModel()
         vm.onTargetChange("google.com")
         vm.onCountChange("3")
@@ -102,7 +102,7 @@ class PingViewModelTest {
 
         lines.send("64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=12.0 ms")
         lines.send("64 bytes from 8.8.8.8: icmp_seq=2 ttl=117 time=14.0 ms")
-        // o pacote 3 ficou sem resposta: só aparece no resumo
+        // packet 3 got no reply: it only shows up in the summary
         lines.send("3 packets transmitted, 2 received, 33% packet loss, time 2003ms")
         lines.close()
 
@@ -114,7 +114,7 @@ class PingViewModelTest {
     }
 
     @Test
-    fun `fim do processo marca como concluído`() = runTest {
+    fun `process end marks the run as done`() = runTest {
         val vm = viewModel()
         vm.onTargetChange("8.8.8.8")
         vm.onStart()
@@ -125,7 +125,7 @@ class PingViewModelTest {
     }
 
     @Test
-    fun `host inexistente mostra erro no campo`() = runTest {
+    fun `nonexistent host shows an error in the field`() = runTest {
         val vm = viewModel()
         vm.onTargetChange("exemplo.invalid")
         vm.onStart()
@@ -136,7 +136,7 @@ class PingViewModelTest {
     }
 
     @Test
-    fun `alvo na rede local sem permissão pede a permissão em vez de rodar`() = runTest {
+    fun `local network target without permission asks for it instead of running`() = runTest {
         val vm = viewModel()
         vm.onTargetChange("192.168.0.1")
         vm.onStart()
@@ -149,8 +149,8 @@ class PingViewModelTest {
     }
 
     @Test
-    fun `alvo público não precisa da permissão de rede local`() = runTest {
-        // O resolver de teste devolve 8.8.8.8 para nomes: alvo público não precisa da permissão.
+    fun `public target doesn't need the local network permission`() = runTest {
+        // The test resolver returns 8.8.8.8 for names: a public target doesn't need the permission.
         val vm = viewModel()
         vm.onTargetChange("google.com")
         vm.onStart()
@@ -158,7 +158,7 @@ class PingViewModelTest {
     }
 
     @Test
-    fun `alvo vazio ou inválido não inicia`() = runTest {
+    fun `empty or invalid target doesn't start`() = runTest {
         val vm = viewModel()
         vm.onStart()
         assertEquals(TargetError.Required, vm.uiState.value.targetError)
@@ -169,7 +169,7 @@ class PingViewModelTest {
     }
 
     @Test
-    fun `intervalo abaixo do mínimo abre as opções com erro`() = runTest {
+    fun `interval below the minimum opens the options with an error`() = runTest {
         val vm = viewModel()
         vm.onTargetChange("8.8.8.8")
         vm.onToggleAdvanced()
@@ -181,7 +181,7 @@ class PingViewModelTest {
     }
 
     @Test
-    fun `parar interrompe a execução contínua`() = runTest {
+    fun `stop interrupts the continuous run`() = runTest {
         val vm = viewModel()
         vm.onTargetChange("8.8.8.8")
         vm.onModeChange(PingMode.Continuous)
@@ -194,7 +194,7 @@ class PingViewModelTest {
     }
 
     @Test
-    fun `queda da rede durante a execução vira erro de conexão perdida`() = runTest {
+    fun `network drop while running becomes a connection lost error`() = runTest {
         val vm = viewModel()
         vm.onTargetChange("8.8.8.8")
         vm.onStart()

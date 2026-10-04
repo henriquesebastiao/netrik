@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Baixa ícones Material Symbols Rounded (wght 400, opsz 24) e grava como vector drawables.
+"""Downloads Material Symbols Rounded icons (wght 400, opsz 24) and saves them as vector drawables.
 
-Uso: scripts/material_symbol.py nome [nome ...] [--filled nome ...]
-Grava em app/src/main/res/drawable/ic_<nome>.xml (FILL 0) e ic_<nome>_filled.xml (FILL 1).
-Licença dos ícones: Apache License 2.0 (Google).
+Usage: scripts/material_symbol.py name [name ...] [--filled name ...]
+Writes app/src/main/res/drawable/ic_<name>.xml (FILL 0) and ic_<name>_filled.xml (FILL 1).
+Icon license: Apache License 2.0 (Google).
 """
 import argparse
 import pathlib
@@ -19,7 +19,7 @@ def convert(name: str, filled: bool) -> pathlib.Path:
     svg = urllib.request.urlopen(BASE.format(n=name, v="fill1_" if filled else "")).read().decode()
     paths = re.findall(r'<path d="([^"]+)"', svg)
     if not paths:
-        raise SystemExit(f"sem <path> em {name}")
+        raise SystemExit(f"no <path> in {name}")
     body = "\n".join(
         f'        <path\n            android:fillColor="@android:color/white"\n            android:pathData="{p}" />'
         for p in paths

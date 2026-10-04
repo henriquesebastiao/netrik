@@ -14,7 +14,7 @@ import javax.inject.Singleton
 
 private val Context.terminalPrefs: DataStore<Preferences> by preferencesDataStore(name = "terminal")
 
-/** Preferências do terminal (por enquanto, o tamanho da fonte do menu "Fonte"). */
+/** Terminal preferences (for now, the font size from the "Font" menu). */
 @Singleton
 class TerminalPreferences @Inject constructor(@param:ApplicationContext private val context: Context) {
 

@@ -30,7 +30,7 @@ import java.time.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Rede local disponível para varredura (Wi-Fi ou cabo com IPv4). */
+/** Local network available for scanning (Wi-Fi or cable with IPv4). */
 data class LocalNetwork(
     val range: ScanRange,
     val selfIp: String,
@@ -39,12 +39,12 @@ data class LocalNetwork(
     val ssid: String?,
 )
 
-/** Permissão de rede local (Android 17+, `ACCESS_LOCAL_NETWORK`); avaliada pela tela. */
+/** Local network permission (Android 17+, `ACCESS_LOCAL_NETWORK`); evaluated by the screen. */
 enum class LocalNetworkPermission { Unknown, NotGranted, PermanentlyDenied, Granted }
 
 data class DevicesUiState(
     val permission: LocalNetworkPermission = LocalNetworkPermission.Unknown,
-    /** Null = sem rede local (dados móveis, VPN ou desconectado). */
+    /** Null = no local network (mobile data, VPN or disconnected). */
     val network: LocalNetwork? = null,
     val networkChecked: Boolean = false,
     val phase: RunPhase = RunPhase.Idle,
@@ -52,20 +52,20 @@ data class DevicesUiState(
     val total: Int = 0,
     val startedAt: Long = 0,
     val elapsedMillis: Long = 0,
-    /** A varredura dos IPs terminou e as fontes de nome estão completando os dados. */
+    /** The IP sweep ended and the name sources are filling in the data. */
     val sweepDone: Boolean = false,
     val devices: Map<String, LanDevice> = emptyMap(),
     val sort: DeviceSort = DeviceSort.Ip,
     val query: String = "",
     val searchOpen: Boolean = false,
-    /** CIDR da última varredura (para avisar se a rede mudou). */
+    /** CIDR of the last scan (to warn if the network changed). */
     val scannedCidr: String? = null,
 ) {
     val running: Boolean get() = phase == RunPhase.Running
     val visible: List<LanDevice> get() = devices.values.filter { it.matches(query) }.sortedFor(sort)
 }
 
-/** "Buscar na rede" da Consulta OUI: busca a aplicar quando a aba Dispositivos abrir. */
+/** "Find on network" from the OUI lookup: search to apply when the Devices tab opens. */
 @Singleton
 class PendingDeviceSearch @Inject constructor() {
     val query = MutableStateFlow<String?>(null)
@@ -96,7 +96,7 @@ class DevicesViewModel @Inject constructor(
                 state.update { it.copy(searchOpen = true, query = query) }
             }
         }
-        // Rede caiu ou trocou no meio: interrompe (os IPs varridos seriam de outra rede).
+        // The network dropped or changed midway: stop (the swept IPs would belong to another network).
         viewModelScope.launch {
             localNetwork.collect { n ->
                 val cidr = n.toLocal()?.range?.cidr
@@ -117,7 +117,7 @@ class DevicesViewModel @Inject constructor(
         }
     }
 
-    /** Primeira vez com a permissão concedida e rede local disponível: já começa a varrer. */
+    /** First time with the permission granted and a local network available: start scanning right away. */
     fun onPermissionResult(permission: LocalNetworkPermission) {
         state.update { it.copy(permission = permission) }
         if (permission == LocalNetworkPermission.Granted && !autoStarted) {
@@ -162,7 +162,7 @@ class DevicesViewModel @Inject constructor(
     }
 }
 
-/** Só Wi-Fi ou cabo com IPv4: em dados móveis a "rede local" é a da operadora. */
+/** Wi-Fi or cable with IPv4 only: on mobile data the "local network" belongs to the carrier. */
 private fun CurrentNetwork.toLocal(): LocalNetwork? {
     val connected = this as? CurrentNetwork.Connected ?: return null
     if (connected.transport != CurrentNetwork.Transport.Wifi && connected.transport != CurrentNetwork.Transport.Ethernet) return null

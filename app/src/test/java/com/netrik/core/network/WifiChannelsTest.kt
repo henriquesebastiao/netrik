@@ -7,7 +7,7 @@ import org.junit.Test
 class WifiChannelsTest {
 
     @Test
-    fun `frequências de 2,4 GHz`() {
+    fun `2_4 GHz frequencies`() {
         assertEquals(1, WifiChannels.frequencyToChannel(2412))
         assertEquals(6, WifiChannels.frequencyToChannel(2437))
         assertEquals(13, WifiChannels.frequencyToChannel(2472))
@@ -16,7 +16,7 @@ class WifiChannelsTest {
     }
 
     @Test
-    fun `frequências de 5 GHz`() {
+    fun `5 GHz frequencies`() {
         assertEquals(36, WifiChannels.frequencyToChannel(5180))
         assertEquals(100, WifiChannels.frequencyToChannel(5500))
         assertEquals(165, WifiChannels.frequencyToChannel(5825))
@@ -24,7 +24,7 @@ class WifiChannelsTest {
     }
 
     @Test
-    fun `frequências de 6 GHz`() {
+    fun `6 GHz frequencies`() {
         assertEquals(1, WifiChannels.frequencyToChannel(5955))
         assertEquals(2, WifiChannels.frequencyToChannel(5935))
         assertEquals(37, WifiChannels.frequencyToChannel(6135))
@@ -33,14 +33,14 @@ class WifiChannelsTest {
     }
 
     @Test
-    fun `frequência fora das bandas ou fora da grade devolve null`() {
+    fun `frequency outside the bands or off the grid returns null`() {
         assertNull(WifiChannels.frequencyToChannel(900))
         assertNull(WifiChannels.frequencyToChannel(2413))
         assertNull(WifiChannels.bandOf(60_000))
     }
 
     @Test
-    fun `canal vira frequência`() {
+    fun `channel becomes frequency`() {
         assertEquals(2412, WifiChannels.channelToFrequency(1, WifiBand.GHz2_4))
         assertEquals(2484, WifiChannels.channelToFrequency(14, WifiBand.GHz2_4))
         assertEquals(5180, WifiChannels.channelToFrequency(36, WifiBand.GHz5))

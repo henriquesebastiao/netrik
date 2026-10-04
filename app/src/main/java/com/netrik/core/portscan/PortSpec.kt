@@ -4,23 +4,23 @@ import com.netrik.core.network.Ipv4
 
 enum class Protocol { Tcp, Udp }
 
-/** Estado de uma porta, com a semântica do Nmap. */
+/** State of a port, with Nmap semantics. */
 enum class PortState {
     Open,
     Closed,
-    /** TCP sem resposta no tempo: algo descartou o pacote. */
+    /** TCP with no reply in time: something dropped the packet. */
     Filtered,
-    /** UDP sem resposta: pode estar aberta (serviço não respondeu à sonda) ou filtrada. */
+    /** UDP with no reply: may be open (the service didn't answer the probe) or filtered. */
     OpenFiltered,
 }
 
-/** Lista de portas digitada: "22,80,443,8000-8100". */
+/** Typed port list: "22,80,443,8000-8100". */
 sealed interface PortList {
     data class Valid(val ports: List<Int>, val singles: Int, val ranges: Int) : PortList
     data object Empty : PortList
-    /** Item que não é número nem faixa. */
+    /** Item that is neither a number nor a range. */
     data class Malformed(val token: String) : PortList
-    /** Fora de 1–65535 ou faixa invertida. */
+    /** Outside 1–65535 or a reversed range. */
     data class OutOfRange(val token: String) : PortList
 
     companion object {
@@ -45,9 +45,9 @@ sealed interface PortList {
     }
 }
 
-/** Rede em notação CIDR digitada no modo Rede. */
+/** Network in CIDR notation typed in Network mode. */
 object Cidr {
-    /** Maior rede aceita para varredura de portas: /22 (1.022 hosts). */
+    /** Largest network accepted for port scanning: /22 (1,022 hosts). */
     const val MIN_PREFIX = 22
 
     sealed interface Result {
@@ -67,7 +67,7 @@ object Cidr {
     }
 }
 
-/** Estimativa de pior caso: lotes concorrentes esperando o timeout inteiro. */
+/** Worst-case estimate: concurrent batches waiting for the whole timeout. */
 object ScanEstimate {
     fun concurrency(protocol: Protocol): Int = when (protocol) {
         Protocol.Tcp -> PortScanner.TCP_CONCURRENCY

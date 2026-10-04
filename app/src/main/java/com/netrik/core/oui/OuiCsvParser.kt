@@ -3,23 +3,23 @@ package com.netrik.core.oui
 import java.io.IOException
 import java.io.Reader
 
-/** Arquivo OUI com formato inesperado (cabeçalho errado, poucos registros). */
+/** OUI file in an unexpected format (wrong header, too few records). */
 class OuiFormatException(message: String) : IOException(message)
 
 /**
- * Lê os CSVs públicos do IEEE (oui.csv, mam.csv, oui36.csv), no formato
- * `Registry,Assignment,Organization Name,Organization Address`, com campos entre aspas (RFC 4180).
+ * Reads the IEEE public CSVs (oui.csv, mam.csv, oui36.csv), in the format
+ * `Registry,Assignment,Organization Name,Organization Address`, with quoted fields (RFC 4180).
  */
 object OuiCsvParser {
 
     private val header = listOf("Registry", "Assignment", "Organization Name", "Organization Address")
     private val whitespace = Regex("\\s+")
 
-    /** Lança [OuiFormatException] se o arquivo não tiver o cabeçalho esperado do registro [expected]. */
+    /** Throws [OuiFormatException] if the file doesn't have the header expected for registry [expected]. */
     fun parse(reader: Reader, expected: OuiRegistry): List<OuiRecord> {
         val rows = readRows(reader)
         val head = rows.firstOrNull()?.map { it.trim().removePrefix("\uFEFF") }
-        if (head != header) throw OuiFormatException("Cabeçalho inesperado no arquivo ${expected.label}")
+        if (head != header) throw OuiFormatException("Unexpected header in ${expected.label} file")
         return rows.drop(1).mapNotNull { row -> toRecord(row, expected) }
     }
 
@@ -36,7 +36,7 @@ object OuiCsvParser {
 
     private fun String.clean() = replace(whitespace, " ").trim()
 
-    /** Parser CSV mínimo: aspas, aspas escapadas ("") e quebras de linha dentro de campos. */
+    /** Minimal CSV parser: quotes, escaped quotes ("") and line breaks inside fields. */
     internal fun readRows(reader: Reader): List<List<String>> {
         val rows = mutableListOf<List<String>>()
         var row = mutableListOf<String>()

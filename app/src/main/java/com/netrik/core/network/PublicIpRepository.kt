@@ -10,7 +10,7 @@ import java.net.URL
 import javax.inject.Inject
 
 interface PublicIpRepository {
-    /** Consulta o IP público num serviço externo. Só deve ser chamada por ação do usuário. */
+    /** Queries the public IP on an external service. Must only be called by a user action. */
     suspend fun fetchPublicIp(): Result<String>
 }
 
@@ -48,7 +48,7 @@ class IpifyPublicIpRepository @Inject constructor(
     }
 }
 
-/** Aceita IPv4 válido ou um IPv6 plausível (hexadecimal e dois-pontos). */
+/** Accepts a valid IPv4 or a plausible IPv6 (hexadecimal and colons). */
 internal fun looksLikeIpAddress(value: String): Boolean =
     Ipv4.parse(value) != null ||
         (value.contains(':') && value.length <= 45 && value.all { it.isDigit() || it in 'a'..'f' || it in 'A'..'F' || it == ':' || it == '.' })

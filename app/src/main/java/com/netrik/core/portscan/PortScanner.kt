@@ -28,14 +28,14 @@ import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 
 sealed interface PortScanEvent {
-    /** Fase de descoberta (modo Rede): quantos IPs já foram sondados. */
+    /** Discovery phase (Network mode): how many IPs have been probed. */
     data class Discovery(val probed: Int, val total: Int) : PortScanEvent
     data class HostUp(val ip: String) : PortScanEvent
     data class Port(val ip: String, val port: Int, val state: PortState) : PortScanEvent
     data class Progress(val checksDone: Long, val checksTotal: Long, val hostsDone: Int, val hostsTotal: Int) : PortScanEvent
 }
 
-/** Verificação de uma porta; separada para os testes do scanner não abrirem sockets. */
+/** Checks one port; kept separate so the scanner tests don't open sockets. */
 interface PortProber {
     suspend fun tcp(ip: String, port: Int, timeoutMs: Int): PortState
     suspend fun udp(ip: String, port: Int, timeoutMs: Int): PortState
@@ -43,7 +43,7 @@ interface PortProber {
 
 class SocketPortProber @Inject constructor(@param:IoDispatcher private val io: CoroutineDispatcher) : PortProber {
 
-    /** Conectou: aberta. Recusada (RST): fechada. Sem resposta: filtrada. */
+    /** Connected: open. Refused (RST): closed. No reply: filtered. */
     override suspend fun tcp(ip: String, port: Int, timeoutMs: Int): PortState = runInterruptible(io) {
         Socket().use { socket ->
             try {
@@ -64,8 +64,8 @@ class SocketPortProber @Inject constructor(@param:IoDispatcher private val io: C
     }
 
     /**
-     * Resposta: aberta. ICMP "porta inalcançável" (o Linux o entrega a sockets UDP conectados como
-     * PortUnreachableException): fechada. Silêncio: aberta|filtrada — não dá para distinguir.
+     * Reply: open. ICMP "port unreachable" (Linux delivers it to connected UDP sockets as a
+     * PortUnreachableException): closed. Silence: open|filtered — they can't be told apart.
      */
     override suspend fun udp(ip: String, port: Int, timeoutMs: Int): PortState = runInterruptible(io) {
         try {
@@ -89,8 +89,8 @@ class SocketPortProber @Inject constructor(@param:IoDispatcher private val io: C
 }
 
 /**
- * Varredura de portas com concorrência limitada. No modo Rede descobre primeiro os hosts ativos
- * (como o Nmap) e só varre as portas deles; num host único varre direto.
+ * Port scan with limited concurrency. In Network mode it first discovers the active hosts
+ * (like Nmap) and only scans their ports; for a single host it scans right away.
  */
 class PortScanner @Inject constructor(
     private val prober: PortProber,
@@ -112,7 +112,7 @@ class PortScanner @Inject constructor(
         val remaining = alive.associateWith { AtomicInteger(ports.size) }
         send(PortScanEvent.Progress(0, total, 0, alive.size))
 
-        // Pool fixo de workers lendo de um canal: memória constante mesmo com 65.535 portas × 1.022 hosts.
+        // Fixed pool of workers reading from a channel: constant memory even with 65,535 ports × 1,022 hosts.
         val workers = ScanEstimate.concurrency(protocol)
         val work = Channel<Pair<String, Int>>(capacity = workers * 2)
         coroutineScope {
@@ -162,9 +162,9 @@ class PortScanner @Inject constructor(
     }
 
     companion object {
-        /** Sockets TCP simultâneos: rápido sem esgotar descritores nem afogar o roteador. */
+        /** Concurrent TCP sockets: fast without exhausting descriptors or flooding the router. */
         const val TCP_CONCURRENCY = 128
-        /** UDP depende de respostas ICMP, que os hosts limitam (Linux: ~1/s); mais paralelismo só gera falsos "filtrados". */
+        /** UDP depends on ICMP replies, which hosts rate-limit (Linux: ~1/s); more parallelism only yields false "filtered". */
         const val UDP_CONCURRENCY = 16
         const val DISCOVERY_CONCURRENCY = 32
         private const val PROGRESS_EVERY = 16L

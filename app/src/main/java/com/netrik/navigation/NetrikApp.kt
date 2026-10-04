@@ -24,7 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.netrik.core.ui.LocalSnackbarHostState
 
-/** Estrutura do app: conteúdo das abas, barra de navegação e Snackbar acima dela. */
+/** App structure: tab content, navigation bar and the Snackbar above it. */
 @Composable
 fun NetrikApp() {
     val navController = rememberNavController()
@@ -34,16 +34,16 @@ fun NetrikApp() {
 
     CompositionLocalProvider(LocalSnackbarHostState provides snackbarHostState) {
         Scaffold(
-            // imePadding: com o teclado aberto (terminal SSH) o aviso aparece acima dele.
+            // imePadding: with the keyboard open (SSH terminal) the notice shows above it.
             snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.imePadding()) },
             bottomBar = {
-                // Formulário e terminal SSH ocupam a tela toda, como no protótipo.
+                // The SSH form and terminal take the whole screen, as in the prototype.
                 val fullScreen = backStackEntry?.destination?.let { it.hasRoute<SshFormRoute>() || it.hasRoute<SshTerminalRoute>() } == true
                 if (!fullScreen) NetrikNavigationBar(
                     current = currentTab,
                     onSelect = { tab ->
                         if (tab == currentTab) {
-                            // Tocar na aba atual volta à tela inicial dela.
+                            // Tapping the current tab goes back to its start screen.
                             navController.popBackStack(route = tab.startRoute, inclusive = false)
                         } else {
                             navController.navigateToTab(tab)
@@ -51,7 +51,7 @@ fun NetrikApp() {
                     },
                 )
             },
-            // Cada tela cuida dos próprios insets superiores; a barra cuida dos inferiores.
+            // Each screen handles its own top insets; the bar handles the bottom ones.
             contentWindowInsets = WindowInsets(0),
         ) { padding ->
             NetrikNavHost(

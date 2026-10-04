@@ -1,93 +1,100 @@
-# Projeto: Netrik — desenvolvimento do app Android
+# Project: Netrik — Android app development
 
-## Contexto
-Netrik é um app Android de ferramentas de rede para analistas de redes, pentesters e entusiastas. O design completo (ícone, design system e telas) foi criado no Claude Design e está neste link:
+## Context
+Netrik is an Android network toolkit for network analysts, pentesters and enthusiasts. The full design (icon, design system and screens) was created in Claude Design and lives at:
 
 https://claude.ai/design/p/a79c09a3-0c10-41a4-97e4-8fde20361378?file=Netrik+Prot%C3%B3tipo+naveg%C3%A1vel.dc.html
 
-Esse protótipo navegável é a fonte da verdade visual: siga cores, tipografia, espaçamentos, componentes e fluxos de navegação dele. Se algo no design for inviável ou ambíguo em Compose, escolha a solução mais fiel possível e registre a decisão no relatório da etapa.
+That clickable prototype is the visual source of truth: follow its colors, typography, spacing, components and navigation flows. If something in the design is unfeasible or ambiguous in Compose, pick the most faithful solution and record the decision in the report.
 
-### Como acessar o design
-- O link exige login; WebFetch retorna 403. Use o MCP `claude_design` (servidor `https://api.anthropic.com/v1/design/mcp`, autenticação via `/design-login`), projeto `a79c09a3-0c10-41a4-97e4-8fde20361378`: `list_files` e `read_file`.
-- Arquivos principais: `Netrik Protótipo navegável.dc.html` (fluxo e regras de navegação), `Netrik Etapa 1.dc.html` (ícone, seed, design system), `NetrikHub`, `NetrikTool` (Ping/Traceroute), `NetrikDevices`, `NetrikWifi`, `NetrikPorts`, `NetrikSSH`, `NetrikOUI`. A numeração de etapas nos nomes de arquivo do design difere do plano abaixo; vale o plano abaixo.
-- Antes de implementar cada tela, releia o arquivo correspondente no design (estados, textos, espaçamentos).
-- Se não conseguir acessar o design, PARE e avise. Não adivinhe nem recrie o design por conta própria.
+### Accessing the design
+- The link requires login; WebFetch returns 403. Use the `claude_design` MCP (server `https://api.anthropic.com/v1/design/mcp`, authenticate with `/design-login`), project `a79c09a3-0c10-41a4-97e4-8fde20361378`: `list_files` and `read_file`.
+- Main files: `Netrik Protótipo navegável.dc.html` (flow and navigation rules), `Netrik Etapa 1.dc.html` (icon, seed, design system), `NetrikIcon`, `NetrikHub`, `NetrikTool` (Ping/Traceroute), `NetrikDevices`, `NetrikWifi`, `NetrikPorts`, `NetrikSSH`, `NetrikOUI`. The stage numbers in the design file names differ from the plan below; the plan below wins.
+- Before implementing a screen, re-read its design file (states, texts, spacing).
+- If the design can't be accessed, STOP and say so. Don't guess or recreate the design on your own.
+- Screens that don't exist in the design (e.g. Settings) are built from the existing design system components; call that out in the report.
 
-### Decisões de design já aprovadas
-- Ícone 2a ("Estrela": hub central com 3 nós, substitui o 1a), seed azul-petróleo `#136B79`, hub em lista agrupada (Diagnóstico, Descoberta, Acesso remoto).
-- Esquema de fallback gerado com material-color-utilities (SchemeTonalSpot) em `core/designsystem/theme/Color.kt`; success/warning em `ExtendedColors` (harmonizados com o seed).
-- Roboto Flex na interface e JetBrains Mono em todo dado técnico (`NetrikTheme.dataTypography`), embarcadas em `res/font` (subconjunto latino).
-- Ícones: Material Symbols Rounded como vector drawables em `res/drawable` (`ic_<nome>` e `ic_<nome>_filled`). Para um ícone novo: `scripts/material_symbol.py nome [--filled nome]`.
-- Tema segue o sistema; o botão de tema do protótipo não vai para o app.
-- IP público: só consultado quando o usuário toca em "Mostrar IP público" (api.ipify.org).
-- Rede local (Android 17+): com targetSdk 37, qualquer TCP/UDP para IPs da LAN (e o mDNS) exige a permissão de execução `ACCESS_LOCAL_NETWORK` (grupo Dispositivos próximos); sem ela o tráfego é descartado em silêncio (timeout/EPERM), inclusive o ping. Use `LocalNetworkAccess`/`LocalAddress` antes de falar com a LAN e `rememberLocalNetworkPermissionRequest` para pedir. Vale para Port Scanner e SSH.
-- MACs na LAN: o app não lê `/proc/net/arp` nem `ip neigh` (negado pelo SELinux). MAC só quando o próprio dispositivo anuncia (NetBIOS, mDNS); senão "MAC indisponível".
-- Portas: `assets/ports/top-tcp.txt` e `top-udp.txt` têm só os números das 1000 portas mais comuns na ordem do Nmap (o arquivo `nmap-services` é NPSL e não é embutido); nomes de serviço vêm do registro da IANA (`services.tsv.gzip`). Fontes em `assets/ports/SOURCES.txt`.
-- SSH: JSch (fork `com.github.mwiede:jsch`, BSD) + Bouncy Castle (`bcprov-jdk18on`, MIT). `JschSetup.install()` força as classes `com.jcraft.jsch.bc.*` para Ed25519/Ed448/X25519/ML-KEM: no Android o JSch escolheria as JCE, que dependem do provedor do sistema. Senha, chave privada e senha da chave ficam cifradas (AES-GCM, chave não exportável no Android Keystore, `KeystoreSecretCipher`); nada disso vai para log. Chaves de host confiadas ficam no Room (`ssh_known_host`, id `host` ou `[host]:porta`, como no OpenSSH); chave desconhecida ou alterada encerra a conexão antes da autenticação e a interface pergunta; ao confiar, o app reconecta.
-- Terminal SSH: emulação e desenho com `terminal-emulator`/`terminal-view` do Termux (Apache 2.0, JitPack, restrito ao grupo `com.github.termux.termux-app` em `settings.gradle.kts`). O `TerminalView`/`TerminalSession` do Termux não são usados (a sessão é final e abre processo local via JNI): a View é `TerminalCanvasView` e a sessão é `SshTerminal` (canal shell do JSch). `libtermux.so` é excluída do APK (não usada e não alinhada a 16 KB). Sessões vivem no `SshSessionManager` (singleton) e o `SshSessionService` (primeiro plano, `specialUse`) as mantém com o app em segundo plano. Cores do terminal fixas e escuras (paleta do design em `TerminalTheme`); fonte do terminal no DataStore.
-- Release: o R8 renomeia enums usados como argumento das rotas type-safe; `proguard-rules.pro` mantém os nomes dos enums de `com.netrik.navigation`. Teste o APK release no emulador ao mexer em rotas.
-- OUI: a base IEEE vai em `assets/oui/*.csv.gzip` (extensão `.gzip`, não `.gz`: o AGP descompacta `.gz` no build) e é importada no Room no primeiro uso. Downloads do IEEE precisam de User-Agent próprio (`Netrik/<versão>`): o padrão do Android leva HTTP 418. Os CSVs do IEEE não têm data de registro, então ela não é exibida.
+### Approved design decisions
+- Icon 2a ("Star": central hub with 3 nodes, replaces 1a), petrol blue seed `#136B79`, hub as a grouped list (Diagnostics, Discovery, Remote access).
+- Fallback scheme generated with material-color-utilities (SchemeTonalSpot) in `core/designsystem/theme/Color.kt`; success/warning in `ExtendedColors` (harmonized with the seed).
+- Roboto Flex for the UI and JetBrains Mono for all technical data (`NetrikTheme.dataTypography`), bundled in `res/font` (Latin subset).
+- Icons: Material Symbols Rounded as vector drawables in `res/drawable` (`ic_<name>` and `ic_<name>_filled`). For a new icon: `scripts/material_symbol.py name [--filled name]`.
+- Theme: Settings offers system/light/dark (system is the default), wallpaper colors (dynamic color, on by default, Android 12+) and pure black (AMOLED). The prototype's theme button doesn't go into the app.
+- Languages: English (default, `values/`) and Brazilian Portuguese (`values-pt-rBR/`). Settings → App language offers "System default" (default; English when the device language isn't available), English and Português (Brasil). Android 13+ uses the system per-app language (`res/xml/locales_config.xml`); older versions store the choice and wrap the Activity/Service context (`AppLanguages.wrap`). App bundle language splits are disabled so every language ships.
+- Public IP: only queried when the user taps "Show public IP" (api.ipify.org).
+- Local network (Android 17+): with targetSdk 37, any TCP/UDP to LAN IPs (and mDNS) requires the runtime permission `ACCESS_LOCAL_NETWORK` (Nearby devices group); without it traffic is silently dropped (timeout/EPERM), ping included. Use `LocalNetworkAccess`/`LocalAddress` before talking to the LAN and `rememberLocalNetworkPermissionRequest` to ask. Applies to Port Scanner and SSH.
+- MACs on the LAN: the app can't read `/proc/net/arp` or `ip neigh` (denied by SELinux). A MAC only shows when the device itself announces it (NetBIOS, mDNS); otherwise "MAC unavailable".
+- Ports: `assets/ports/top-tcp.txt` and `top-udp.txt` hold only the numbers of the 1000 most common ports in Nmap's order (the `nmap-services` file is NPSL and isn't bundled); service names come from the IANA registry (`services.tsv.gzip`). Sources in `assets/ports/SOURCES.txt`.
+- SSH: JSch (`com.github.mwiede:jsch` fork, BSD) + Bouncy Castle (`bcprov-jdk18on`, MIT). `JschSetup.install()` forces the `com.jcraft.jsch.bc.*` classes for Ed25519/Ed448/X25519/ML-KEM: on Android JSch would pick the JCE ones, which depend on the system provider. Password, private key and key passphrase are encrypted (AES-GCM, non-exportable Android Keystore key, `KeystoreSecretCipher`); none of it is ever logged. Trusted host keys live in Room (`ssh_known_host`, id `host` or `[host]:port`, as in OpenSSH); an unknown or changed key closes the connection before authentication and the UI asks; after trusting, the app reconnects.
+- SSH terminal: emulation and rendering with Termux `terminal-emulator`/`terminal-view` (Apache 2.0, JitPack, restricted to the `com.github.termux.termux-app` group in `settings.gradle.kts`). Termux's `TerminalView`/`TerminalSession` aren't used (the session is final and spawns a local process via JNI): the View is `TerminalCanvasView` and the session is `SshTerminal` (JSch shell channel). `libtermux.so` is excluded from the APK (unused and not 16 KB aligned). Sessions live in `SshSessionManager` (singleton) and `SshSessionService` (foreground, `specialUse`) keeps them alive with the app in the background. Terminal colors are fixed and dark (design palette in `TerminalTheme`); terminal font size in DataStore.
+- Release: R8 renames enums used as type-safe route arguments; `proguard-rules.pro` keeps the enum names in `com.netrik.navigation`. Test the release APK on the emulator when touching routes.
+- OUI: the IEEE database ships in `assets/oui/*.csv.gzip` (`.gzip` extension, not `.gz`: AGP decompresses `.gz` at build time) and is imported into Room on first use. IEEE downloads need a custom User-Agent (`Netrik/<version>`): Android's default gets HTTP 418. The IEEE CSVs have no registration date, so none is shown.
 
-## Regras de Git (OBRIGATÓRIAS)
-- NUNCA execute `git commit`, `git add`, `git push`, `git stash`, `git reset`, `git checkout`, `git rebase`, `git merge` ou qualquer comando que altere o histórico, o índice ou as branches. Comandos somente leitura (`git status`, `git diff`, `git log`) são permitidos.
-- Ao concluir cada etapa, escreva no arquivo `commit-message.md` (na raiz) a mensagem de commit das mudanças daquela etapa, para que eu mesmo faça o commit.
-- Se o arquivo já tiver conteúdo, sobrescreva-o: ele deve sempre descrever apenas as mudanças ainda não commitadas da etapa atual.
-- Formato: Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `build:`, `test:`, `docs:`), título com no máximo 72 caracteres e corpo com uma lista objetiva do que mudou e por quê, em português.
-- Se as mudanças da etapa ficarem melhores em mais de um commit, escreva cada mensagem separadamente no arquivo, indicando quais arquivos pertencem a cada uma.
-- Adicione `commit-message.md` ao `.gitignore`.
+## Language rules (MANDATORY)
+- Everything in the repository is in English: code, identifiers, comments, KDoc, test names, Gradle/ProGuard/manifest comments, scripts, docs and commit messages.
+- No user-facing text in Kotlin: every string goes into `values/strings.xml` (English) **and** `values-pt-rBR/strings.xml` (Brazilian Portuguese), same keys. Plurals use `<plurals>` (Portuguese also needs the `many` quantity).
+- Numbers and dates are formatted with the current locale (`Locale.getDefault()` follows the app language), never a hardcoded locale.
+- Talk to the maintainer in Brazilian Portuguese (reports, plans, questions).
 
-## Stack e arquitetura
-- Kotlin, Jetpack Compose, Material 3 (com cores dinâmicas e o esquema de cores próprio do design como fallback), edge-to-edge.
-- minSdk 26, target e compile no SDK estável mais recente.
-- Gradle Kotlin DSL com version catalog (`libs.versions.toml`).
-- Arquitetura MVVM com fluxo unidirecional de dados: UI (Compose) → ViewModel (StateFlow de UI state imutável) → camada de dados (repositories/data sources).
-- Coroutines e Flow para tudo que é assíncrono; operações de rede em `Dispatchers.IO`, com concorrência controlada (Semaphore) nos scanners e cancelamento correto ao sair da tela ou apertar "Parar".
-- Hilt para injeção de dependência, Room para dados estruturados (hosts e grupos SSH, históricos), DataStore para preferências, Navigation Compose com rotas type-safe.
-- Organize por feature (`feature/ping`, `feature/traceroute`, `feature/lan`, `feature/wifi`, `feature/portscan`, `feature/ssh`, `feature/oui`) mais `core/` (design system, rede, banco, utilitários). A estrutura deve facilitar adicionar novas ferramentas no futuro.
-- Para cada nova dependência, justifique a escolha no relatório da etapa e prefira bibliotecas mantidas e com licença compatível com open source.
+## Git rules (MANDATORY)
+- NEVER run `git commit`, `git add`, `git push`, `git stash`, `git reset`, `git checkout`, `git rebase`, `git merge` or any command that changes history, the index or branches. Read-only commands (`git status`, `git diff`, `git log`) are allowed.
+- When a task is done, write the commit message for its changes to `commit-message.md` (repository root), so the maintainer commits by hand.
+- If the file already has content, overwrite it: it must always describe only the changes not yet committed.
+- Format: Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `build:`, `test:`, `docs:`), title of at most 72 characters and a body with an objective list of what changed and why, in English.
+- If the changes are better split into several commits, write each message separately in the file, saying which files belong to each.
+- `commit-message.md` is in `.gitignore`.
 
-## Regras de qualidade
-- Nunca invente dados nem simule resultados. Se o Android não permitir obter alguma informação, mostre isso honestamente na UI (ex.: "MAC indisponível") e explique no relatório.
-- Implemente os estados do design: vazio, em execução, resultado, erro e sem conexão.
-- Escreva testes unitários para a lógica pura: parsing da saída do ping/traceroute, normalização de MAC, lookup OUI, cálculo de CIDR/faixa de IPs, parsing de listas de portas (ex.: `22,80,8000-8100`), conversão canal ↔ frequência.
-- Antes de encerrar cada etapa, rode `./gradlew assembleDebug` e `./gradlew test` e corrija o que falhar.
-- Nunca registre em log senhas, chaves privadas ou conteúdo de sessões SSH.
+## Stack and architecture
+- Kotlin, Jetpack Compose, Material 3 (dynamic color with the design's own scheme as fallback), edge-to-edge.
+- minSdk 26, target and compile SDK at the latest stable.
+- Gradle Kotlin DSL with a version catalog (`libs.versions.toml`).
+- MVVM with unidirectional data flow: UI (Compose) → ViewModel (StateFlow of immutable UI state) → data layer (repositories/data sources).
+- Coroutines and Flow for everything asynchronous; network work on `Dispatchers.IO`, with bounded concurrency (Semaphore/worker pools) in the scanners and proper cancellation when leaving the screen or tapping "Stop".
+- Hilt for dependency injection, Room for structured data (SSH hosts and groups, histories), DataStore for preferences, Navigation Compose with type-safe routes.
+- Organized by feature (`feature/ping`, `feature/traceroute`, `feature/devices`, `feature/wifi`, `feature/portscan`, `feature/ssh`, `feature/oui`, `feature/settings`) plus `core/` (design system, network, database, settings, utilities). Adding a new tool should be easy (see `NetrikTool`).
+- For every new dependency, justify the choice in the report and prefer maintained libraries with an open source compatible license (the project is GPL-3.0).
 
-## Notas técnicas por funcionalidade
-Pesquise e valide cada ponto abaixo contra as APIs atuais do Android antes de implementar.
+## Quality rules
+- Never make up data or fake results. If Android doesn't allow getting some information, show that honestly in the UI (e.g. "MAC unavailable") and explain it in the report.
+- Implement the design states: empty, running, result, error and no connection.
+- Write unit tests for pure logic: ping/traceroute output parsing, MAC normalization, OUI lookup, CIDR/IP range math, port list parsing (e.g. `22,80,8000-8100`), channel ↔ frequency conversion, terminal key encoding, etc.
+- Before finishing a task, run `./gradlew assembleDebug` and `./gradlew test` and fix whatever fails. `./gradlew lintDebug` must have no errors.
+- Never log passwords, private keys or SSH session content.
 
-- **Ping**: apps sem root não abrem sockets ICMP raw. Use o binário `/system/bin/ping` via ProcessBuilder, lendo a saída em tempo real e fazendo parsing de seq, TTL e tempo. Calcule as estatísticas (perda, mín/méd/máx, jitter) no app.
-- **Traceroute**: geralmente não existe binário no Android. Implemente com `ping` usando TTL incremental (um salto por TTL) e capture o IP que responde "Time to live exceeded". Faça a resolução reversa de hostname de forma assíncrona.
-- **Scanner LAN**: desde o Android 10 o app não lê `/proc/net/arp`, e versões mais recentes também restringem `ip neigh`. Faça a descoberta por sondagem concorrente (ICMP via ping e/ou TCP connect em portas comuns) e obtenha nomes via mDNS (NsdManager) e, se viável, NetBIOS/SSDP. Investigue o que é realmente possível para obter MACs nas versões suportadas e trate a indisponibilidade com elegância na UI.
-- **Scanner Wi-Fi**: use WifiManager/ScanResult (frequência, centerFreq0/1, channelWidth, capabilities e, no API 33+, os tipos de segurança). Verifique a combinação correta de permissões por nível de API (localização, NEARBY_WIFI_DEVICES) e a exigência de localização ativa. Respeite o throttling de scans do Android e informe-o na UI. Desenhe o gráfico de espectro com Canvas do Compose.
-- **Port scanner**: TCP via connect com timeout configurável. Em UDP, ausência de resposta não significa porta aberta: classifique como "aberta|filtrada" quando não houver resposta e como "fechada" quando houver erro de porta inalcançável, deixando isso claro na UI. Inclua listas embutidas de Top 100 e Top 1000 portas com nomes de serviço.
-- **SSH**: avalie sshj ou o fork mantido do JSch (mwiede/jsch), garantindo suporte a chaves Ed25519, RSA e ECDSA no Android. Para o terminal, avalie bibliotecas de emulação existentes (ex.: os módulos terminal-emulator/terminal-view do Termux), verificando a licença, em vez de escrever um emulador do zero. Implemente a verificação de host key com tela de confirmação de fingerprint e armazenamento de known_hosts. Criptografe senhas e chaves privadas salvas com Android Keystore.
-- **OUI**: embarque a base IEEE (MA-L, MA-M e MA-S) processada em um formato eficiente (Room ou asset indexado), funcionando offline, com opção de atualizar a partir dos arquivos públicos do IEEE. Aceite MAC em vários formatos e prefixos parciais. Esse módulo é compartilhado pelos scanners LAN e Wi-Fi.
+## Technical notes per feature
+Research and validate each point against the current Android APIs before implementing.
 
-## Plano de etapas
-Trabalhe UMA etapa por vez. Ao fim de cada uma: garanta build e testes passando, escreva `commit-message.md`, me envie um relatório curto (o que foi feito, decisões, limitações encontradas, como testar) e PARE. Aguarde minha aprovação para seguir.
+- **Ping**: non-root apps can't open raw ICMP sockets. Use the `/system/bin/ping` binary through ProcessBuilder, reading the output in real time and parsing seq, TTL and time. Compute the statistics (loss, min/avg/max, jitter) in the app.
+- **Traceroute**: there is usually no binary on Android. Implement it with `ping` and an increasing TTL (one hop per TTL), capturing the IP that answers "Time to live exceeded". Reverse-resolve hostnames asynchronously.
+- **LAN scanner**: since Android 10 apps can't read `/proc/net/arp`, and newer versions also restrict `ip neigh`. Discover by concurrent probing (ICMP via ping and/or TCP connect on common ports) and get names via mDNS (NsdManager) and NetBIOS/SSDP. Handle MAC unavailability gracefully in the UI.
+- **Wi-Fi scanner**: use WifiManager/ScanResult (frequency, centerFreq0/1, channelWidth, capabilities and, on API 33+, the security types). Check the right permission combination per API level (location, NEARBY_WIFI_DEVICES) and the location-on requirement. Respect Android's scan throttling and show it in the UI. Draw the spectrum chart with Compose Canvas.
+- **Port scanner**: TCP via connect with a configurable timeout. For UDP, no reply doesn't mean open: classify as "open|filtered" when there is no reply and "closed" on port unreachable, making it clear in the UI. Ship Top 100 and Top 1000 port lists with service names.
+- **SSH**: JSch fork with Ed25519, RSA and ECDSA keys; host key verification with a fingerprint confirmation screen and known_hosts storage; saved passwords and private keys encrypted with the Android Keystore.
+- **OUI**: the IEEE database (MA-L, MA-M and MA-S) bundled and working offline, with an option to update from the IEEE public files. Accepts MACs in many formats and partial prefixes. Shared by the LAN and Wi-Fi scanners.
 
-- **Etapa 0 — Fundação**: criar o projeto, version catalog, Hilt, tema Material 3 a partir do design system (cores claro/escuro, tipografia incluindo a fonte monoespaçada, cores semânticas de status), ícone adaptativo (foreground, background, monocromático), Navigation Bar, hub de Ferramentas com card "Rede atual", `.gitignore` e um `CLAUDE.md` com as regras deste prompt (em especial as de Git, o plano de etapas e o link do design no Claude Design como fonte da verdade visual) para que valham nas próximas sessões.
-- **Etapa 1 — OUI Lookup**: base de dados, repositório compartilhado e tela de consulta.
-- **Etapa 2 — Ping e Traceroute**.
-- **Etapa 3 — Scanner Wi-Fi**: lista, espectro e fluxo de permissões.
-- **Etapa 4 — Scanner de dispositivos LAN**: lista, detalhes e ações rápidas.
-- **Etapa 5 — Port Scanner**: TCP/UDP, host único e rede.
-- **Etapa 6 — SSH**: hosts, grupos, formulário, armazenamento seguro e verificação de host key.
-- **Etapa 7 — Terminal SSH**: emulação, barra de teclas extras e múltiplas sessões.
+## Workflow
+Work on ONE task at a time. For larger tasks, present a plan before coding and wait for approval. At the end: make sure build and tests pass, write `commit-message.md`, send a short report (what was done, decisions, limitations found, how to test) and STOP. Wait for approval before moving on.
 
-## Ambiente de build
-- JDK 17 via `gradle/gradle-daemon-jvm.properties` (o JDK padrão da máquina pode ser mais novo que o suportado pelo AGP).
-- `./gradlew assembleDebug` e `./gradlew test`.
-- Emulador: AVD `Pixel_9`; inicie com `-memory 4096`, porque com 2 GB o app é morto por falta de memória logo após o boot.
+Original plan (all stages are done):
+- **Stage 0 — Foundation**: project, version catalog, Hilt, Material 3 theme from the design system, adaptive icon, Navigation Bar, Tools hub with the "Current network" card, `.gitignore` and this `CLAUDE.md`.
+- **Stage 1 — OUI Lookup**: database, shared repository and lookup screen.
+- **Stage 2 — Ping and Traceroute**.
+- **Stage 3 — Wi-Fi scanner**: list, spectrum and permission flow.
+- **Stage 4 — LAN device scanner**: list, details and quick actions.
+- **Stage 5 — Port Scanner**: TCP/UDP, single host and network.
+- **Stage 6 — SSH**: hosts, groups, form, secure storage and host key verification.
+- **Stage 7 — SSH terminal**: emulation, extra keys bar and multiple sessions.
 
-## Andamento
-- Etapa 0 — Fundação: concluída.
-- Etapa 1 — OUI Lookup: concluída.
-- Etapa 2 — Ping e Traceroute: concluída. O traceroute ainda precisa de validação num aparelho físico: no emulador o ICMP é simulado (TTL sempre 255, sem "TTL excedido").
-- Etapa 3 — Scanner Wi-Fi: concluída. O emulador só tem a rede "AndroidWifi" (2,4 GHz, sem 6 GHz).
-- Etapa 4 — Scanner de dispositivos LAN: concluída. No emulador a rede é simulada: sem nomes nem MACs reais; mDNS/NetBIOS/UPnP precisam de validação num aparelho físico.
-- Etapa 5 — Port Scanner: concluída. No emulador, 10.0.2.2 é o loopback do PC: serve de gabarito para portas TCP abertas.
-- Etapa 6 — SSH: concluída. Testada no emulador com sshd local sem root (chave, 10.0.2.2:2222) e o container `lscr.io/linuxserver/openssh-server` (senha, 10.0.2.2:2223).
-- Etapa 7 — Terminal SSH: concluída (aguardando commit/aprovação). Celular deitado com teclado aberto: o terminal esconde barra e abas e usa uma linha de teclas extras (sobram ~2 linhas de texto).
-- Todas as etapas do plano concluídas; próximos passos dependem do que for pedido.
+## Build environment
+- JDK 17 via `gradle/gradle-daemon-jvm.properties` (the machine's default JDK may be newer than AGP supports).
+- `./gradlew assembleDebug`, `./gradlew test` and `./gradlew lintDebug`.
+- Emulator: AVD `Pixel_9`; start it with `-memory 4096`, because with 2 GB the app is killed for lack of memory right after boot.
+
+## Progress
+- Stages 0–7: done and committed.
+- Stage 2: traceroute still needs validation on a physical device (on the emulator ICMP is simulated: TTL always 255, no "TTL exceeded").
+- Stage 3: the emulator only has the "AndroidWifi" network (2.4 GHz, no 6 GHz).
+- Stage 4: on the emulator the network is simulated (no real names or MACs); mDNS/NetBIOS/UPnP need validation on a physical device.
+- Stage 5: on the emulator, 10.0.2.2 is the host machine's loopback: a good reference for open TCP ports.
+- Stage 6/7: tested on the emulator with a rootless local sshd (key, 10.0.2.2:2222) and the `lscr.io/linuxserver/openssh-server` container (password, 10.0.2.2:2223). Phone in landscape with the keyboard open: the terminal hides the bar and tabs and uses a single row of extra keys (~2 lines of text left).
+- English/Portuguese translation, Settings screen (theme, dynamic color, AMOLED, language, version, bug report), README.md and CONTRIBUTING.md: done (waiting for commit/approval).

@@ -24,6 +24,7 @@ import com.netrik.feature.ping.PingScreen
 import com.netrik.feature.portscan.PortScanScreen
 import com.netrik.feature.traceroute.TracerouteScreen
 import com.netrik.feature.wifi.WifiScreen
+import com.netrik.feature.settings.SettingsScreen
 import com.netrik.feature.ssh.SshFormScreen
 import com.netrik.feature.ssh.SshHostsScreen
 import com.netrik.feature.ssh.SshTerminalScreen
@@ -35,11 +36,14 @@ fun NetrikNavHost(navController: NavHostController, modifier: Modifier = Modifie
     NavHost(navController = navController, startDestination = ToolsGraph, modifier = modifier) {
         navigation<ToolsGraph>(startDestination = HubRoute) {
             composable<HubRoute> {
-                HubScreen(onOpenTool = { tool -> navController.openTool(tool, TopLevelDestination.Tools) })
+                HubScreen(
+                    onOpenTool = { tool -> navController.openTool(tool, TopLevelDestination.Tools) },
+                    onOpenSettings = { navController.navigate(SettingsRoute) },
+                )
             }
         }
         navigation<DevicesGraph>(startDestination = DevicesRoute) {
-            // Lista e detalhes compartilham o ViewModel do grafo: a varredura sobrevive à navegação.
+            // List and details share the graph ViewModel: the scan survives navigation.
             composable<DevicesRoute> { entry ->
                 DevicesScreen(
                     viewModel = devicesViewModel(navController, entry),
@@ -59,7 +63,7 @@ fun NetrikNavHost(navController: NavHostController, modifier: Modifier = Modifie
             composable<WifiRoute> { WifiScreen() }
         }
         navigation<SshGraph>(startDestination = SshRoute) {
-            // Lista e formulário compartilham o ViewModel do grafo (conexão em andamento, diálogos).
+            // List, form and terminal share the graph ViewModel (ongoing connection, dialogs, sessions).
             composable<SshRoute> { entry ->
                 SshHostsScreen(
                     viewModel = sshViewModel(navController, entry),
@@ -84,6 +88,7 @@ fun NetrikNavHost(navController: NavHostController, modifier: Modifier = Modifie
                 onFindInNetwork = { navController.navigateToTab(TopLevelDestination.Devices) },
             )
         }
+        composable<SettingsRoute> { SettingsScreen(onBack = { navController.popBackStack() }) }
         composable<PingRoute> { PingScreen(onBack = { navController.popBackStack() }) }
         composable<TracerouteRoute> { TracerouteScreen(onBack = { navController.popBackStack() }) }
         composable<PortScanRoute> { PortScanScreen(onBack = { navController.popBackStack() }) }
@@ -106,7 +111,7 @@ private fun sshViewModel(navController: NavController, entry: NavBackStackEntry)
     return hiltViewModel(parent)
 }
 
-/** Rota inicial de cada aba. */
+/** Start route of each tab. */
 val TopLevelDestination.startRoute: Any
     get() = when (this) {
         TopLevelDestination.Tools -> HubRoute
@@ -115,7 +120,7 @@ val TopLevelDestination.startRoute: Any
         TopLevelDestination.Ssh -> SshRoute
     }
 
-/** Troca de aba salvando a pilha da aba atual e restaurando a da aba de destino. */
+/** Switches tab saving the current tab's stack and restoring the destination tab's. */
 fun NavController.navigateToTab(tab: TopLevelDestination) {
     navigate(tab.graph) {
         popUpTo(graph.findStartDestination().id) { saveState = true }
@@ -124,11 +129,11 @@ fun NavController.navigateToTab(tab: TopLevelDestination) {
     }
 }
 
-/** Abas viram troca de aba; as demais ferramentas abrem por cima da aba de origem. */
+/** Tabs become a tab switch; the other tools open on top of the origin tab. */
 fun NavController.openTool(tool: NetrikTool, origin: TopLevelDestination, target: String? = null) {
     val tab = tool.tab
     when {
-        // SSH com alvo (ação rápida de um dispositivo): abre a aba e o formulário já com o host.
+        // SSH with a target (quick action from a device): opens the tab and the form with the host filled in.
         tool == NetrikTool.Ssh && target != null -> {
             navigateToTab(TopLevelDestination.Ssh)
             navigate(SshFormRoute(target = target))
@@ -142,7 +147,7 @@ fun NavController.openTool(tool: NetrikTool, origin: TopLevelDestination, target
     }
 }
 
-/** Aba que deve aparecer destacada para esta entrada da pilha. */
+/** Tab that should be highlighted for this back stack entry. */
 fun NavBackStackEntry.topLevelDestination(): TopLevelDestination? {
     if (destination.hasRoute<ToolRoute>()) return toRoute<ToolRoute>().origin
     if (destination.hasRoute<OuiRoute>()) return toRoute<OuiRoute>().origin

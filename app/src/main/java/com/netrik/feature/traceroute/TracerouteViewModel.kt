@@ -32,7 +32,7 @@ import javax.inject.Inject
 
 data class HopUi(
     val number: Int,
-    /** Null = sem resposta no tempo (`* * *`). */
+    /** Null = no reply in time (`* * *`). */
     val address: String?,
     val hostname: String? = null,
     val rttMs: Double? = null,

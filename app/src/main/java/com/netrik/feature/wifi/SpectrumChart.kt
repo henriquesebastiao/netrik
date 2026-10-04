@@ -42,7 +42,7 @@ private const val BOTTOM_DBM = -100
 private val CHART_HEIGHT = 290.dp
 private val SLOT_WIDTH = 44.dp
 
-/** Curva de cada rede: trapézio suave na largura do canal, com altura = intensidade do sinal. */
+/** Curve of each network: a smooth trapezoid across the channel width, with height = signal strength. */
 @Composable
 fun SpectrumChart(
     band: WifiBand,
@@ -67,7 +67,7 @@ fun SpectrumChart(
             }
         }
         BoxWithConstraints(modifier = Modifier.weight(1f)) {
-            // 2,4 GHz cabe na largura; 5 e 6 GHz usam 44dp por canal de 20 MHz e rolam na horizontal.
+            // 2.4 GHz fits the width; 5 and 6 GHz use 44dp per 20 MHz channel and scroll horizontally.
             val slotPx = if (band == WifiBand.GHz2_4) constraints.maxWidth / axis.slots else with(density) { SLOT_WIDTH.toPx() }
             val widthDp = with(density) { (slotPx * axis.slots).toDp() }
             val scroll = rememberScrollState()
@@ -78,7 +78,7 @@ fun SpectrumChart(
                         .height(CHART_HEIGHT)
                         .pointerInput(networks, slotPx) {
                             detectTapGestures { tap ->
-                                // A rede mais forte cuja faixa contém o toque.
+                                // The strongest network whose range contains the tap.
                                 val hit = networks
                                     .mapNotNull { n -> axis.span(n.centerMhz, n.widthMhz)?.let { n to it } }
                                     .filter { (_, s) -> tap.x in s.first * slotPx..s.second * slotPx }
@@ -89,7 +89,7 @@ fun SpectrumChart(
                 ) {
                     drawGrid(axis, slotPx, scheme.outlineVariant, scheme.outline)
                     drawTicks(axis, slotPx, measurer, mono.copy(fontSize = 11.sp, color = scheme.onSurfaceVariant))
-                    // A selecionada por último, por cima; as outras das mais fracas para as mais fortes.
+                    // The last selected one on top; the others from weakest to strongest.
                     networks.sortedWith(compareBy<WifiNetwork>({ it.bssid == selected }, { it.rssiDbm })).forEach { n ->
                         val span = axis.span(n.centerMhz, n.widthMhz) ?: return@forEach
                         val color = colors[n.bssid] ?: scheme.primary
@@ -139,7 +139,7 @@ private fun DrawScope.drawGrid(axis: SpectrumAxis, slotPx: Float, grid: Color, b
 
 private fun DrawScope.drawTicks(axis: SpectrumAxis, slotPx: Float, measurer: TextMeasurer, style: TextStyle) {
     val y = yOf(BOTTOM_DBM, size.height) + 6.dp.toPx()
-    // 6 GHz tem 59 canais: rotula um a cada dois para não sobrepor.
+    // 6 GHz has 59 channels: label every other one so they don't overlap.
     val step = if (axis.band == WifiBand.GHz6) 2 else 1
     axis.ticks.filterIndexed { i, _ -> i % step == 0 }.forEach { (channel, slot) ->
         val text = measurer.measure(channel.toString(), style)
@@ -166,7 +166,7 @@ private fun DrawScope.drawLabel(measurer: TextMeasurer, text: String, centerX: F
     val pad = 3.dp.toPx()
     val x = (centerX - layout.size.width / 2).coerceIn(pad, (size.width - layout.size.width - pad).coerceAtLeast(pad))
     val y = top - layout.size.height - 3.dp.toPx()
-    // Fundo discreto em vez de contorno: mantém o rótulo legível sobre outras curvas.
+    // Subtle background instead of an outline: keeps the label readable over other curves.
     drawRoundRect(
         color = halo.copy(alpha = 0.85f),
         topLeft = Offset(x - pad, y),

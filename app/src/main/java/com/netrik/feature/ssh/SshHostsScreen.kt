@@ -111,7 +111,7 @@ fun SshHostsScreen(
             }
         },
         floatingActionButton = {
-            // O Snackbar fica no Scaffold do app, por cima deste: o FAB sobe enquanto ele aparece.
+            // The Snackbar lives in the app Scaffold, on top of this one: the FAB moves up while it shows.
             val lift by animateDpAsState(if (snackbar.currentSnackbarData != null) 64.dp else 0.dp, label = "fab")
             ExtendedFloatingActionButton(
                 modifier = Modifier.padding(bottom = lift),
@@ -292,7 +292,7 @@ private fun HostRow(host: SshHost, index: Int, count: Int, sessionActive: Boolea
                 Box {
                     IconAvatar(icon = R.drawable.ic_dns)
                     if (sessionActive) {
-                        // Ponto verde com contorno da cor do item, no canto do avatar.
+                        // Green dot outlined with the item color, at the corner of the avatar.
                         Box(
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
@@ -393,7 +393,7 @@ private fun EmptyGroup() {
     }
 }
 
-/** Faixa "N sessões ativas" no topo da lista, com os nomes e "Abrir". */
+/** "N active sessions" banner at the top of the list, with the names and "Open". */
 @Composable
 private fun ActiveSessionsBanner(count: Int, names: String, onOpen: () -> Unit) {
     val ext = NetrikTheme.extendedColors

@@ -11,13 +11,13 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
 
-/** Executa o ping do sistema e emite cada linha interpretada, terminando com [PingEvent.Exited]. */
+/** Runs the system ping and emits each parsed line, ending with [PingEvent.Exited]. */
 interface PingRunner {
     fun run(command: List<String>): Flow<PingEvent>
 }
 
 /**
- * Apps sem root não abrem socket ICMP raw; o `/system/bin/ping` usa sockets ICMP de datagrama,
+ * Non-root apps can't open raw ICMP sockets; `/system/bin/ping` uses ICMP datagram sockets,
  * permitidos a apps. Cancelar a coleta encerra o processo.
  */
 class ProcessPingRunner @Inject constructor(
@@ -28,7 +28,7 @@ class ProcessPingRunner @Inject constructor(
         val process = try {
             ProcessBuilder(command).redirectErrorStream(true).start()
         } catch (e: IOException) {
-            send(PingEvent.Failure(e.message ?: "Falha ao executar o ping"))
+            send(PingEvent.Failure(e.message.orEmpty()))
             send(PingEvent.Exited(-1))
             close()
             return@callbackFlow
@@ -40,7 +40,7 @@ class ProcessPingRunner @Inject constructor(
                 }
                 trySendBlocking(PingEvent.Exited(process.waitFor()))
             } catch (_: IOException) {
-                // Fluxo fechado porque o processo foi encerrado (Parar ou sair da tela).
+                // Stream closed because the process was killed (Stop or leaving the screen).
             } finally {
                 channel.close()
             }

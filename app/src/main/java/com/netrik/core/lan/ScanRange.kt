@@ -3,8 +3,8 @@ package com.netrik.core.lan
 import com.netrik.core.network.Ipv4
 
 /**
- * Hosts a varrer na sub-rede do aparelho.
- * [truncated] = a rede é maior que [MAX_PREFIX_SCANNED] e só o /24 do aparelho será varrido.
+ * Hosts to sweep on the device subnet.
+ * [truncated] = the network is larger than [MAX_PREFIX_SCANNED] and only the device's /24 will be swept.
  */
 data class ScanRange(
     val network: String,
@@ -15,7 +15,7 @@ data class ScanRange(
     val cidr: String get() = "$network/$prefixLength"
 
     companion object {
-        /** Redes maiores que /22 (1.022 hosts) varrem só o /24 do aparelho. */
+        /** Networks larger than /22 (1,022 hosts) sweep only the device's /24. */
         const val MAX_PREFIX_SCANNED = 22
 
         fun of(address: String, prefixLength: Int): ScanRange? {
@@ -27,7 +27,7 @@ data class ScanRange(
             val size = 1L shl (32 - effective)
             val hosts = when {
                 effective == 32 -> listOf(network)
-                effective == 31 -> listOf(network, network + 1) // RFC 3021: sem rede/broadcast
+                effective == 31 -> listOf(network, network + 1) // RFC 3021: no network/broadcast
                 else -> (network + 1 until network + size - 1).toList()
             }.map(Ipv4::format)
             return ScanRange(Ipv4.format(network), effective, hosts, truncated = effective != prefixLength)

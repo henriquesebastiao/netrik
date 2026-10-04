@@ -12,7 +12,7 @@ import java.time.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Dados do formulário prontos para salvar. Segredos nulos mantêm os já salvos (edição). */
+/** Form data ready to save. Null secrets keep the ones already saved (editing). */
 class SshHostDraft(
     val id: Long?,
     val name: String,
@@ -41,7 +41,7 @@ class SshRepository @Inject constructor(
 
     suspend fun host(id: Long): SshHost? = dao.host(id)?.toModel()
 
-    /** Salva (novo ou edição) cifrando os segredos; devolve o id do host. */
+    /** Saves (new or edit) encrypting the secrets; returns the host id. */
     suspend fun save(draft: SshHostDraft): Long = withContext(io) {
         val existing = draft.id?.let { dao.host(it) }
         val usesPassword = draft.auth == SshAuth.Password
@@ -54,12 +54,12 @@ class SshRepository @Inject constructor(
             username = draft.username,
             auth = draft.auth.storedName,
             groupId = draft.groupId,
-            // Trocar o tipo de autenticação descarta o segredo do outro tipo.
+            // Switching the authentication type discards the secret of the other type.
             passwordEnc = if (!usesPassword) null else draft.password?.let(cipher::encrypt) ?: existing?.passwordEnc,
             keyEnc = if (!usesKey) null else draft.key?.bytes?.let(cipher::encrypt) ?: existing?.keyEnc,
             keyPassphraseEnc = when {
                 !usesKey -> null
-                // Chave nova: a senha vale para ela (vazia = sem senha).
+                // New key: the passphrase applies to it (empty = no passphrase).
                 draft.key != null -> draft.keyPassphrase?.takeIf { it.isNotEmpty() }?.let(cipher::encrypt)
                 draft.keyPassphrase != null && draft.keyPassphrase.isNotEmpty() -> cipher.encrypt(draft.keyPassphrase)
                 else -> existing?.keyPassphraseEnc
@@ -73,15 +73,15 @@ class SshRepository @Inject constructor(
 
     suspend fun deleteHost(id: Long) = dao.deleteHost(id)
 
-    /** Indica se o host já tem senha / senha da chave salvas (para a edição). */
+    /** Tells whether the host already has a saved password / key passphrase (for editing). */
     suspend fun storedSecrets(id: Long): StoredSecrets {
         val entity = dao.host(id) ?: return StoredSecrets(password = false, keyPassphrase = false)
         return StoredSecrets(password = entity.passwordEnc != null, keyPassphrase = entity.keyPassphraseEnc != null)
     }
 
     /**
-     * Monta o alvo de conexão de um host salvo, decifrando os segredos. [overrides] substitui
-     * os segredos salvos (ex.: senha digitada agora no formulário).
+     * Builds the connection target of a saved host, decrypting the secrets. [overrides] replaces
+     * the saved secrets (e.g. a password typed just now in the form).
      */
     suspend fun target(id: Long, overrides: SshHostDraft? = null): SshTarget? = withContext(io) {
         val entity = dao.host(id) ?: return@withContext null
@@ -118,14 +118,14 @@ class SshRepository @Inject constructor(
     suspend fun knownHost(hostId: String): HostKey? =
         dao.knownHost(hostId)?.let { HostKey(it.keyType, it.keyBlob) }
 
-    /** Confia na chave (novo host ou substituição explícita de uma chave alterada). */
+    /** Trusts the key (new host or explicit replacement of a changed key). */
     suspend fun trust(hostId: String, key: HostKey) = dao.upsertKnownHost(
         KnownHostEntity(hostId, key.type, key.blob, key.fingerprint, clock.millis()),
     )
 
     /**
-     * Segredo que não decifra mais (ex.: banco restaurado de backup em outro aparelho, onde a chave do
-     * Keystore não existe): tratado como ausente, e a conexão pede para editar os dados.
+     * Secret that no longer decrypts (e.g. database restored from a backup on another device, where the
+     * Keystore key doesn't exist): treated as missing, and the connection asks to edit the details.
      */
     private fun decryptOrNull(sealed: ByteArray): ByteArray? = try {
         cipher.decrypt(sealed)

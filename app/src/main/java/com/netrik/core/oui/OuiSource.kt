@@ -11,16 +11,16 @@ import java.net.URL
 import java.util.zip.GZIPInputStream
 import javax.inject.Inject
 
-/** Origem dos arquivos OUI: a cópia embarcada no APK e os arquivos públicos do IEEE. */
+/** Source of the OUI files: the copy bundled in the APK and the IEEE public files. */
 interface OuiSource {
-    /** Data dos dados embarcados (ISO-8601). */
+    /** Date of the bundled data (ISO-8601). */
     fun bundledVersion(): String
 
     fun openBundled(registry: OuiRegistry): Reader
 
     /**
-     * Baixa o CSV do [registry] para um arquivo temporário. Bloqueante: chamar fora da main thread.
-     * [onProgress] recebe bytes lidos e o total (-1 se desconhecido).
+     * Downloads the CSV of [registry] to a temporary file. Blocking: call it off the main thread.
+     * [onProgress] receives the bytes read and the total (-1 if unknown).
      */
     fun download(registry: OuiRegistry, onProgress: (read: Long, total: Long) -> Unit): File
 }
@@ -34,7 +34,7 @@ class AndroidOuiSource @Inject constructor(
     override fun bundledVersion(): String =
         context.assets.open("$ASSET_DIR/VERSION").bufferedReader().use { it.readText().trim() }
 
-    // Extensão ".gzip" de propósito: o AGP descompacta assets ".gz" no build e remove a extensão.
+    // ".gzip" extension on purpose: AGP decompresses ".gz" assets at build time and drops the extension.
     override fun openBundled(registry: OuiRegistry): Reader =
         GZIPInputStream(context.assets.open("$ASSET_DIR/${registry.fileName}.csv.gzip")).bufferedReader(Charsets.UTF_8)
 
@@ -44,7 +44,7 @@ class AndroidOuiSource @Inject constructor(
         try {
             connection.connectTimeout = 15_000
             connection.readTimeout = 30_000
-            // O IEEE rejeita (HTTP 418) o User-Agent padrão do Android ("Dalvik/…").
+            // The IEEE rejects (HTTP 418) Android's default User-Agent ("Dalvik/…").
             connection.setRequestProperty("User-Agent", "Netrik/${BuildConfig.VERSION_NAME} (Android)")
             connection.setRequestProperty("Accept", "text/csv")
             val code = connection.responseCode

@@ -21,12 +21,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Fim de uma sessão: [byUser] distingue "Desconectar"/fechar aba de queda ou `exit` no servidor. */
+/** End of a session: [byUser] tells "Disconnect"/closing the tab apart from a drop or `exit` on the server. */
 data class SessionEnded(val name: String, val byUser: Boolean, val disconnect: Boolean)
 
 /**
- * Sessões de terminal abertas, vivas enquanto o processo vive (independem da tela). Enquanto houver
- * alguma, o [SshSessionService] fica em primeiro plano para o Android não derrubar as conexões.
+ * Open terminal sessions, alive as long as the process (independent of the screen). While there is
+ * any, [SshSessionService] stays in the foreground so Android doesn't drop the connections.
  */
 @Singleton
 class SshSessionManager @Inject constructor(
@@ -45,10 +45,10 @@ class SshSessionManager @Inject constructor(
     private val _ended = MutableSharedFlow<SessionEnded>(extraBufferCapacity = 8)
     val ended: SharedFlow<SessionEnded> = _ended.asSharedFlow()
 
-    /** Pedidos de fechamento que vieram de "Desconectar" (para o texto do aviso). */
+    /** Close requests that came from "Disconnect" (for the notice text). */
     private val disconnecting = mutableSetOf<Long>()
 
-    /** Abre o shell numa sessão já autenticada e torna a aba ativa. */
+    /** Opens the shell on an already authenticated session and makes its tab active. */
     fun open(session: SshSession, hostId: Long?, name: String, address: String): SshTerminal {
         val terminal = SshTerminal(nextId++, hostId, name, address, session, io)
         _sessions.update { it + terminal }
@@ -69,7 +69,7 @@ class SshSessionManager @Inject constructor(
         if (find(id) != null) _activeId.value = id
     }
 
-    /** Fecha a aba (ícone ×) ou desconecta ([disconnect] muda só o texto do aviso). */
+    /** Closes the tab (× icon) or disconnects ([disconnect] only changes the notice text). */
     fun close(id: Long, disconnect: Boolean = false) {
         val terminal = find(id) ?: return
         if (disconnect) disconnecting += id

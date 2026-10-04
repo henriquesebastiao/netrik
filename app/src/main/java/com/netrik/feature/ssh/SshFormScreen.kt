@@ -68,6 +68,7 @@ import com.netrik.R
 import com.netrik.core.designsystem.theme.NetrikTheme
 import com.netrik.core.ssh.SshAuth
 import com.netrik.core.ssh.SshField
+import com.netrik.core.ssh.SshFieldError
 import com.netrik.core.ssh.SshGroup
 import com.netrik.core.ui.LocalSnackbarHostState
 import kotlinx.coroutines.flow.takeWhile
@@ -88,7 +89,7 @@ fun SshFormScreen(viewModel: SshViewModel, onClose: () -> Unit) {
     BackHandler(onBack = close)
 
     LaunchedEffect(viewModel) {
-        // Para de ouvir ao fechar: o aviso que vem depois ("Autenticado como…") fica para a lista.
+        // Stops listening on close: the events that come after it (open the terminal, notices) are for the host list.
         viewModel.events.takeWhile { it != SshEvent.CloseForm }.collect { event ->
             if (event is SshEvent.Message) launch { snackbar.showSnackbar(sshMessageText(context, event.text)) }
         }
@@ -155,7 +156,7 @@ fun SshFormScreen(viewModel: SshViewModel, onClose: () -> Unit) {
                 label = stringResource(R.string.ssh_form_host),
                 placeholder = stringResource(R.string.ssh_form_host_hint),
                 icon = R.drawable.ic_dns,
-                error = form.errors[SshField.Host],
+                error = fieldErrorText(form.errors[SshField.Host]),
                 supporting = stringResource(R.string.ssh_form_host_sup),
                 keyboardType = KeyboardType.Uri,
             )
@@ -164,7 +165,7 @@ fun SshFormScreen(viewModel: SshViewModel, onClose: () -> Unit) {
                     value = form.port,
                     onValueChange = { v -> viewModel.updateForm { it.copy(port = v.filter(Char::isDigit).take(5)) } },
                     label = stringResource(R.string.ssh_form_port),
-                    error = form.errors[SshField.Port],
+                    error = fieldErrorText(form.errors[SshField.Port]),
                     supporting = stringResource(R.string.ssh_form_port_sup),
                     keyboardType = KeyboardType.Number,
                     modifier = Modifier.width(104.dp),
@@ -175,7 +176,7 @@ fun SshFormScreen(viewModel: SshViewModel, onClose: () -> Unit) {
                     label = stringResource(R.string.ssh_form_user),
                     placeholder = stringResource(R.string.ssh_form_user_hint),
                     icon = R.drawable.ic_person,
-                    error = form.errors[SshField.User],
+                    error = fieldErrorText(form.errors[SshField.User]),
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -222,7 +223,7 @@ fun SshFormScreen(viewModel: SshViewModel, onClose: () -> Unit) {
     SshDialogHost(dialog, viewModel)
 }
 
-/** Campo de dado técnico (host, porta, usuário) em fonte monoespaçada. */
+/** Technical data field (host, port, user) in a monospaced font. */
 @Composable
 private fun DataField(
     value: String,
@@ -283,7 +284,7 @@ private fun AuthSelector(selected: SshAuth, onSelect: (SshAuth) -> Unit) {
 
 @Composable
 private fun PasswordField(form: SshFormState, viewModel: SshViewModel) {
-    val error = form.errors[SshField.Password]
+    val error = fieldErrorText(form.errors[SshField.Password])
     val keep = form.isEditing && form.hasStoredPassword && !form.passwordRejected
     OutlinedTextField(
         value = form.password,
@@ -312,7 +313,7 @@ private fun PasswordField(form: SshFormState, viewModel: SshViewModel) {
 @Composable
 private fun KeySection(form: SshFormState, viewModel: SshViewModel, onPick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
-    val keyError = form.errors[SshField.Key] ?: when (form.keyError) {
+    val keyError = fieldErrorText(form.errors[SshField.Key]) ?: when (form.keyError) {
         KeyFileError.Invalid -> stringResource(R.string.ssh_form_key_invalid)
         KeyFileError.TooLarge -> stringResource(R.string.ssh_form_key_too_large)
         KeyFileError.Unreadable -> stringResource(R.string.ssh_form_key_unreadable)
@@ -393,7 +394,7 @@ private fun KeySection(form: SshFormState, viewModel: SshViewModel, onPick: () -
 private fun GroupPicker(selected: Long?, groups: List<SshGroup>, onSelect: (Long?) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     val noGroup = stringResource(R.string.ssh_no_group)
-    // "Sem grupo" por último, como na lista de hosts.
+    // "No group" last, as in the host list.
     val options = groups.map { it.id as Long? to it.name } + (null to noGroup)
     val current = options.firstOrNull { it.first == selected }?.second ?: noGroup
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
@@ -426,4 +427,21 @@ private fun GroupPicker(selected: Long?, groups: List<SshGroup>, onSelect: (Long
             }
         }
     }
+}
+
+/** Translated text for a form validation error. */
+@Composable
+private fun fieldErrorText(error: SshFieldError?): String? = error?.let {
+    stringResource(
+        when (it) {
+            SshFieldError.HostRequired -> R.string.ssh_form_host_required
+            SshFieldError.HostInvalid -> R.string.ssh_form_host_invalid
+            SshFieldError.PortInvalid -> R.string.ssh_form_port_invalid
+            SshFieldError.UserRequired -> R.string.ssh_form_user_required
+            SshFieldError.UserInvalid -> R.string.ssh_form_user_invalid
+            SshFieldError.PasswordRequired -> R.string.ssh_form_password_required
+            SshFieldError.KeyRequired -> R.string.ssh_form_key_required
+            SshFieldError.PasswordRejected -> R.string.ssh_form_password_rejected
+        },
+    )
 }

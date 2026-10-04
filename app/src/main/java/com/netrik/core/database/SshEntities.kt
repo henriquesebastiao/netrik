@@ -13,7 +13,7 @@ import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
-/** Grupo de hosts SSH. "Sem grupo" não é uma linha: são os hosts com group_id nulo. */
+/** SSH host group. "No group" isn't a row: it's the hosts with a null group_id. */
 @Entity(tableName = "ssh_group")
 data class SshGroupEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -23,9 +23,9 @@ data class SshGroupEntity(
 )
 
 /**
- * Host SSH salvo. Senha, chave privada e senha da chave ficam cifradas com o Android Keystore
- * ([com.netrik.core.ssh.SecretCipher]); o banco nunca guarda esses segredos em claro.
- * Excluir o grupo leva os hosts para "Sem grupo" (SET NULL).
+ * Saved SSH host. Password, private key and key passphrase are encrypted with the Android Keystore
+ * ([com.netrik.core.ssh.SecretCipher]); the database never stores these secrets in plain text.
+ * Deleting the group moves its hosts to "No group" (SET NULL).
  */
 @Entity(
     tableName = "ssh_host",
@@ -45,22 +45,22 @@ data class SshHostEntity(
     val host: String,
     val port: Int,
     val username: String,
-    /** "password" ou "key". */
+    /** "password" or "key". */
     val auth: String,
     @ColumnInfo(name = "group_id") val groupId: Long?,
     @ColumnInfo(name = "password_enc") val passwordEnc: ByteArray?,
     @ColumnInfo(name = "key_enc") val keyEnc: ByteArray?,
     @ColumnInfo(name = "key_passphrase_enc") val keyPassphraseEnc: ByteArray?,
-    /** Nome do arquivo de chave importado e o resumo exibido ("ED25519 · 411 bytes"). */
+    /** Name of the imported key file and the summary shown ("ED25519 · 411 bytes"). */
     @ColumnInfo(name = "key_name") val keyName: String?,
     @ColumnInfo(name = "key_info") val keyInfo: String?,
     @ColumnInfo(name = "created_at") val createdAt: Long,
 )
 
-/** Chave de host confiada (equivalente ao known_hosts do OpenSSH). */
+/** Trusted host key (same idea as OpenSSH's known_hosts). */
 @Entity(tableName = "ssh_known_host")
 data class KnownHostEntity(
-    /** "host" ou "[host]:porta". */
+    /** "host" or "[host]:port". */
     @PrimaryKey @ColumnInfo(name = "host_id") val hostId: String,
     @ColumnInfo(name = "key_type") val keyType: String,
     @ColumnInfo(name = "key_blob") val keyBlob: ByteArray,
@@ -112,7 +112,7 @@ interface SshDao {
     @Upsert
     suspend fun upsertKnownHost(entry: KnownHostEntity)
 
-    /** Cria o grupo no fim da lista (antes de "Sem grupo", que é sempre o último). */
+    /** Creates the group at the end of the list (before "No group", which is always last). */
     @Transaction
     suspend fun appendGroup(name: String): Long =
         insertGroup(SshGroupEntity(name = name, position = nextGroupPosition()))

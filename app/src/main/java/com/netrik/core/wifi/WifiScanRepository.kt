@@ -21,16 +21,16 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Scan de redes Wi-Fi próximas. Exige localização precisa concedida e ativada no sistema. */
+/** Scan of nearby Wi-Fi networks. Requires precise location granted and turned on in the system. */
 interface WifiScanRepository {
-    /** Resultados mais recentes, reemitidos a cada scan concluído (deste ou de outro app). */
+    /** Most recent results, re-emitted on every finished scan (from this or another app). */
     val networks: Flow<List<WifiNetwork>>
 
     val wifiEnabled: Flow<Boolean>
     val locationEnabled: Flow<Boolean>
     val supports6Ghz: Boolean
 
-    /** Pede um scan ao sistema; false se recusado (limite de scans ou Wi-Fi indisponível). */
+    /** Asks the system for a scan; false if refused (scan limit or Wi-Fi unavailable). */
     fun requestScan(): Boolean
 }
 
@@ -43,7 +43,7 @@ class AndroidWifiScanRepository @Inject constructor(
     private val wifi = context.getSystemService(WifiManager::class.java)
     private val location = context.getSystemService(LocationManager::class.java)
 
-    @SuppressLint("MissingPermission") // a tela só coleta com ACCESS_FINE_LOCATION concedida
+    @SuppressLint("MissingPermission") // the screen only collects with ACCESS_FINE_LOCATION granted
     override val networks: Flow<List<WifiNetwork>> =
         broadcasts(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION).map { readResults() }
 
@@ -58,7 +58,7 @@ class AndroidWifiScanRepository @Inject constructor(
     override val supports6Ghz: Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && wifi?.is6GHzBandSupported == true
 
-    @Suppress("DEPRECATION") // startScan segue funcionando, com o limite de 4 scans a cada 2 min
+    @Suppress("DEPRECATION") // startScan still works, with the limit of 4 scans every 2 min
     override fun requestScan(): Boolean = try {
         wifi?.startScan() == true
     } catch (_: SecurityException) {
@@ -96,7 +96,7 @@ class AndroidWifiScanRepository @Inject constructor(
         )
     }
 
-    /** SSID legível; null para rede oculta (vazio ou só zeros). */
+    /** Readable SSID; null for a hidden network (empty or all zeros). */
     @Suppress("DEPRECATION")
     private fun ScanResult.ssidText(): String? {
         val text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -112,7 +112,7 @@ class AndroidWifiScanRepository @Inject constructor(
         else it.isProviderEnabled(LocationManager.GPS_PROVIDER) || it.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     } == true
 
-    /** Emite logo ao assinar e a cada broadcast das [actions]. */
+    /** Emits right on subscribe and on every broadcast of [actions]. */
     private fun broadcasts(vararg actions: String): Flow<Unit> = callbackFlow {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {

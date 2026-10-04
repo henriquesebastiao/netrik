@@ -10,7 +10,7 @@ import javax.crypto.spec.GCMParameterSpec
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Cifra segredos (senhas, chaves privadas) antes de irem para o banco. */
+/** Encrypts secrets (passwords, private keys) before they go into the database. */
 interface SecretCipher {
     /** Devolve IV + texto cifrado + tag. */
     fun encrypt(plain: ByteArray): ByteArray
@@ -18,8 +18,8 @@ interface SecretCipher {
 }
 
 /**
- * AES-256-GCM com uma chave gerada e guardada no Android Keystore: ela nunca sai do aparelho
- * (nem aparece em backup), então o banco sozinho não revela os segredos.
+ * AES-256-GCM with a key generated and kept in the Android Keystore: it never leaves the device
+ * (nor shows up in backups), so the database alone doesn't reveal the secrets.
  */
 @Singleton
 class KeystoreSecretCipher @Inject constructor() : SecretCipher {
@@ -33,7 +33,7 @@ class KeystoreSecretCipher @Inject constructor() : SecretCipher {
     }
 
     override fun decrypt(sealed: ByteArray): ByteArray {
-        require(sealed.size > IV_SIZE) { "Segredo cifrado inválido" }
+        require(sealed.size > IV_SIZE) { "Invalid encrypted secret" }
         val cipher = Cipher.getInstance(TRANSFORMATION)
         cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_BITS, sealed, 0, IV_SIZE))
         return cipher.doFinal(sealed, IV_SIZE, sealed.size - IV_SIZE)

@@ -10,12 +10,12 @@ import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import kotlinx.coroutines.launch
 
-/** SnackbarHost único do app, acima da barra de navegação. */
+/** The app's single SnackbarHost, above the navigation bar. */
 val LocalSnackbarHostState = staticCompositionLocalOf { SnackbarHostState() }
 
 /**
- * Copia um valor e mostra uma Snackbar dizendo o que foi copiado, como pede o design.
- * Mantida também no Android 13+, onde o aviso do sistema não informa qual valor foi copiado.
+ * Copies a value and shows a Snackbar saying what was copied, as the design asks.
+ * Kept on Android 13+ too, where the system notice doesn't say which value was copied.
  */
 fun interface CopyAction {
     fun copy(value: String, confirmation: String)

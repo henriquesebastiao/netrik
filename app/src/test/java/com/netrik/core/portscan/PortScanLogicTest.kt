@@ -13,7 +13,7 @@ import java.util.zip.GZIPInputStream
 class PortScanLogicTest {
 
     @Test
-    fun `lista de portas com avulsas e faixas`() {
+    fun `port list with singles and ranges`() {
         val list = PortList.parse("22, 80,443,8000-8100") as PortList.Valid
         assertEquals(104, list.ports.size)
         assertEquals(3, list.singles)
@@ -23,13 +23,13 @@ class PortScanLogicTest {
     }
 
     @Test
-    fun `portas repetidas contam uma vez e saem ordenadas`() {
+    fun `repeated ports count once and come out sorted`() {
         val list = PortList.parse("443,22,22,20-23") as PortList.Valid
         assertEquals(listOf(20, 21, 22, 23, 443), list.ports)
     }
 
     @Test
-    fun `erros da lista de portas`() {
+    fun `port list errors`() {
         assertEquals(PortList.Empty, PortList.parse(" , "))
         assertEquals(PortList.Malformed("ssh"), PortList.parse("22,ssh"))
         assertEquals(PortList.Malformed("80-"), PortList.parse("80-"))
@@ -39,7 +39,7 @@ class PortScanLogicTest {
     }
 
     @Test
-    fun `rede CIDR do modo Rede`() {
+    fun `CIDR network of Network mode`() {
         assertEquals(Cidr.Result.Valid("192.168.0.0", 24), Cidr.parse("192.168.0.0/24"))
         assertEquals(Cidr.Result.Valid("10.0.0.5", 22), Cidr.parse(" 10.0.0.5/22 "))
         assertEquals(Cidr.Result.TooLarge, Cidr.parse("10.0.0.0/16"))
@@ -49,12 +49,12 @@ class PortScanLogicTest {
     }
 
     @Test
-    fun `estimativa de pior caso`() {
-        // 100 portas TCP, 128 em paralelo, 1 s de timeout: um lote.
+    fun `worst case estimate`() {
+        // 100 TCP ports, 128 in parallel, 1 s timeout: one batch.
         assertEquals(1, ScanEstimate.seconds(100, Protocol.Tcp, 1000))
-        // 254 × 1000 TCP: 1985 lotes de 1 s.
+        // 254 × 1000 TCP: 1985 batches of 1 s.
         assertEquals(1985, ScanEstimate.seconds(254_000, Protocol.Tcp, 1000))
-        // UDP com 16 em paralelo e 2 s.
+        // UDP with 16 in parallel and 2 s.
         assertEquals(14, ScanEstimate.seconds(100, Protocol.Udp, 2000))
         assertEquals(0, ScanEstimate.seconds(0, Protocol.Tcp, 1000))
     }
@@ -69,13 +69,13 @@ class PortScanLogicTest {
         assertEquals(0x1B, ntp[0].toInt())
         val snmp = UdpProbes.payloadFor(161)
         assertEquals(0x30, snmp[0].toInt())
-        assertEquals(snmp.size - 2, snmp[1].toInt()) // comprimento da mensagem ASN.1
+        assertEquals(snmp.size - 2, snmp[1].toInt()) // ASN.1 message length
         assertEquals(50, UdpProbes.payloadFor(137).size) // NBSTAT
         assertEquals(0, UdpProbes.payloadFor(9999).size)
     }
 
     @Test
-    fun `listas e nomes embarcados no APK`() {
+    fun `lists and names bundled in the APK`() {
         val dir = File("src/main/assets/ports")
         val tcp = File(dir, "top-tcp.txt").reader().use(PortCatalogFiles::parseTop)
         val udp = File(dir, "top-udp.txt").reader().use(PortCatalogFiles::parseTop)
@@ -100,7 +100,7 @@ class PortScanLogicTest {
     }
 
     @Test
-    fun `scanner de host único reporta cada porta`() = runTest {
+    fun `single host scanner reports each port`() = runTest {
         val prober = FakeProber(open = setOf("10.0.0.7" to 22), closed = setOf("10.0.0.7" to 80))
         val hostProber = ReachabilityProber(object : com.netrik.core.network.ping.PingRunner {
             override fun run(command: List<String>) = kotlinx.coroutines.flow.emptyFlow<com.netrik.core.network.ping.PingEvent>()
@@ -116,7 +116,7 @@ class PortScanLogicTest {
     }
 
     @Test
-    fun `UDP sem resposta fica aberta ou filtrada`() = runTest {
+    fun `UDP without reply stays open or filtered`() = runTest {
         val hostProber = ReachabilityProber(object : com.netrik.core.network.ping.PingRunner {
             override fun run(command: List<String>) = kotlinx.coroutines.flow.emptyFlow<com.netrik.core.network.ping.PingEvent>()
         }, StandardTestDispatcher(testScheduler))

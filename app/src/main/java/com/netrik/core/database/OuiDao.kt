@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface OuiDao {
 
-    /** O prefixo mais longo vence (MA-S > MA-M > MA-L). */
+    /** The longest prefix wins (MA-S > MA-M > MA-L). */
     @Query("SELECT * FROM oui_prefix WHERE prefix IN (:candidates) ORDER BY LENGTH(prefix) DESC LIMIT 1")
     suspend fun findBestMatch(candidates: List<String>): OuiPrefixEntity?
 
@@ -36,7 +36,7 @@ interface OuiDao {
     @Upsert
     suspend fun upsertMeta(meta: OuiMetaEntity)
 
-    /** Troca a base inteira numa transação: ou entra tudo, ou nada muda. */
+    /** Replaces the whole database in one transaction: either everything goes in or nothing changes. */
     @Transaction
     suspend fun replaceAll(prefixes: List<OuiPrefixEntity>, meta: OuiMetaEntity) {
         clearPrefixes()

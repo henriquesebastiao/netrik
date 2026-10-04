@@ -33,7 +33,7 @@ import com.netrik.core.network.CurrentNetwork.Transport
 import com.netrik.core.ui.CopyAction
 import com.netrik.core.ui.rememberCopyAction
 
-/** Card "Rede atual" do hub: tocar num valor copia; "Copiar tudo" copia o resumo. */
+/** Hub "Current network" card: tapping a value copies it; "Copy all" copies the summary. */
 @Composable
 fun NetworkCard(
     network: NetworkCardState,
@@ -261,7 +261,7 @@ private fun PublicIpTile(state: PublicIpUi, onShow: () -> Unit, copy: CopyAction
     }
 }
 
-/** Bloco de valor do card: fundo surface, cantos de 8dp, toque mínimo de 60dp. */
+/** Value block of the card: surface background, 8dp corners, 60dp minimum touch target. */
 @Composable
 private fun Tile(
     label: String,
@@ -305,7 +305,7 @@ private fun Tile(
     }
 }
 
-/** Usa o sinal de menos tipográfico, como no design (−54 dBm). */
+/** Uses the typographic minus sign, as in the design (−54 dBm). */
 private fun formatDbm(dbm: Int): String = dbm.toString().replace('-', '−')
 
 @DrawableRes

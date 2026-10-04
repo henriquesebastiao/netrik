@@ -5,7 +5,7 @@
 build/
 .kotlin/
 
-# Configuração local (caminho do SDK, chaves)
+# Local configuration (SDK path, keys)
 local.properties
 *.keystore
 *.jks
@@ -18,7 +18,7 @@ captures/
 .externalNativeBuild/
 .cxx/
 
-# Mensagem de commit da etapa em andamento (gerada para commit manual)
+# Commit message for the work in progress (written for a manual commit)
 commit-message.md
 
 # Created by https://www.toptal.com/developers/gitignore/api/kotlin

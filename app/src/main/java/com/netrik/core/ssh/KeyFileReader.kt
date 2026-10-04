@@ -10,7 +10,7 @@ import kotlinx.coroutines.withContext
 import java.io.IOException
 import javax.inject.Inject
 
-/** Lê o arquivo de chave escolhido no seletor do sistema (Storage Access Framework). */
+/** Reads the key file picked in the system file picker (Storage Access Framework). */
 class KeyFileReader @Inject constructor(
     @param:ApplicationContext private val context: Context,
     @param:IoDispatcher private val io: CoroutineDispatcher,
@@ -23,9 +23,9 @@ class KeyFileReader @Inject constructor(
 
     suspend fun read(uri: Uri): Result = withContext(io) {
         try {
-            val name = displayName(uri) ?: uri.lastPathSegment?.substringAfterLast('/') ?: "chave"
+            val name = displayName(uri) ?: uri.lastPathSegment?.substringAfterLast('/') ?: "key"
             val bytes = context.contentResolver.openInputStream(uri)?.use { input ->
-                // Lê um byte além do limite só para saber se passou dele.
+                // Reads one byte past the limit just to know whether it went over.
                 input.readNBytesCompat(PrivateKeys.MAX_SIZE + 1)
             } ?: return@withContext Result.Unreadable
             if (bytes.size > PrivateKeys.MAX_SIZE) Result.TooLarge else Result.Read(name, bytes)

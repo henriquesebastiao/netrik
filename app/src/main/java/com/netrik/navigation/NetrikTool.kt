@@ -11,10 +11,10 @@ enum class ToolGroup(@param:StringRes val title: Int) {
 }
 
 /**
- * Catálogo de ferramentas do hub, na ordem em que aparecem. Para adicionar uma ferramenta,
- * inclua uma entrada aqui e registre a rota dela no [NetrikNavHost].
+ * Hub tool catalog, in display order. To add a tool,
+ * add an entry here and register its route in [NetrikNavHost].
  *
- * [tab] != null: a ferramenta é uma aba da barra de navegação (atalho ↗ no hub).
+ * [tab] != null: the tool is a navigation bar tab (↗ shortcut in the hub).
  */
 enum class NetrikTool(
     @param:StringRes val title: Int,

@@ -10,7 +10,7 @@ import org.junit.Test
 class PingLogicTest {
 
     @Test
-    fun `estatísticas com perdas`() {
+    fun `statistics with losses`() {
         val samples = listOf(
             PingSample(1, 117, 12.0),
             PingSample(2, 117, 14.0),
@@ -29,7 +29,7 @@ class PingLogicTest {
     }
 
     @Test
-    fun `estatísticas sem respostas`() {
+    fun `statistics without replies`() {
         val stats = PingStats.of(listOf(PingSample(1, null, null), PingSample(2, null, null)))
         assertEquals(100, stats.lossPercent)
         assertNull(stats.minMs)
@@ -39,7 +39,7 @@ class PingLogicTest {
     }
 
     @Test
-    fun `opções válidas do ping`() {
+    fun `valid ping options`() {
         val ok = PingOptionsValidator.ping("10", "0,5", "56", "2") as Result.Ok
         assertEquals(PingOptions(10, 0.5, 56, 2), ok.value)
         val continuous = PingOptionsValidator.ping(null, "1", "0", "1") as Result.Ok
@@ -47,7 +47,7 @@ class PingLogicTest {
     }
 
     @Test
-    fun `opções inválidas apontam os campos`() {
+    fun `invalid options point to the fields`() {
         val invalid = PingOptionsValidator.ping("0", "0.1", "70000", "") as Result.Invalid
         assertEquals(setOf(OptionField.Count, OptionField.Interval, OptionField.Size, OptionField.Timeout), invalid.errors)
         val trace = PingOptionsValidator.traceroute("65", "0") as Result.Invalid
@@ -56,7 +56,7 @@ class PingLogicTest {
     }
 
     @Test
-    fun `linha de comando do ping`() {
+    fun `ping command line`() {
         assertEquals(
             listOf("/system/bin/ping", "-n", "-O", "-c", "10", "-i", "0.5", "-s", "56", "-W", "2", "8.8.8.8"),
             PingCommand.build("8.8.8.8", ipv6 = false, PingOptions(10, 0.5, 56, 2)),
@@ -72,7 +72,7 @@ class PingLogicTest {
     }
 
     @Test
-    fun `validação do alvo`() {
+    fun `target validation`() {
         listOf("8.8.8.8", "google.com", "srv-01.lan", "localhost", "2804:14d:5c83:8a10::1f3a", "::1").forEach {
             assertTrue(it, TargetValidator.isValid(it))
         }

@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Consulta do IP público, sob demanda (botão "Mostrar IP público") -->
+    <!-- Public IP lookup, on demand ("Show public IP" button) -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Dados da rede atual: endereços, gateway, DNS e tipo de conexão -->
+    <!-- Current network details: addresses, gateway, DNS and connection type -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Intensidade do sinal e frequência do Wi-Fi conectado; resultados de scan -->
+    <!-- Signal strength and frequency of the connected Wi-Fi; scan results -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <!-- Pedir scans de redes Wi-Fi (limitado pelo Android a 4 a cada 2 min) -->
+    <!-- Request Wi-Fi network scans (limited by Android to 4 every 2 min) -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <!-- O Android só entrega a lista de redes Wi-Fi (e o SSID/BSSID da rede atual) com localização precisa -->
+    <!-- Android only provides the Wi-Fi network list (and the SSID/BSSID of the current network) with precise location -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!-- Receber respostas multicast de mDNS e SSDP durante a varredura da rede local (permissão normal) -->
+    <!-- Receive mDNS and SSDP multicast replies while scanning the local network (normal permission) -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
-    <!-- Android 17+: comunicação com aparelhos da rede local (TCP/UDP para IPs da LAN, mDNS). Runtime, grupo Dispositivos próximos -->
+    <!-- Android 17+: talking to devices on the local network (TCP/UDP to LAN IPs, mDNS). Runtime, Nearby devices group -->
     <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
-    <!-- Sessões SSH abertas continuam vivas com o app em segundo plano (serviço em primeiro plano com notificação) -->
+    <!-- Open SSH sessions stay alive with the app in the background (foreground service with a notification) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-    <!-- Notificação "N sessões SSH ativas" (Android 13+) -->
+    <!-- "N active SSH sessions" notification (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
@@ -28,6 +28,7 @@
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.Netrik">
 
@@ -47,7 +48,7 @@
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Sessões SSH interativas abertas pelo usuário: o terminal remoto precisa continuar conectado com o app em segundo plano." />
+                android:value="Interactive SSH sessions opened by the user: the remote terminal must stay connected while the app is in the background." />
         </service>
     </application>
 

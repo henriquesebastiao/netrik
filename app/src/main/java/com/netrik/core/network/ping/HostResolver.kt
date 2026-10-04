@@ -12,10 +12,10 @@ import javax.inject.Inject
 data class ResolvedHost(val input: String, val address: String, val ipv6: Boolean)
 
 interface HostResolver {
-    /** Resolve um IP ou nome. Prefere IPv4 quando o nome tem os dois. Null = não resolvido. */
+    /** Resolves an IP or name. Prefers IPv4 when the name has both. Null = not resolved. */
     suspend fun resolve(target: String): ResolvedHost?
 
-    /** DNS reverso (PTR). Null quando não há nome ou ele é igual ao próprio IP. */
+    /** Reverse DNS (PTR). Null when there's no name or it equals the IP itself. */
     suspend fun reverse(address: String): String?
 }
 
@@ -44,7 +44,7 @@ class SystemHostResolver @Inject constructor(
     }
 }
 
-/** Validação local do texto do alvo: IPv4, IPv6 ou nome de host. */
+/** Local validation of the target text: IPv4, IPv6 or host name. */
 object TargetValidator {
     private val hostname = Regex("""^(?=.{1,253}$)([A-Za-z0-9_](?:[A-Za-z0-9_-]{0,61}[A-Za-z0-9_])?)(\.[A-Za-z0-9_](?:[A-Za-z0-9_-]{0,61}[A-Za-z0-9_])?)*\.?$""")
     private val ipv6 = Regex("""^[0-9A-Fa-f:.]+$""")

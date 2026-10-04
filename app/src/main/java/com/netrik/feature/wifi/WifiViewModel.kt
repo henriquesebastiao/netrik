@@ -31,13 +31,13 @@ import kotlinx.coroutines.flow.update
 import java.time.Clock
 import javax.inject.Inject
 
-/** Estado da permissão de localização, avaliado pela tela (precisa da Activity). */
+/** Location permission state, evaluated by the screen (it needs the Activity). */
 enum class LocationPermission {
-    /** Nunca pedida nesta sessão, ou negada com possibilidade de pedir de novo. */
+    /** Never asked in this session, or denied with the chance to ask again. */
     NotGranted,
-    /** Só localização aproximada: o Android não entrega a lista de redes. */
+    /** Approximate location only: Android doesn't provide the network list. */
     CoarseOnly,
-    /** Negada sem poder pedir de novo: só pelas configurações. */
+    /** Denied without being able to ask again: only through settings. */
     PermanentlyDenied,
     Granted,
 }
@@ -55,9 +55,9 @@ data class WifiUiState(
     val selectedBssid: String? = null,
     val networks: List<WifiNetwork> = emptyList(),
     val supports6Ghz: Boolean = false,
-    /** Segundos até a próxima atualização automática. */
+    /** Seconds until the next automatic refresh. */
     val secondsToRefresh: Int = 0,
-    /** O limite de scans do Android foi atingido. */
+    /** Android's scan limit was reached. */
     val throttled: Boolean = false,
 ) {
     val ready: Boolean get() = permission == LocationPermission.Granted && wifiEnabled && locationEnabled
@@ -89,13 +89,13 @@ class WifiViewModel @Inject constructor(
         (n as? CurrentNetwork.Connected)?.wifi?.bssid
     }
 
-    /** Só escuta resultados com a permissão concedida; sem ela o Android nega o acesso. */
+    /** Only listens for results with the permission granted; without it Android denies access. */
     @OptIn(ExperimentalCoroutinesApi::class)
     private val results: Flow<List<WifiNetwork>?> = local.map { it.permission == LocationPermission.Granted }
         .distinctUntilChanged()
         .flatMapLatest { granted -> if (granted) scanner.networks else flowOf(null) }
 
-    /** Relógio de 1 s que só roda enquanto a tela coleta o estado; dispara os scans automáticos. */
+    /** 1 s clock that only runs while the screen collects the state; triggers the automatic scans. */
     private val ticker = flow {
         while (true) {
             emit(clock.millis())
@@ -127,7 +127,7 @@ class WifiViewModel @Inject constructor(
 
     fun onViewChange(view: WifiView) = local.update { it.copy(view = view, selectedBssid = null) }
 
-    /** Lista: as bandas são filtros independentes. Espectro: uma banda por vez. */
+    /** List: the bands are independent filters. Spectrum: one band at a time. */
     fun onBandClick(band: WifiBand) = local.update { s ->
         if (s.view == WifiView.Spectrum) {
             s.copy(spectrumBand = band, selectedBssid = null)
@@ -143,7 +143,7 @@ class WifiViewModel @Inject constructor(
 
     fun onSelectNetwork(bssid: String?) = local.update { it.copy(selectedBssid = bssid) }
 
-    /** Atualização manual: respeita o limite e avisa quanto falta. */
+    /** Manual refresh: honors the limit and says how long is left. */
     fun onRefresh() {
         val now = clock.millis()
         if (!uiState.value.ready) return
@@ -166,12 +166,12 @@ class WifiViewModel @Inject constructor(
         nextAutoScanAt = maxOf(now + AUTO_REFRESH_MILLIS, throttle.nextAllowedAt(now))
     }
 
-    /** O estado local não sabe se Wi-Fi e localização estão ligados; usa o último estado publicado. */
+    /** The local state doesn't know whether Wi-Fi and location are on; uses the last published state. */
     private fun WifiUiState.ready(): Boolean =
         permission == LocationPermission.Granted && uiState.value.wifiEnabled && uiState.value.locationEnabled
 
     companion object {
-        /** 4 scans a cada 2 min permitem um a cada 30 s sem bater no limite. */
+        /** 4 scans every 2 min allow one every 30 s without hitting the limit. */
         const val AUTO_REFRESH_MILLIS = 30_000L
     }
 }

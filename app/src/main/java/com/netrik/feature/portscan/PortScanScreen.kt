@@ -78,8 +78,7 @@ import com.netrik.core.ui.targetErrorText
 import java.text.NumberFormat
 import java.util.Locale
 
-private val ptBr = Locale.forLanguageTag("pt-BR")
-private fun nf(n: Long): String = NumberFormat.getIntegerInstance(ptBr).format(n)
+private fun nf(n: Long): String = NumberFormat.getIntegerInstance(Locale.getDefault()).format(n)
 private fun nf(n: Int): String = nf(n.toLong())
 
 @Composable
@@ -354,7 +353,7 @@ private fun Results(state: PortScanUiState, viewModel: PortScanViewModel) {
                 Text(stringResource(R.string.ports_no_hosts), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))
             }
         }
-        // Durante a descoberta os hosts ainda não tiveram as portas varridas: a nota seria prematura.
+        // During discovery the hosts haven't had their ports scanned yet: the note would be premature.
         if (hidden > 0 && !state.discovering) {
             item(key = "hidden") {
                 Text(pluralStringResource(R.plurals.ports_hidden_hosts, hidden, hidden), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))
@@ -558,6 +557,6 @@ private fun fraction(done: Long, total: Long): Float = if (total <= 0) 0f else (
 internal fun duration(seconds: Long): String = when {
     seconds < 60 -> "~${seconds.coerceAtLeast(1)} s"
     seconds < 3600 -> "~${(seconds + 30) / 60} min"
-    else -> "~" + String.format(ptBr, "%.1f", seconds / 3600.0) + " h"
+    else -> "~" + String.format(Locale.getDefault(), "%.1f", seconds / 3600.0) + " h"
 }
 

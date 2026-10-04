@@ -19,13 +19,13 @@ import javax.inject.Inject
 sealed interface ScanEvent {
     data class Progress(val scanned: Int, val total: Int) : ScanEvent
     data class Found(val update: DeviceUpdate) : ScanEvent
-    /** A varredura dos IPs terminou; as fontes de nomes ainda podem completar dados por alguns segundos. */
+    /** The IP sweep ended; the name sources may still fill in data for a few seconds. */
     data object SweepDone : ScanEvent
 }
 
 /**
- * Descobre dispositivos da sub-rede: sondagem concorrente (ping + TCP) de cada IP e, em paralelo,
- * mDNS e SSDP. Para cada host ativo busca DNS reverso e NetBIOS. Cancelar a coleta para tudo.
+ * Discovers devices on the subnet: concurrent probing (ping + TCP) of each IP and, in parallel,
+ * mDNS and SSDP. For each active host it looks up reverse DNS and NetBIOS. Cancelling the collection stops everything.
  */
 class LanScanner @Inject constructor(
     @param:ApplicationContext private val context: Context,
@@ -38,7 +38,7 @@ class LanScanner @Inject constructor(
 ) {
 
     fun scan(range: ScanRange): Flow<ScanEvent> = channelFlow {
-        // Sem o MulticastLock o Wi-Fi descarta respostas multicast (mDNS/SSDP) para economizar bateria.
+        // Without the MulticastLock, Wi-Fi drops multicast replies (mDNS/SSDP) to save battery.
         val lock = context.getSystemService(WifiManager::class.java)
             ?.createMulticastLock("netrik-lan")
             ?.apply { setReferenceCounted(false); acquire() }
@@ -55,7 +55,7 @@ class LanScanner @Inject constructor(
                 }
             }
 
-            /** Primeira vez que um IP aparece (por qualquer fonte): busca nome por DNS e NetBIOS. */
+            /** First time an IP shows up (from any source): looks up its name via DNS and NetBIOS. */
             fun lookupNames(ip: String) {
                 if (!seen.add(ip)) return
                 launch { resolver.reverse(ip)?.let { send(ScanEvent.Found(DeviceUpdate(ip, hostname = Sourced(it, InfoSource.Dns)))) } }
@@ -96,7 +96,7 @@ class LanScanner @Inject constructor(
                 }
             }
             send(ScanEvent.SweepDone)
-            // Dá tempo às respostas de mDNS, NetBIOS e UPnP que ainda estão chegando.
+            // Gives time to the mDNS, NetBIOS and UPnP replies still arriving.
             delay(LINGER_MILLIS)
             discovery.cancel()
         } finally {
@@ -105,7 +105,7 @@ class LanScanner @Inject constructor(
     }
 
     companion object {
-        /** Cada sonda abre 1 processo de ping e 8 sockets TCP; 32 hosts por vez mantêm isso leve. */
+        /** Each probe opens 1 ping process and 8 TCP sockets; 32 hosts at a time keeps it light. */
         const val MAX_CONCURRENT_PROBES = 32
         const val LINGER_MILLIS = 3_000L
     }

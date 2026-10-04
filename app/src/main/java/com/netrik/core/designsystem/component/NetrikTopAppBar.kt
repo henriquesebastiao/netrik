@@ -15,7 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.netrik.R
 
-/** Top App Bar de 64dp com título 22/28; seta de voltar quando [onBack] é informado. */
+/** 64dp Top App Bar with a 22/28 title; back arrow when [onBack] is given. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NetrikTopAppBar(

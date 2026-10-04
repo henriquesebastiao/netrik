@@ -4,14 +4,14 @@ import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.KeyPair
 
-/** Configuração global do JSch para o Android. */
+/** Global JSch configuration for Android. */
 object JschSetup {
     @Volatile private var installed = false
 
     /**
-     * O JSch escolhe entre as classes JCE e BouncyCastle conforme a versão do Java; no Android
-     * a escolha cai nas JCE, que pedem algoritmos (Ed25519, X25519, ML-KEM) que o provedor do
-     * sistema não oferece em todas as versões suportadas. Forçamos as implementações BouncyCastle.
+     * JSch picks between the JCE and BouncyCastle classes depending on the Java version; on Android
+     * it lands on JCE, which needs algorithms (Ed25519, X25519, ML-KEM) the system provider
+     * doesn't offer on every supported version. We force the BouncyCastle implementations.
      */
     fun install() {
         if (installed) return
@@ -29,24 +29,24 @@ object JschSetup {
     }
 }
 
-/** Resultado da leitura de um arquivo de chave privada. */
+/** Result of reading a private key file. */
 sealed interface KeyInspection {
     /** [summary]: "ED25519", "RSA 4096", "ECDSA P-256". */
     data class Valid(val summary: String, val encrypted: Boolean) : KeyInspection
-    /** A chave é cifrada e a senha informada não a abre. */
+    /** The key is encrypted and the given passphrase doesn't open it. */
     data object WrongPassphrase : KeyInspection
-    /** Não é uma chave privada que o app saiba ler (ou é só a chave pública). */
+    /** Not a private key the app can read (or only the public key). */
     data object Invalid : KeyInspection
     data object TooLarge : KeyInspection
 }
 
 object PrivateKeys {
-    /** Chaves privadas reais têm poucos KB; acima disso é outro tipo de arquivo. */
+    /** Real private keys are a few KB; above this it's some other kind of file. */
     const val MAX_SIZE = 64 * 1024
 
     /**
-     * Lê a chave (OpenSSH, PEM/PKCS#8 ou PuTTY) sem guardar nada. Com [passphrase], confere se ela
-     * abre a chave cifrada; sem ela, só identifica o tipo.
+     * Reads the key (OpenSSH, PEM/PKCS#8 or PuTTY) without storing anything. With [passphrase], checks that
+     * it opens the encrypted key; without it, only identifies the type.
      */
     fun inspect(bytes: ByteArray, passphrase: ByteArray? = null): KeyInspection {
         if (bytes.size > MAX_SIZE) return KeyInspection.TooLarge
@@ -79,11 +79,11 @@ object PrivateKeys {
         KeyPair.RSA -> pair.keySize.takeIf { it > 0 }?.let { "RSA $it" } ?: "RSA"
         KeyPair.ECDSA -> pair.keySize.takeIf { it > 0 }?.let { "ECDSA P-$it" } ?: "ECDSA"
         KeyPair.DSA -> "DSA"
-        // Chave PuTTY/OpenSSH cifrada: o tipo só aparece depois de decifrar.
-        else -> pair.keyTypeString?.let(HostKeys::displayType) ?: "Chave"
+        // Encrypted PuTTY/OpenSSH key: the type only shows up after decrypting.
+        else -> pair.keyTypeString?.let(HostKeys::displayType) ?: "Key"
     }
 
-    /** "411 bytes", "3,2 KB". */
-    fun formatSize(bytes: Int): String =
-        if (bytes < 1024) "$bytes bytes" else String.format(java.util.Locale.forLanguageTag("pt-BR"), "%.1f KB", bytes / 1024.0)
+    /** "411 bytes", "3.2 KB" ("3,2 KB" in Portuguese). */
+    fun formatSize(bytes: Int, locale: java.util.Locale = java.util.Locale.getDefault()): String =
+        if (bytes < 1024) "$bytes bytes" else String.format(locale, "%.1f KB", bytes / 1024.0)
 }

@@ -41,7 +41,7 @@ enum class PortPreset(val count: Int) { Top100(100), Top1000(1000), All(65_535),
 
 data class HostResult(
     val ip: String,
-    /** Portas com resposta útil: abertas, filtradas, aberta|filtrada. */
+    /** Ports with a useful answer: open, filtered, open|filtered. */
     val ports: Map<Int, PortState> = emptyMap(),
     val closed: Int = 0,
 ) {
@@ -62,7 +62,7 @@ data class PortScanUiState(
     val mode: ScanMode = ScanMode.Host,
     val hostText: String = "",
     val cidrText: String = "",
-    /** CIDR da sub-rede atual (sugestão do modo Rede). */
+    /** CIDR of the current subnet (Network mode suggestion). */
     val currentCidr: String? = null,
     val protocol: Protocol = Protocol.Tcp,
     val preset: PortPreset = PortPreset.Top100,
@@ -71,7 +71,7 @@ data class PortScanUiState(
     val targetError: TargetError? = null,
     val recents: List<String> = emptyList(),
     val connected: Boolean = true,
-    // Execução
+    // Run
     val phase: RunPhase = RunPhase.Idle,
     val failure: RunFailure? = null,
     val spec: ScanSpec? = null,
@@ -86,7 +86,7 @@ data class PortScanUiState(
     val elapsedMillis: Long = 0,
     val hosts: List<HostResult> = emptyList(),
     val serviceNames: Map<Int, String> = emptyMap(),
-    /** DNS reverso dos hosts ativos, preenchido à parte da contagem de portas. */
+    /** Reverse DNS of the active hosts, filled in apart from the port count. */
     val hostnames: Map<String, String> = emptyMap(),
     val onlyOpen: Boolean = true,
     val expanded: Set<String> = emptySet(),
@@ -96,7 +96,7 @@ data class PortScanUiState(
     val cidr: Cidr.Result get() = Cidr.parse(cidrText)
     val timeoutMs: Int? get() = timeoutText.toIntOrNull()?.takeIf { it in 100..10_000 }
 
-    /** Quantidade de portas da configuração atual (0 se inválida). */
+    /** Number of ports in the current configuration (0 if invalid). */
     val portCount: Int get() = when (preset) {
         PortPreset.Custom -> (portList as? PortList.Valid)?.ports?.size ?: 0
         else -> preset.count
@@ -134,7 +134,7 @@ class PortScanViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), state.value)
 
     init {
-        // Modo Rede começa com a sub-rede atual preenchida.
+        // Network mode starts with the current subnet filled in.
         viewModelScope.launch {
             val cidr = network.first().second
             if (cidr != null) state.update { if (it.cidrText.isEmpty()) it.copy(cidrText = cidr) else it }
@@ -155,7 +155,7 @@ class PortScanViewModel @Inject constructor(
         viewModelScope.launch { history.clear(TOOL) }
     }
 
-    /** "Voltar" e "Novo scan" na tela de resultados levam de volta à configuração. */
+    /** "Back" and "New scan" on the results screen go back to the configuration. */
     fun onBackToConfig() {
         job?.cancel()
         state.update { it.copy(inResults = false, phase = if (it.running) RunPhase.Stopped else it.phase) }
@@ -230,7 +230,7 @@ class PortScanViewModel @Inject constructor(
         }
     }
 
-    /** Junta os eventos em memória e publica no máximo a cada 250 ms. */
+    /** Gathers the events in memory and publishes at most every 250 ms. */
     private suspend fun run(hosts: List<String>, ports: List<Int>, protocol: Protocol, timeoutMs: Int, discoverFirst: Boolean) {
         val results = LinkedHashMap<String, HostResult>()
         var progress: PortScanEvent.Progress? = null

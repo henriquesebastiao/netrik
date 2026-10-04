@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Tema da janela; as cores da interface vêm do NetrikTheme (Compose). -->
+    <!-- Window theme; the UI colors come from NetrikTheme (Compose). -->
     <style name="Theme.Netrik" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/window_background</item>
     </style>

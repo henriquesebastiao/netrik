@@ -7,11 +7,11 @@ import com.netrik.core.oui.OuiMatch
 data class OuiUiState(
     val input: String = "",
     val parsed: MacInput = MacInput.Empty,
-    /** Mostra o erro de "poucos dígitos" só depois de o usuário tentar consultar. */
+    /** Shows the "too few digits" error only after the user tries to look up. */
     val showShortError: Boolean = false,
     val result: OuiResult? = null,
     val history: List<HistoryItem> = emptyList(),
-    /** Null enquanto a base offline é preparada no primeiro uso. */
+    /** Null while the offline database is prepared on first use. */
     val db: OuiDbStatus? = null,
     val now: Long = 0,
 )
@@ -22,8 +22,8 @@ sealed interface OuiResult {
     data class Loading(override val hex: String) : OuiResult
 
     /**
-     * [match] pode existir mesmo com [locallyAdministered], mas na prática o IEEE não atribui
-     * prefixos com o bit U/L ligado.
+     * [match] may exist even with [locallyAdministered], but in practice the IEEE doesn't assign
+     * prefixes with the U/L bit set.
      */
     data class Done(
         override val hex: String,

@@ -1,22 +1,22 @@
 package com.netrik.core.network
 
-/** Retrato da rede padrão do aparelho, como o Android a expõe. Campos nulos = indisponível. */
+/** Snapshot of the device's default network, as Android exposes it. Null fields = unavailable. */
 sealed interface CurrentNetwork {
 
     data object Disconnected : CurrentNetwork
 
     data class Connected(
         val transport: Transport,
-        /** A rede tem internet validada pelo Android (NET_CAPABILITY_VALIDATED). */
+        /** The network has internet validated by Android (NET_CAPABILITY_VALIDATED). */
         val validated: Boolean,
         val ipv4: Ipv4Address?,
         val gateway: String?,
         val dnsServers: List<String>,
         val ipv6: String?,
         val wifi: WifiDetails?,
-        /** Nome da operadora, só para dados móveis. */
+        /** Carrier name, mobile data only. */
         val carrierName: String?,
-        /** Interface do sistema (ex.: wlan0). */
+        /** System interface (e.g. wlan0). */
         val interfaceName: String? = null,
     ) : CurrentNetwork
 
@@ -26,10 +26,10 @@ sealed interface CurrentNetwork {
 data class Ipv4Address(val address: String, val prefixLength: Int)
 
 data class WifiDetails(
-    /** Null quando o Android oculta o SSID (sem permissão de localização). */
+    /** Null when Android hides the SSID (no location permission). */
     val ssid: String?,
     val rssiDbm: Int?,
     val frequencyMhz: Int?,
-    /** Null quando oculto pelo Android (sem permissão de localização). */
+    /** Null when hidden by Android (no location permission). */
     val bssid: String? = null,
 )

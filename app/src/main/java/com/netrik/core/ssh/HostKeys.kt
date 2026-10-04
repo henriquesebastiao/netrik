@@ -3,9 +3,9 @@ package com.netrik.core.ssh
 import java.security.MessageDigest
 import java.util.Base64
 
-/** Chave pública apresentada por um servidor SSH (formato de transmissão do RFC 4253). */
+/** Public key presented by an SSH server (RFC 4253 wire format). */
 data class HostKey(val type: String, val blob: ByteArray) {
-    /** Impressão digital no formato do OpenSSH: "SHA256:" + Base64 sem "=". */
+    /** Fingerprint in OpenSSH format: "SHA256:" + Base64 without "=". */
     val fingerprint: String get() = HostKeys.fingerprint(blob)
     val base64: String get() = Base64.getEncoder().encodeToString(blob)
 
@@ -20,7 +20,7 @@ object HostKeys {
     fun fingerprint(blob: ByteArray): String =
         "SHA256:" + Base64.getEncoder().withoutPadding().encodeToString(MessageDigest.getInstance("SHA-256").digest(blob))
 
-    /** O blob começa com o nome do algoritmo como string SSH (uint32 big-endian + bytes). */
+    /** The blob starts with the algorithm name as an SSH string (big-endian uint32 + bytes). */
     fun typeOf(blob: ByteArray): String? {
         if (blob.size < 4) return null
         val len = ((blob[0].toInt() and 0xFF) shl 24) or ((blob[1].toInt() and 0xFF) shl 16) or
@@ -29,7 +29,7 @@ object HostKeys {
         return String(blob, 4, len, Charsets.US_ASCII)
     }
 
-    /** Nome curto para a interface: "ssh-ed25519" → "ED25519", "ecdsa-sha2-nistp256" → "ECDSA P-256". */
+    /** Short name for the UI: "ssh-ed25519" → "ED25519", "ecdsa-sha2-nistp256" → "ECDSA P-256". */
     fun displayType(type: String): String = when {
         type == "ssh-ed25519" -> "ED25519"
         type == "ssh-ed448" -> "ED448"
@@ -39,13 +39,13 @@ object HostKeys {
         else -> type.uppercase()
     }
 
-    /** Compara a chave apresentada com a salva para o mesmo host:porta. */
+    /** Compares the presented key with the one saved for the same host:port. */
     fun status(stored: HostKey?, presented: HostKey): HostKeyStatus = when {
         stored == null -> HostKeyStatus.Unknown
         stored == presented -> HostKeyStatus.Known
         else -> HostKeyStatus.Changed
     }
 
-    /** Identificador do host no known_hosts: "host" na porta 22, "[host]:porta" nas demais (como o OpenSSH). */
+    /** Host id in known_hosts: "host" on port 22, "[host]:port" otherwise (like OpenSSH). */
     fun hostId(host: String, port: Int): String = if (port == 22) host.lowercase() else "[${host.lowercase()}]:$port"
 }

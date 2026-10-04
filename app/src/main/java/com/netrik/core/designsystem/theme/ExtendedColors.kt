@@ -5,8 +5,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 /**
- * Cores semânticas de status que o Material 3 não define (sucesso e aviso).
- * Erro usa o `colorScheme.error` padrão. Status é sempre cor + ícone + rótulo.
+ * Semantic status colors that Material 3 doesn't define (success and warning).
+ * Error uses the standard `colorScheme.error`. Status is always color + icon + label.
  */
 @Immutable
 data class ExtendedColors(

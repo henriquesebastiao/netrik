@@ -2,6 +2,7 @@ package com.netrik.core.designsystem.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -10,6 +11,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColorScheme = lightColorScheme(
@@ -91,16 +94,17 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 /**
- * Tema do Netrik: cor dinâmica no Android 12+ e o esquema do seed #136B79 como fallback.
- * O tema segue o sistema (o botão de tema do protótipo existe só no protótipo).
+ * Netrik theme: dynamic color (wallpaper) on Android 12+ or the scheme generated from the #136B79 seed.
+ * Light/dark, dynamic color and pure black (AMOLED) come from the Settings screen.
  */
 @Composable
 fun NetrikTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
+    amoled: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = when {
+    val baseScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
@@ -108,6 +112,7 @@ fun NetrikTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+    val colorScheme = if (darkTheme && amoled) baseScheme.toPureBlack() else baseScheme
     val extendedColors = if (darkTheme) DarkExtendedColors else LightExtendedColors
 
     CompositionLocalProvider(
@@ -122,7 +127,22 @@ fun NetrikTheme(
     }
 }
 
-/** Acesso aos tokens que o MaterialTheme não cobre. */
+/**
+ * Pure black variant of a dark scheme: the background becomes #000000 and the surface containers
+ * get darker while keeping their tint, so cards and bars still stand out.
+ */
+private fun ColorScheme.toPureBlack(): ColorScheme = copy(
+    background = Color.Black,
+    surface = Color.Black,
+    surfaceDim = Color.Black,
+    surfaceContainerLowest = Color.Black,
+    surfaceContainerLow = lerp(surfaceContainerLow, Color.Black, 0.6f),
+    surfaceContainer = lerp(surfaceContainer, Color.Black, 0.5f),
+    surfaceContainerHigh = lerp(surfaceContainerHigh, Color.Black, 0.4f),
+    surfaceContainerHighest = lerp(surfaceContainerHighest, Color.Black, 0.3f),
+)
+
+/** Access to the tokens MaterialTheme doesn't cover. */
 object NetrikTheme {
     val extendedColors: ExtendedColors
         @Composable @ReadOnlyComposable get() = LocalExtendedColors.current

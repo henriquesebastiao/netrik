@@ -24,7 +24,7 @@ class HubViewModel @Inject constructor(
     wifiScan: WifiScanRepository,
 ) : ViewModel() {
 
-    /** Consulta do IP público, presa à rede em que foi feita. */
+    /** Public IP lookup, tied to the network it was made on. */
     private sealed interface PublicIpQuery {
         val networkKey: String
         data class Loading(override val networkKey: String) : PublicIpQuery
@@ -35,7 +35,7 @@ class HubViewModel @Inject constructor(
     private val publicIpQuery = MutableStateFlow<PublicIpQuery?>(null)
     private var publicIpJob: Job? = null
 
-    /** Largura de canal por BSSID, do último scan Wi-Fi (vazio sem a permissão de localização). */
+    /** Channel width per BSSID, from the last Wi-Fi scan (empty without the location permission). */
     private val channelWidths = wifiScan.networks
         .map { list -> list.associate { it.bssid to it.widthMhz } }
         .onStart { emit(emptyMap()) }
@@ -44,7 +44,7 @@ class HubViewModel @Inject constructor(
         combine(networkInfoRepository.currentNetwork, channelWidths) { network, widths -> network.toCardState(widths) },
         publicIpQuery,
     ) { card, query ->
-        // Se a rede mudou depois da consulta, o IP público antigo não vale mais.
+        // If the network changed after the lookup, the old public IP is no longer valid.
         val key = (card as? NetworkCardState.Connected)?.networkKey
         val publicIp = when {
             query == null || query.networkKey != key -> PublicIpUi.Hidden
@@ -55,7 +55,7 @@ class HubViewModel @Inject constructor(
         HubUiState(network = card, publicIp = publicIp)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HubUiState())
 
-    /** Só por ação explícita do usuário: a consulta revela o IP a um serviço externo. */
+    /** Only on an explicit user action: the lookup reveals the IP to an external service. */
     fun onShowPublicIp() {
         val card = uiState.value.network as? NetworkCardState.Connected ?: return
         val key = card.networkKey

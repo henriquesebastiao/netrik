@@ -30,7 +30,7 @@ class MacAddressesTest {
     }
 
     @Test
-    fun `entradas inválidas`() {
+    fun `invalid inputs`() {
         assertEquals(MacInput.Empty, MacAddresses.parse("   "))
         assertEquals(MacInput.InvalidChar("3C22", 'G'), MacAddresses.parse("3C:22:G"))
         assertEquals(MacInput.TooLong("3C22FB9A107E"), MacAddresses.parse("3C:22:FB:9A:10:7E:01"))
@@ -38,15 +38,15 @@ class MacAddressesTest {
     }
 
     @Test
-    fun `formatação por octetos`() {
+    fun `formatting by octets`() {
         assertEquals("3C:22:FB:9A:10:7E", MacAddresses.format("3C22FB9A107E"))
         assertEquals("C8:5C:E2:7", MacAddresses.format("C85CE27"))
         assertEquals("", MacAddresses.format(""))
     }
 
     @Test
-    fun `bit de administração local (MAC aleatório)`() {
-        // 2º dígito 2, 6, A ou E
+    fun `locally administered bit (random MAC)`() {
+        // 2nd digit 2, 6, A or E
         listOf("DAA1196E035C", "02420000AC11", "F60000", "AE0000").forEach {
             assertTrue(it, MacAddresses.isLocallyAdministered(it))
         }
@@ -56,7 +56,7 @@ class MacAddressesTest {
     }
 
     @Test
-    fun `bit de multicast`() {
+    fun `multicast bit`() {
         assertTrue(MacAddresses.isMulticast("01005E000001"))
         assertTrue(MacAddresses.isMulticast("333300000001"))
         assertFalse(MacAddresses.isMulticast("3C22FB9A107E"))

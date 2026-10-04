@@ -8,10 +8,10 @@ import kotlinx.serialization.Serializable
 @Serializable data object SshRoute
 
 /**
- * Ferramenta sem aba própria, aberta por cima da aba de origem. [origin] mantém essa aba
- * destacada na barra; [target] leva o alvo (IP/host) quando aberta a partir de outra tela.
+ * Tool without its own tab, opened on top of the origin tab. [origin] keeps that tab
+ * highlighted in the bar; [target] carries the target (IP/host) when opened from another screen.
  *
- * Ferramentas ainda sem tela usam esta rota com tela provisória; cada etapa troca a sua por uma rota dedicada.
+ * Tools without a screen yet use this route with a placeholder screen; each one gets a dedicated route once built.
  */
 @Serializable
 data class ToolRoute(
@@ -20,14 +20,14 @@ data class ToolRoute(
     val target: String? = null,
 )
 
-/** Consulta MAC/OUI; [mac] pré-preenche o campo quando aberta a partir de outra tela. */
+/** MAC/OUI lookup; [mac] prefills the field when opened from another screen. */
 @Serializable
 data class OuiRoute(
     val origin: TopLevelDestination,
     val mac: String? = null,
 )
 
-/** Ping; [target] pré-preenche o alvo (ex.: ação rápida dos detalhes de um dispositivo). */
+/** Ping; [target] prefills the target (e.g. quick action from a device's details). */
 @Serializable
 data class PingRoute(
     val origin: TopLevelDestination,
@@ -40,11 +40,11 @@ data class TracerouteRoute(
     val target: String? = null,
 )
 
-/** Detalhes de um dispositivo encontrado na varredura (dentro da aba Dispositivos). */
+/** Details of a device found by the scan (inside the Devices tab). */
 @Serializable
 data class DeviceDetailRoute(val ip: String)
 
-/** Port Scanner; [target] pré-preenche o host (ex.: ação rápida dos detalhes de um dispositivo). */
+/** Port Scanner; [target] prefills the host (e.g. quick action from a device's details). */
 @Serializable
 data class PortScanRoute(
     val origin: TopLevelDestination,
@@ -52,8 +52,8 @@ data class PortScanRoute(
 )
 
 /**
- * Formulário SSH em tela cheia (sem a barra de navegação), dentro da aba SSH: [hostId] edita um
- * host salvo; [target] pré-preenche o host de uma conexão nova (ex.: ação rápida de um dispositivo).
+ * Full-screen SSH form (without the navigation bar), inside the SSH tab: [hostId] edits a
+ * saved host; [target] prefills the host of a new connection (e.g. quick action from a device).
  */
 @Serializable
 data class SshFormRoute(
@@ -62,5 +62,8 @@ data class SshFormRoute(
     val passwordRejected: Boolean = false,
 )
 
-/** Terminal SSH em tela cheia, com as abas das sessões abertas (dentro da aba SSH). */
+/** Full-screen SSH terminal, with the tabs of the open sessions (inside the SSH tab). */
 @Serializable data object SshTerminalRoute
+
+/** Settings screen, opened from the Tools tab top bar. */
+@Serializable data object SettingsRoute

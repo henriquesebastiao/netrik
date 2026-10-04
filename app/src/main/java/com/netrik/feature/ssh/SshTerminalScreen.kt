@@ -57,6 +57,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
@@ -85,7 +86,7 @@ import com.netrik.core.ui.rememberCopyAction
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 
-/** Cores fixas do terminal no design (escuras nos dois temas). */
+/** Fixed terminal colors from the design (dark in both themes). */
 private object TermColors {
     val Bg = Color(0xFF0A1112)
     val Bar = Color(0xFF131B1C)
@@ -100,10 +101,10 @@ private object TermColors {
     val ChipOn = Color(0xFF264344)
 }
 
-/** Abaixo desta altura de tela (dp), com o teclado aberto, o terminal esconde barra e abas. */
+/** Below this screen height (dp), with the keyboard open, the terminal hides the bar and tabs. */
 private const val COMPACT_HEIGHT_DP = 480
 
-/** Pedido de notificação feito uma vez por execução do app (a notificação do serviço de sessões). */
+/** Notification permission request made once per app run (the notification of the sessions service). */
 private var notificationPermissionAsked = false
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -115,11 +116,12 @@ fun SshTerminalScreen(viewModel: SshViewModel, onBack: () -> Unit) {
     val active = terminals.firstOrNull { it.id == activeId } ?: terminals.firstOrNull()
     val snackbar = LocalSnackbarHostState.current
     val context = LocalContext.current
+    val resources = LocalResources.current
     val back by rememberUpdatedState(onBack)
     BackHandler(onBack = onBack)
 
     LaunchedEffect(viewModel) {
-        // Para de ouvir ao sair: o aviso seguinte ("Desconectado de…") fica para a lista de hosts.
+        // Stops listening on exit: the next notice ("Disconnected from…") is for the host list.
         viewModel.events.takeWhile { it != SshEvent.CloseTerminal }.collect { event ->
             if (event is SshEvent.Message) launch { snackbar.showSnackbar(sshMessageText(context, event.text)) }
         }
@@ -144,7 +146,7 @@ fun SshTerminalScreen(viewModel: SshViewModel, onBack: () -> Unit) {
             .navigationBarsPadding()
             .imePadding(),
     ) {
-        // Celular deitado com teclado aberto: sobra pouca altura, então barra e abas saem até o teclado fechar.
+        // Phone in landscape with the keyboard open: little height left, so the bar and tabs go away until the keyboard closes.
         val compact = WindowInsets.isImeVisible && LocalConfiguration.current.screenHeightDp < COMPACT_HEIGHT_DP
         Column(modifier = Modifier.background(TermColors.Bar).statusBarsPadding()) {
             if (!compact) {
@@ -166,7 +168,7 @@ fun SshTerminalScreen(viewModel: SshViewModel, onBack: () -> Unit) {
                 },
                 modifier = Modifier
                     .fillMaxSize()
-                    .semantics { contentDescription = context.getString(R.string.ssh_term_screen, active?.name.orEmpty()) },
+                    .semantics { contentDescription = resources.getString(R.string.ssh_term_screen, active?.name.orEmpty()) },
             )
             if (active != null) {
                 val status by active.status.collectAsStateWithLifecycle()
@@ -184,7 +186,7 @@ fun SshTerminalScreen(viewModel: SshViewModel, onBack: () -> Unit) {
         }
     }
 
-    // Redesenha a cada saída do servidor e abre o teclado ao entrar numa sessão.
+    // Redraws on every server output and opens the keyboard when entering a session.
     LaunchedEffect(active, canvas) {
         val view = canvas ?: return@LaunchedEffect
         val terminal = active ?: return@LaunchedEffect
@@ -394,7 +396,7 @@ private fun ConnectingLine() {
 }
 
 /**
- * Barra de teclas extras (6 colunas × 2 linhas, ou uma linha só no modo compacto); Ctrl e Alt ficam
+ * Extra keys bar (6 columns × 2 rows, or a single row in compact mode); Ctrl and Alt stay
  * destacados enquanto presos.
  */
 @Composable
@@ -442,7 +444,7 @@ private fun arrowIcon(key: ExtraKey): Pair<Int, Int>? = when (key) {
     else -> null
 }
 
-/** Ícones claros na barra de status enquanto o terminal (escuro) está na tela. */
+/** Light status bar icons while the (dark) terminal is on screen. */
 @Composable
 private fun DarkStatusBar() {
     val view = LocalView.current
@@ -455,7 +457,7 @@ private fun DarkStatusBar() {
     }
 }
 
-/** Android 13+: pede a permissão da notificação "sessões SSH ativas" uma vez por execução. */
+/** Android 13+: asks for the "active SSH sessions" notification permission once per run. */
 @Composable
 private fun RequestNotificationPermissionOnce() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
@@ -470,7 +472,7 @@ private fun RequestNotificationPermissionOnce() {
     }
 }
 
-/** O teclado foi aberto pela View do terminal (fora do Compose): fecha pelo InputMethodManager. */
+/** The keyboard was opened by the terminal View (outside Compose): closes it via InputMethodManager. */
 private fun canvasHideKeyboard(context: android.content.Context) {
     val window = (context as? Activity)?.window ?: return
     context.getSystemService(android.view.inputmethod.InputMethodManager::class.java)

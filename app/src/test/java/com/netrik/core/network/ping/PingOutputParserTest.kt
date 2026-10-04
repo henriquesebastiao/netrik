@@ -4,11 +4,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
-/** Linhas reais do /system/bin/ping (iputils) do Android 16/17, capturadas no emulador e de documentação do iputils. */
+/** Real lines from Android 16/17 /system/bin/ping (iputils), captured on the emulator and from the iputils docs. */
 class PingOutputParserTest {
 
     @Test
-    fun `cabeçalho com nome e IP resolvido`() {
+    fun `header with name and resolved IP`() {
         assertEquals(
             PingEvent.Header("google.com", "172.217.29.206", 56),
             PingOutputParser.parse("PING google.com (172.217.29.206) 56(84) bytes of data."),
@@ -33,12 +33,12 @@ class PingOutputParserTest {
     }
 
     @Test
-    fun `pacote sem resposta (opção -O)`() {
+    fun `packet without reply (-O option)`() {
         assertEquals(PingEvent.NoAnswer(3), PingOutputParser.parse("no answer yet for icmp_seq=3"))
     }
 
     @Test
-    fun `TTL excedido e destino inalcançável`() {
+    fun `TTL exceeded and destination unreachable`() {
         assertEquals(
             PingEvent.TtlExceeded(seq = 1, from = "192.168.0.1"),
             PingOutputParser.parse("From 192.168.0.1 icmp_seq=1 Time to live exceeded"),
@@ -66,14 +66,14 @@ class PingOutputParserTest {
     }
 
     @Test
-    fun `erros do ping`() {
-        assertEquals(PingEvent.UnknownHost, PingOutputParser.parse("ping: unknown host nao-existe.invalid"))
+    fun `ping errors`() {
+        assertEquals(PingEvent.UnknownHost, PingOutputParser.parse("ping: unknown host does-not-exist.invalid"))
         assertEquals(PingEvent.Failure("Network is unreachable"), PingOutputParser.parse("connect: Network is unreachable"))
         assertEquals(PingEvent.Failure("sendmsg: Operation not permitted"), PingOutputParser.parse("ping: sendmsg: Operation not permitted"))
     }
 
     @Test
-    fun `linhas irrelevantes são ignoradas`() {
+    fun `irrelevant lines are ignored`() {
         assertNull(PingOutputParser.parse(""))
         assertNull(PingOutputParser.parse("--- 8.8.8.8 ping statistics ---"))
         assertNull(PingOutputParser.parse("rtt min/avg/max/mdev = 130.598/328.493/509.384/155.105 ms, pipe 2"))

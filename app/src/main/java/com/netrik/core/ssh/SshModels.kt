@@ -10,7 +10,7 @@ enum class SshAuth(val storedName: String) {
     }
 }
 
-/** Host salvo, sem os segredos (eles só são decifrados na hora de conectar). */
+/** Saved host, without the secrets (they are only decrypted when connecting). */
 data class SshHost(
     val id: Long,
     val name: String,
@@ -22,19 +22,19 @@ data class SshHost(
     val keyName: String?,
     val keyInfo: String?,
 ) {
-    /** "user@host:porta", como na lista do design. */
+    /** "user@host:port", as in the design list. */
     val address: String get() = "$username@$host:$port"
 }
 
 data class SshGroup(val id: Long, val name: String, val expanded: Boolean)
 
-/** Arquivo de chave privada escolhido no formulário. */
+/** Private key file picked in the form. */
 class PrivateKeyFile(val name: String, val bytes: ByteArray, val summary: String, val encrypted: Boolean) {
     /** "ED25519 · 411 bytes". */
     val info: String get() = "$summary · ${PrivateKeys.formatSize(bytes.size)}"
 }
 
-/** Dados de uma conexão, com os segredos em claro só durante a tentativa. */
+/** Connection details, with the secrets in plain text only during the attempt. */
 class SshTarget(
     val host: String,
     val port: Int,
@@ -46,7 +46,7 @@ class SshTarget(
 ) {
     val hostId: String get() = HostKeys.hostId(host, port)
 
-    /** Apaga os segredos da memória depois do uso. */
+    /** Wipes the secrets from memory after use. */
     fun wipe() {
         password?.fill(0)
         privateKey?.fill(0)

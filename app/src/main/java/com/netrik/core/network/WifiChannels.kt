@@ -6,7 +6,7 @@ enum class WifiBand(val label: String) {
     GHz6("6"),
 }
 
-/** Conversão canal ↔ frequência central (MHz) segundo IEEE 802.11. */
+/** Channel ↔ center frequency (MHz) conversion according to IEEE 802.11. */
 object WifiChannels {
 
     fun bandOf(frequencyMhz: Int): WifiBand? = when (frequencyMhz) {

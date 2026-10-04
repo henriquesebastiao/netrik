@@ -32,8 +32,8 @@ class SshHostListTest {
     private fun host(id: Long, name: String, group: Long?, user: String = "root", address: String = "10.0.0.$id") =
         SshHost(id, name, address, 22, user, SshAuth.Password, group, null, null)
 
-    private val prod = SshGroup(1, "Produção", expanded = true)
-    private val lab = SshGroup(2, "Laboratório", expanded = false)
+    private val prod = SshGroup(1, "Production", expanded = true)
+    private val lab = SshGroup(2, "Lab", expanded = false)
     private val empty = SshGroup(3, "Clientes", expanded = true)
     private val hosts = listOf(
         host(1, "srv-01", 1, user = "admin"),
@@ -43,7 +43,7 @@ class SshHostListTest {
     )
 
     @Test
-    fun `grupos na ordem e Sem grupo por último`() {
+    fun `groups in order and No group last`() {
         val groups = SshHostList.build(listOf(prod, lab, empty), hosts, "", noGroupExpanded = true)
         assertEquals(listOf(1L, 2L, 3L, null), groups.map { it.id })
         assertEquals(listOf(2, 1, 0, 1), groups.map { it.total })
@@ -51,19 +51,19 @@ class SshHostListTest {
     }
 
     @Test
-    fun `Sem grupo some quando vazio`() {
+    fun `No group disappears when empty`() {
         val groups = SshHostList.build(listOf(prod), hosts.filter { it.groupId == 1L }, "", noGroupExpanded = true)
         assertEquals(listOf(1L), groups.map { it.id })
     }
 
     @Test
-    fun `host de grupo que não existe mais cai em Sem grupo`() {
-        val groups = SshHostList.build(listOf(prod), listOf(host(9, "órfão", 42)), "", noGroupExpanded = true)
+    fun `host of a group that no longer exists falls into No group`() {
+        val groups = SshHostList.build(listOf(prod), listOf(host(9, "orphan", 42)), "", noGroupExpanded = true)
         assertEquals(1, groups.last { it.id == null }.total)
     }
 
     @Test
-    fun `busca por nome, usuário ou host abre os grupos com resultado`() {
+    fun `search by name, user or host expands the groups with results`() {
         val byUser = SshHostList.build(listOf(prod, lab, empty), hosts, "POSTGRES", noGroupExpanded = false)
         assertEquals(listOf(1L), byUser.map { it.id })
         assertEquals(listOf("db-primary"), byUser.single().hosts.map { it.name })
@@ -75,7 +75,7 @@ class SshHostListTest {
         assertTrue(SshHostList.build(listOf(prod), hosts, "inexistente", true).isEmpty())
     }
 
-    // Repositório com DAO em memória e cifra reversível de teste.
+    // Repository with an in-memory DAO and a reversible test cipher.
 
     private class XorCipher : SecretCipher {
         override fun encrypt(plain: ByteArray) = byteArrayOf(0x7F) + plain.map { (it.toInt() xor 0x5A).toByte() }
@@ -125,7 +125,7 @@ class SshHostListTest {
     private val clock = Clock.fixed(Instant.parse("2026-10-04T12:00:00Z"), ZoneOffset.UTC)
 
     @Test
-    fun `segredos vão cifrados para o banco e voltam na conexão`() = runTest {
+    fun `secrets go encrypted to the database and come back on connect`() = runTest {
         val dao = MemoryDao()
         val repo = SshRepository(dao, XorCipher(), clock, StandardTestDispatcher(testScheduler))
         val id = repo.save(draft())
@@ -135,39 +135,39 @@ class SshHostListTest {
     }
 
     @Test
-    fun `editar sem digitar a senha mantém a salva e trocar para chave a descarta`() = runTest {
+    fun `editing without typing the password keeps the saved one and switching to key discards it`() = runTest {
         val dao = MemoryDao()
         val repo = SshRepository(dao, XorCipher(), clock, StandardTestDispatcher(testScheduler))
         val id = repo.save(draft())
         repo.save(draft(id = id, password = null))
         assertArrayEquals("s3nha".toByteArray(), repo.target(id)!!.password)
 
-        val key = PrivateKeyFile("id_ed25519", "chave".toByteArray(), "ED25519", encrypted = true)
+        val key = PrivateKeyFile("id_ed25519", "key".toByteArray(), "ED25519", encrypted = true)
         repo.save(draft(id = id, auth = SshAuth.Key, password = null, key = key, passphrase = "frase"))
         val saved = dao.host(id)!!
         assertNull(saved.passwordEnc)
         assertEquals("id_ed25519", saved.keyName)
-        assertEquals("ED25519 · 5 bytes", saved.keyInfo)
+        assertEquals("ED25519 · 3 bytes", saved.keyInfo)
         val target = repo.target(id)!!
-        assertArrayEquals("chave".toByteArray(), target.privateKey)
+        assertArrayEquals("key".toByteArray(), target.privateKey)
         assertArrayEquals("frase".toByteArray(), target.keyPassphrase)
         assertNull(target.password)
         assertEquals(1, dao.hosts.value.size)
     }
 
     @Test
-    fun `excluir grupo move os hosts para Sem grupo`() = runTest {
+    fun `deleting a group moves the hosts to No group`() = runTest {
         val dao = MemoryDao()
         val repo = SshRepository(dao, XorCipher(), clock, StandardTestDispatcher(testScheduler))
-        val group = repo.createGroup("  Laboratório ")
-        assertEquals("Laboratório", dao.groups.value.single().name)
+        val group = repo.createGroup("  Lab ")
+        assertEquals("Lab", dao.groups.value.single().name)
         val id = repo.save(draft(group = group))
         repo.deleteGroup(group)
         assertNull(repo.host(id)!!.groupId)
     }
 
     @Test
-    fun `chave de host confiada fica salva por host e porta`() = runTest {
+    fun `trusted host key is saved per host and port`() = runTest {
         val dao = MemoryDao()
         val repo = SshRepository(dao, XorCipher(), clock, StandardTestDispatcher(testScheduler))
         val key = HostKey("ssh-ed25519", byteArrayOf(0, 0, 0, 11) + "ssh-ed25519".toByteArray())

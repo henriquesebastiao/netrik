@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 /**
- * Forma de um item em lista agrupada: container de 16dp nas pontas e 4dp entre itens
+ * Shape of an item in a grouped list: 16dp container corners at the ends and 4dp between items
  * (os itens ficam separados por 2dp).
  */
 fun groupedItemShape(index: Int, count: Int): RoundedCornerShape {
@@ -23,7 +23,7 @@ fun groupedItemShape(index: Int, count: Int): RoundedCornerShape {
     }
 }
 
-/** Cabeçalho de seção: primary 14/20, peso 500. */
+/** Section header: primary 14/20, weight 500. */
 @Composable
 fun SectionHeader(text: String, modifier: Modifier = Modifier) {
     Text(

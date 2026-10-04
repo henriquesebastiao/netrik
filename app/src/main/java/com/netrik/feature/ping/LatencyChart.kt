@@ -35,13 +35,13 @@ private const val WINDOW = 30
 private const val HIGH_LATENCY_MS = 100.0
 private val SCALE_STEPS = listOf(20, 50, 100, 200, 500, 1000, 2000, 5000)
 
-/** Escala do eixo Y: o menor degrau que cabe 110% do maior tempo da janela (mínimo de 15 ms). */
+/** Y axis scale: the smallest step that fits 110% of the largest time in the window (minimum 15 ms). */
 internal fun chartTop(samples: List<PingSample>): Int {
     val peak = maxOf(15.0, samples.maxOfOrNull { it.timeMs ?: 0.0 } ?: 0.0) * 1.1
     return SCALE_STEPS.firstOrNull { it >= peak } ?: SCALE_STEPS.last()
 }
 
-/** Gráfico das últimas [WINDOW] amostras: linha e área em primary, limite de 100 ms e marcas de timeout. */
+/** Chart of the last [WINDOW] samples: line and area in primary, 100 ms limit and timeout marks. */
 @Composable
 fun LatencyChart(samples: List<PingSample>, continuousRunning: Boolean) {
     val window = samples.takeLast(WINDOW)

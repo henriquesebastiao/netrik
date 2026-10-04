@@ -159,7 +159,7 @@ fun TracerouteScreen(onBack: () -> Unit, viewModel: TracerouteViewModel = hiltVi
                     }
                     if (state.hops.isNotEmpty() || state.probingHop != null) {
                         item(key = "hops") { HopTimeline(state, noReply, copy) }
-                        // A nota só faz sentido quando há roteadores intermediários (RTT medido à parte).
+                        // The note only makes sense when there are intermediate routers (RTT measured separately).
                         if (state.hops.any { it.address != null && !it.isDestination }) item(key = "note") {
                             Text(
                                 stringResource(R.string.trace_rtt_note),
@@ -280,7 +280,7 @@ private fun PendingRow(hop: Int, lineAbove: Boolean) {
     }
 }
 
-/** Círculo numerado de 32dp com a linha vertical que liga os saltos. */
+/** 32dp numbered circle with the vertical line linking the hops. */
 @Composable
 private fun TimelineBadge(
     lineAbove: Boolean,

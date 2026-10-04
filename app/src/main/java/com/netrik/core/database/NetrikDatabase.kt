@@ -20,9 +20,9 @@ import javax.inject.Singleton
     version = 3,
     exportSchema = true,
     autoMigrations = [
-        // v2: histórico de alvos das ferramentas (Ping, Traceroute, Port Scanner)
+        // v2: target history of the tools (Ping, Traceroute, Port Scanner)
         AutoMigration(from = 1, to = 2),
-        // v3: hosts e grupos SSH e chaves de host confiadas
+        // v3: SSH hosts and groups and trusted host keys
         AutoMigration(from = 2, to = 3),
     ],
 )

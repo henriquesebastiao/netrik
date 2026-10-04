@@ -8,7 +8,7 @@ import com.netrik.core.oui.OuiRegistry
 
 @Entity(tableName = "oui_prefix")
 data class OuiPrefixEntity(
-    /** Hexadecimal maiúsculo de 6, 7 ou 9 dígitos; único entre os três registros. */
+    /** Uppercase hexadecimal of 6, 7 or 9 digits; unique across the three registries. */
     @PrimaryKey val prefix: String,
     val registry: String,
     val organization: String,
@@ -19,20 +19,20 @@ data class OuiPrefixEntity(
 
 fun OuiRecord.toEntity() = OuiPrefixEntity(prefix, registry.label, organization, address)
 
-/** Metadados da base OUI instalada (linha única). */
+/** Metadata of the installed OUI database (single row). */
 @Entity(tableName = "oui_meta")
 data class OuiMetaEntity(
     @PrimaryKey val id: Int = 0,
-    /** "bundled" (embarcada no APK) ou "ieee" (baixada pelo usuário). */
+    /** "bundled" (shipped in the APK) or "ieee" (downloaded by the user). */
     val source: String,
-    /** Data dos dados (ISO-8601, ex.: 2026-10-03). */
+    /** Date of the data (ISO-8601, e.g. 2026-10-03). */
     @ColumnInfo(name = "data_date") val dataDate: String,
     @ColumnInfo(name = "prefix_count") val prefixCount: Int,
 )
 
 @Entity(tableName = "oui_history")
 data class OuiHistoryEntity(
-    /** Hexadecimal consultado (prefixo ou MAC completo), sem separadores. */
+    /** Queried hexadecimal (prefix or full MAC), without separators. */
     @PrimaryKey val hex: String,
     @ColumnInfo(name = "queried_at") val queriedAt: Long,
 )

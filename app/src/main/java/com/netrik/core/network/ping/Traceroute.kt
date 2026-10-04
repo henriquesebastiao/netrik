@@ -7,26 +7,26 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed interface TraceEvent {
-    /** Começou a sondar o salto [hop]. */
+    /** Started probing hop [hop]. */
     data class Probing(val hop: Int) : TraceEvent
 
-    /** Resultado do salto: [address] null = sem resposta no tempo (`* * *`). */
+    /** Hop result: [address] null = no reply in time (`* * *`). */
     data class Hop(val hop: Int, val address: String?, val reachedDestination: Boolean, val rttMs: Double?) : TraceEvent
 
-    /** RTT medido depois, com ping direto ao roteador (o "TTL excedido" não traz o tempo). */
+    /** RTT measured afterwards, with a direct ping to the router (the "TTL exceeded" doesn't carry the time). */
     data class HopRtt(val hop: Int, val rttMs: Double?) : TraceEvent
 
     data class HopName(val hop: Int, val hostname: String) : TraceEvent
 
     data class Finished(val reachedDestination: Boolean, val hops: Int) : TraceEvent
 
-    /** O ping falhou de forma que impede continuar (ex.: rede inalcançável). */
+    /** Ping failed in a way that prevents going on (e.g. network unreachable). */
     data class Failed(val hop: Int, val message: String) : TraceEvent
 }
 
 /**
- * Traceroute sem root: um ping de 1 pacote por TTL, de 1 até [TracerouteOptions.maxHops].
- * O IP que devolve "Time to live exceeded" é o salto; a resposta normal é o destino.
+ * Root-free traceroute: a 1-packet ping per TTL, from 1 up to [TracerouteOptions.maxHops].
+ * The IP that returns "Time to live exceeded" is the hop; the normal reply is the destination.
  */
 class Traceroute @Inject constructor(
     private val runner: PingRunner,
@@ -56,7 +56,7 @@ class Traceroute @Inject constructor(
                     lookupName(ttl, exceeded.from)
                 }
                 unreachable != null -> {
-                    // Um roteador avisou que o destino é inalcançável: não adianta seguir.
+                    // A router said the destination is unreachable: no point in going on.
                     send(TraceEvent.Hop(ttl, unreachable.from, reachedDestination = false, rttMs = null))
                     lookupName(ttl, unreachable.from)
                     send(TraceEvent.Finished(reachedDestination = false, hops = ttl))

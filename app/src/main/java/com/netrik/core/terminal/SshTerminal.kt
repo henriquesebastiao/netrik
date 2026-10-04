@@ -18,9 +18,9 @@ import kotlinx.coroutines.withContext
 import java.io.IOException
 
 /**
- * Uma sessão de terminal SSH: o shell remoto (canal "shell" do JSch com pty xterm-256color)
- * ligado a um [TerminalEmulator] do Termux. O emulador só é tocado na thread principal; leitura e
- * escrita no socket ficam em [io]. Nada do que passa por aqui vai para log.
+ * One SSH terminal session: the remote shell (JSch "shell" channel with an xterm-256color pty)
+ * wired to a Termux [TerminalEmulator]. The emulator is only touched on the main thread; reading and
+ * writing the socket happen on [io]. Nothing that goes through here is logged.
  */
 class SshTerminal internal constructor(
     val id: Long,
@@ -35,7 +35,7 @@ class SshTerminal internal constructor(
     private val _status = MutableStateFlow(Status.Connecting)
     val status: StateFlow<Status> = _status.asStateFlow()
 
-    /** Muda a cada saída recebida: a View redesenha quando ele muda. */
+    /** Changes on every output received: the View redraws when it changes. */
     private val _revision = MutableStateFlow(0L)
     val revision: StateFlow<Long> = _revision.asStateFlow()
 
@@ -45,12 +45,12 @@ class SshTerminal internal constructor(
         private set
 
     private val output = object : TerminalOutput() {
-        // Respostas do próprio emulador (ex.: consulta de atributos do terminal) vão para o servidor.
+        // Replies from the emulator itself (e.g. terminal attribute queries) go to the server.
         override fun write(data: ByteArray, offset: Int, count: Int) {
             outgoing.trySend(data.copyOfRange(offset, offset + count))
         }
         override fun titleChanged(oldTitle: String?, newTitle: String?) = Unit
-        // OSC 52 e colar pedido pelo servidor: ignorados, o usuário cola pelo menu.
+        // OSC 52 and paste requested by the server: ignored, the user pastes through the menu.
         override fun onCopyTextToClipboard(text: String?) = Unit
         override fun onPasteTextFromClipboard() = Unit
         override fun onBell() = Unit
@@ -58,7 +58,7 @@ class SshTerminal internal constructor(
     }
 
     init {
-        // As cores do design valem desde a criação do emulador.
+        // The design colors apply from the moment the emulator is created.
         TerminalTheme.install()
     }
 
@@ -68,7 +68,7 @@ class SshTerminal internal constructor(
 
     private data class PtySize(val columns: Int, val rows: Int, val widthPx: Int, val heightPx: Int)
 
-    /** Abre o shell e fica lendo até o servidor encerrar. Retorna quando a sessão acaba. */
+    /** Opens the shell and keeps reading until the server closes it. Returns when the session ends. */
     suspend fun run(scope: CoroutineScope) {
         val opened = withContext(io) {
             try {
@@ -91,7 +91,7 @@ class SshTerminal internal constructor(
                     out.flush()
                 }
             } catch (_: IOException) {
-                // Canal fechado: o leitor percebe e encerra a sessão.
+                // Channel closed: the reader notices and ends the session.
             }
         }
         withContext(io) {
@@ -109,7 +109,7 @@ class SshTerminal internal constructor(
                     }
                 }
             } catch (_: IOException) {
-                // Conexão caiu ou foi fechada.
+                // Connection dropped or was closed.
             }
         }
         writer.cancel()
@@ -129,10 +129,10 @@ class SshTerminal internal constructor(
         if (bytes.isNotEmpty()) outgoing.trySend(bytes)
     }
 
-    /** Cola respeitando o modo "bracketed paste" quando o programa remoto pediu (thread principal). */
+    /** Pastes honoring "bracketed paste" mode when the remote program asked for it (main thread). */
     fun paste(text: String) = emulator.paste(text)
 
-    /** Novo tamanho da área de texto (thread principal); avisa o servidor (SIGWINCH remoto). */
+    /** New size of the text area (main thread); tells the server (remote SIGWINCH). */
     fun resize(columns: Int, rows: Int, cellWidthPx: Int, cellHeightPx: Int) {
         val size = PtySize(columns, rows, columns * cellWidthPx, rows * cellHeightPx)
         if (size == ptySize) return
@@ -143,24 +143,24 @@ class SshTerminal internal constructor(
         CoroutineScope(io).launch { runCatching { current.setPtySize(size.columns, size.rows, size.widthPx, size.heightPx) } }
     }
 
-    /** Fecha a pedido do usuário (aba, "Desconectar"). */
+    /** Closes at the user's request (tab, "Disconnect"). */
     fun close() {
         closedByUser = true
-        // Derruba o socket em segundo plano: o leitor sai do read e chama finish().
+        // Drops the socket in the background: the reader leaves read() and calls finish().
         CoroutineScope(io).launch {
             channel?.disconnect()
             session.close()
         }
     }
 
-    /** Todo o texto (histórico + tela), para "Copiar saída". */
+    /** All the text (scrollback + screen), for "Copy output". */
     fun transcript(): String = emulator.screen.transcriptTextWithFullLinesJoined.trimEnd()
 
     private fun bump() {
         _revision.value = _revision.value + 1
     }
 
-    /** O emulador do Termux pede um cliente de sessão; aqui nada é registrado em log. */
+    /** The Termux emulator requires a session client; nothing is logged here. */
     private object SilentClient : TerminalSessionClient {
         override fun onTextChanged(changedSession: TerminalSession) = Unit
         override fun onTitleChanged(changedSession: TerminalSession) = Unit

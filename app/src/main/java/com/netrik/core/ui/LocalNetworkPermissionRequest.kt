@@ -11,8 +11,8 @@ import androidx.compose.ui.platform.LocalContext
 import com.netrik.core.network.LocalNetworkAccess
 
 /**
- * Pede `ACCESS_LOCAL_NETWORK`; chama [onGranted] se concedida. Se o usuário já negou de vez,
- * o diálogo não aparece mais e o pedido abre as configurações do app.
+ * Asks for `ACCESS_LOCAL_NETWORK`; calls [onGranted] if granted. If the user already denied it for good,
+ * the dialog no longer shows up and the request opens the app settings.
  */
 @Composable
 fun rememberLocalNetworkPermissionRequest(onGranted: () -> Unit): () -> Unit {

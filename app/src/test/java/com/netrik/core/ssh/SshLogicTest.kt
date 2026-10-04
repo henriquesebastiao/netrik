@@ -18,14 +18,14 @@ class SshLogicTest {
     private val ed25519Pub = File("src/test/resources/ssh/ed25519.pub").readText().trim().split(" ")
 
     @Test
-    fun `impressão digital igual à do ssh-keygen`() {
+    fun `fingerprint matches ssh-keygen`() {
         val blob = Base64.getDecoder().decode(ed25519Pub[1])
         assertEquals("SHA256:KLlBLWCv4258dGyNPA4jGcUYGrznD6//mSwfhVWPIf8", HostKeys.fingerprint(blob))
         assertEquals("ssh-ed25519", HostKeys.typeOf(blob))
     }
 
     @Test
-    fun `tipo da chave para exibição`() {
+    fun `key type for display`() {
         assertEquals("ED25519", HostKeys.displayType("ssh-ed25519"))
         assertEquals("RSA", HostKeys.displayType("rsa-sha2-512"))
         assertEquals("ECDSA P-384", HostKeys.displayType("ecdsa-sha2-nistp384"))
@@ -34,7 +34,7 @@ class SshLogicTest {
     }
 
     @Test
-    fun `chave do host conhecida, desconhecida ou alterada`() {
+    fun `host key known, unknown or changed`() {
         val a = HostKey("ssh-ed25519", byteArrayOf(1, 2, 3))
         val same = HostKey("ssh-ed25519", byteArrayOf(1, 2, 3))
         val other = HostKey("ssh-ed25519", byteArrayOf(9, 9, 9))
@@ -44,20 +44,20 @@ class SshLogicTest {
     }
 
     @Test
-    fun `identificador do host como no known_hosts`() {
+    fun `host id as in known_hosts`() {
         assertEquals("srv.lan", HostKeys.hostId("SRV.lan", 22))
         assertEquals("[192.168.0.7]:2222", HostKeys.hostId("192.168.0.7", 2222))
     }
 
     @Test
-    fun `lê chaves OpenSSH e PEM`() {
+    fun `reads OpenSSH and PEM keys`() {
         assertEquals(KeyInspection.Valid("ED25519", encrypted = false), PrivateKeys.inspect(fixture("ed25519")))
         assertEquals(KeyInspection.Valid("RSA 3072", encrypted = false), PrivateKeys.inspect(fixture("rsa_pem")))
         assertEquals(KeyInspection.Valid("ECDSA P-256", encrypted = false), PrivateKeys.inspect(fixture("ecdsa")))
     }
 
     @Test
-    fun `chave cifrada exige a senha certa`() {
+    fun `encrypted key needs the right passphrase`() {
         val enc = fixture("ed25519_enc")
         val inspected = PrivateKeys.inspect(enc) as KeyInspection.Valid
         assertTrue(inspected.encrypted)
@@ -70,16 +70,17 @@ class SshLogicTest {
     }
 
     @Test
-    fun `chave pública ou lixo não é chave privada`() {
+    fun `public key or garbage is not a private key`() {
         assertEquals(KeyInspection.Invalid, PrivateKeys.inspect(fixture("ed25519.pub")))
-        assertEquals(KeyInspection.Invalid, PrivateKeys.inspect("não é uma chave".toByteArray()))
+        assertEquals(KeyInspection.Invalid, PrivateKeys.inspect("not a key".toByteArray()))
         assertEquals(KeyInspection.TooLarge, PrivateKeys.inspect(ByteArray(PrivateKeys.MAX_SIZE + 1)))
     }
 
     @Test
-    fun `tamanho do arquivo de chave`() {
+    fun `key file size`() {
         assertEquals("411 bytes", PrivateKeys.formatSize(411))
-        assertEquals("3,2 KB", PrivateKeys.formatSize(3277))
+        assertEquals("3,2 KB", PrivateKeys.formatSize(3277, java.util.Locale.forLanguageTag("pt-BR")))
+        assertEquals("3.2 KB", PrivateKeys.formatSize(3277, java.util.Locale.US))
     }
 
     private fun input(
@@ -93,22 +94,22 @@ class SshLogicTest {
     ) = SshForm.Input(host, port, user, auth, password, key, stored)
 
     @Test
-    fun `validação do formulário`() {
-        assertEquals(emptyMap<SshField, String>(), SshForm.validate(input()))
+    fun `form validation`() {
+        assertEquals(emptyMap<SshField, SshFieldError>(), SshForm.validate(input()))
         val empty = SshForm.validate(input(host = " ", port = "", user = "", password = false))
-        assertEquals("Informe o hostname ou IP", empty[SshField.Host])
-        assertEquals("Inválida", empty[SshField.Port])
-        assertEquals("Informe o usuário", empty[SshField.User])
-        assertEquals("Informe a senha", empty[SshField.Password])
-        assertEquals("Inválida", SshForm.validate(input(port = "70000"))[SshField.Port])
-        assertEquals("Selecione um arquivo de chave", SshForm.validate(input(auth = SshAuth.Key))[SshField.Key])
-        // Edição: senha em branco mantém a salva.
-        assertEquals(emptyMap<SshField, String>(), SshForm.validate(input(password = false, stored = true)))
+        assertEquals(SshFieldError.HostRequired, empty[SshField.Host])
+        assertEquals(SshFieldError.PortInvalid, empty[SshField.Port])
+        assertEquals(SshFieldError.UserRequired, empty[SshField.User])
+        assertEquals(SshFieldError.PasswordRequired, empty[SshField.Password])
+        assertEquals(SshFieldError.PortInvalid, SshForm.validate(input(port = "70000"))[SshField.Port])
+        assertEquals(SshFieldError.KeyRequired, SshForm.validate(input(auth = SshAuth.Key))[SshField.Key])
+        // Editing: a blank password keeps the saved one.
+        assertEquals(emptyMap<SshField, SshFieldError>(), SshForm.validate(input(password = false, stored = true)))
     }
 
     @Test
     fun `hosts aceitos`() {
-        assertTrue(SshForm.isValidHost("srv.empresa.com"))
+        assertTrue(SshForm.isValidHost("srv.company.com"))
         assertTrue(SshForm.isValidHost("fe80::1%wlan0"))
         assertTrue(SshForm.isValidHost("[2001:db8::7]"))
         assertFalse(SshForm.isValidHost("ssh://srv"))
@@ -119,7 +120,7 @@ class SshLogicTest {
     }
 
     @Test
-    fun `classificação das falhas do JSch`() {
+    fun `JSch failure classification`() {
         assertEquals(SshFailure.Timeout, SshConnector.classify(JSchException("timeout: socket is not established", SocketTimeoutException())))
         assertEquals(SshFailure.Refused, SshConnector.classify(JSchException("java.net.ConnectException", ConnectException("refused"))))
         assertEquals(SshFailure.AuthRejected, SshConnector.classify(JSchException("Auth fail for methods 'publickey,password'")))
@@ -127,7 +128,7 @@ class SshLogicTest {
     }
 
     @Test
-    fun `segredos apagados depois do uso`() {
+    fun `secrets wiped after use`() {
         val password = "segredo".toByteArray()
         val target = SshTarget("h", 22, "u", SshAuth.Password, password = password)
         target.wipe()

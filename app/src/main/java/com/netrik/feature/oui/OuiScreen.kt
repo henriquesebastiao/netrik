@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -77,6 +78,7 @@ import com.netrik.core.oui.OuiUpdateState
 import com.netrik.core.ui.CopyAction
 import com.netrik.core.ui.LocalSnackbarHostState
 import com.netrik.core.ui.RelativeTime
+import com.netrik.core.ui.relativeTimeText
 import com.netrik.core.ui.rememberCopyAction
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -84,7 +86,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Locale
 
-/** Base com mais de 6 meses é marcada como desatualizada (o IEEE publica centenas de prefixos por mês). */
+/** A database older than 6 months is marked as out of date (the IEEE publishes hundreds of prefixes a month). */
 private const val STALE_AFTER_DAYS = 180L
 
 private val EXAMPLES = listOf("3C:22:FB:9A:10:7E", "00-11-32", "240ac45b77e2", "4419.B631.0AD4")
@@ -98,14 +100,15 @@ fun OuiScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = LocalSnackbarHostState.current
     val context = LocalContext.current
+    val resources = LocalResources.current
     LaunchedEffect(viewModel) {
         viewModel.messages.collect { message ->
             val text = when (message) {
-                is OuiMessage.Updated -> context.getString(R.string.oui_updated, formatCount(message.added))
-                OuiMessage.UpdateNetworkError -> context.getString(R.string.oui_update_network_error)
-                OuiMessage.UpdateRejected -> context.getString(R.string.oui_update_rejected)
-                OuiMessage.UpdateInvalid -> context.getString(R.string.oui_update_invalid)
-                OuiMessage.HistoryCleared -> context.getString(R.string.oui_history_cleared)
+                is OuiMessage.Updated -> resources.getString(R.string.oui_updated, formatCount(message.added))
+                OuiMessage.UpdateNetworkError -> resources.getString(R.string.oui_update_network_error)
+                OuiMessage.UpdateRejected -> resources.getString(R.string.oui_update_rejected)
+                OuiMessage.UpdateInvalid -> resources.getString(R.string.oui_update_invalid)
+                OuiMessage.HistoryCleared -> resources.getString(R.string.oui_history_cleared)
             }
             snackbar.currentSnackbarData?.dismiss()
             snackbar.showSnackbar(text)
@@ -300,7 +303,7 @@ private fun MacField(
     )
 }
 
-/** Normalização ao vivo em 6 octetos; os 3 primeiros (OUI) em destaque. */
+/** Live normalization into 6 octets; the first 3 (OUI) highlighted. */
 @Composable
 private fun OctetPreview(parsed: MacInput) {
     val hex = parsed.hex
@@ -367,7 +370,7 @@ private fun OctetPreview(parsed: MacInput) {
 
 @Composable
 private fun SubmitButton(enabled: Boolean, onClick: () -> Unit) {
-    // Sempre clicável: sem dígitos suficientes, o toque mostra o erro no campo.
+    // Always clickable: without enough digits, the tap shows the error in the field.
     Button(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().height(48.dp),
@@ -626,7 +629,7 @@ private fun HistoryRow(item: HistoryItem, now: Long, shapeIndex: Int, shapeCount
                         )
                     }
                     Text(
-                        RelativeTime.format(item.queriedAt, now, ZoneId.systemDefault()),
+                        relativeTimeText(RelativeTime.format(item.queriedAt, now, ZoneId.systemDefault())),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -698,8 +701,8 @@ private fun DatabaseFooter(db: OuiDbStatus?, now: Long, onUpdate: () -> Unit) {
     }
 }
 
-/** MAC completo formatado, ou o prefixo completado com "··" até 6 octetos. */
+/** Formatted full MAC, or the prefix padded with "··" up to 6 octets. */
 private fun paddedMac(hex: String): String =
     (0 until 6).joinToString(":") { i -> hex.drop(i * 2).take(2).padEnd(2, '·') }
 
-private fun formatCount(n: Int): String = NumberFormat.getIntegerInstance(Locale.forLanguageTag("pt-BR")).format(n)
+private fun formatCount(n: Int): String = NumberFormat.getIntegerInstance(Locale.getDefault()).format(n)

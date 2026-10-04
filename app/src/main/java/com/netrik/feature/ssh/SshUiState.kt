@@ -4,17 +4,18 @@ import com.netrik.core.ssh.HostKey
 import com.netrik.core.ssh.PrivateKeyFile
 import com.netrik.core.ssh.SshAuth
 import com.netrik.core.ssh.SshField
+import com.netrik.core.ssh.SshFieldError
 import com.netrik.core.ssh.SshFailure
 import com.netrik.core.ssh.SshGroup
 import com.netrik.core.ssh.SshHost
 
-/** Grupo como aparece na lista; [id] nulo é "Sem grupo". */
+/** Group as it shows in the list; a null [id] is "No group". */
 data class HostGroupUi(
     val id: Long?,
     val name: String?,
     val expanded: Boolean,
     val hosts: List<SshHost>,
-    /** Total de hosts do grupo, sem o filtro da busca. */
+    /** Total hosts in the group, without the search filter. */
     val total: Int,
 )
 
@@ -32,8 +33,8 @@ data class SshListState(
 
 object SshHostList {
     /**
-     * Monta os grupos da lista. Sem busca: todos os grupos (vazios também) e "Sem grupo" por último,
-     * só se tiver hosts. Com busca: só os grupos com resultado, sempre expandidos.
+     * Builds the list groups. Without search: all groups (empty ones too) and "No group" last,
+     * only if it has hosts. With search: only groups with results, always expanded.
      */
     fun build(groups: List<SshGroup>, hosts: List<SshHost>, query: String, noGroupExpanded: Boolean): List<HostGroupUi> {
         val q = query.trim().lowercase()
@@ -51,10 +52,10 @@ object SshHostList {
     }
 }
 
-/** Formulário "Nova conexão" / edição. */
+/** "New connection" / edit form. */
 data class SshFormState(
     val editingId: Long? = null,
-    /** Aberto como "Nova conexão": continua assim mesmo depois de salvar na primeira tentativa. */
+    /** Opened as "New connection": stays that way even after saving on the first attempt. */
     val isNew: Boolean = true,
     val name: String = "",
     val host: String = "",
@@ -64,14 +65,14 @@ data class SshFormState(
     val password: String = "",
     val showPassword: Boolean = false,
     val key: PrivateKeyFile? = null,
-    /** Chave já salva (edição), mostrada enquanto o usuário não escolhe outra. */
+    /** Key already saved (editing), shown until the user picks another. */
     val storedKeyName: String? = null,
     val storedKeyInfo: String? = null,
     val keyError: KeyFileError? = null,
     val keyPassphrase: String = "",
     val groupId: Long? = null,
     val save: Boolean = true,
-    val errors: Map<SshField, String> = emptyMap(),
+    val errors: Map<SshField, SshFieldError> = emptyMap(),
     val passphraseError: PassphraseError? = null,
     val passwordRejected: Boolean = false,
     val hasStoredPassword: Boolean = false,
@@ -84,7 +85,7 @@ data class SshFormState(
 enum class KeyFileError { Invalid, TooLarge, Unreadable }
 enum class PassphraseError { Required, Wrong }
 
-/** Diálogos da aba SSH. */
+/** SSH tab dialogs. */
 sealed interface SshDialog {
     data class GroupEdit(val groupId: Long?, val value: String) : SshDialog
     data class GroupDelete(val groupId: Long, val name: String, val hostCount: Int) : SshDialog
@@ -95,15 +96,15 @@ sealed interface SshDialog {
     data class Failure(val failure: SshFailure, val host: String, val port: Int, val user: String, val auth: SshAuth, val hostId: Long?) : SshDialog
 }
 
-/** Eventos de uma vez só: avisos e navegação. */
+/** One-off events: notices and navigation. */
 sealed interface SshEvent {
     data class Message(val text: SshMessage) : SshEvent
     data object CloseForm : SshEvent
-    /** "Editar dados" depois de uma senha recusada, a partir da lista. */
+    /** "Edit details" after a rejected password, from the list. */
     data class EditHost(val hostId: Long, val passwordRejected: Boolean) : SshEvent
-    /** Autenticou (ou tocou num host com sessão aberta): mostrar o terminal. */
+    /** Authenticated (or tapped a host with an open session): show the terminal. */
     data object OpenTerminal : SshEvent
-    /** A última sessão acabou: sair do terminal. */
+    /** The last session ended: leave the terminal. */
     data object CloseTerminal : SshEvent
 }
 

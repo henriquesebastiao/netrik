@@ -12,12 +12,12 @@ import java.time.Clock
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
-/** Dispatcher para E/S de rede e disco; injetável para trocar por um de teste. */
+/** Dispatcher for network and disk I/O; injectable so tests can swap it. */
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class IoDispatcher
 
-/** Escopo que vive enquanto o processo vive: trabalhos que não devem parar ao sair de uma tela. */
+/** Scope that lives as long as the process: work that must not stop when leaving a screen. */
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class ApplicationScope

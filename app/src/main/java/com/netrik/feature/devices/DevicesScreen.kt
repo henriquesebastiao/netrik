@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -77,6 +78,7 @@ fun DevicesScreen(viewModel: DevicesViewModel, onOpenDevice: (String) -> Unit) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val copy = rememberCopyAction()
     val context = LocalContext.current
+    val resources = LocalResources.current
     val activity = LocalActivity.current
     val snackbar = LocalSnackbarHostState.current
     val scope = rememberCoroutineScope()
@@ -92,7 +94,7 @@ fun DevicesScreen(viewModel: DevicesViewModel, onOpenDevice: (String) -> Unit) {
             },
         )
     }
-    // Reavalia ao voltar das configurações; não desfaz "negada de vez" se nada mudou.
+    // Re-checks when coming back from settings; doesn't undo "denied for good" if nothing changed.
     LifecycleResumeEffect(Unit) {
         val now = currentLocalNetworkPermission(context)
         if (now == LocalNetworkPermission.Granted || state.permission != LocalNetworkPermission.PermanentlyDenied) {
@@ -161,7 +163,7 @@ fun DevicesScreen(viewModel: DevicesViewModel, onOpenDevice: (String) -> Unit) {
                         },
                         laterLabel = stringResource(R.string.wifi_perm_later),
                         onLater = {
-                            val text = context.getString(R.string.devices_perm_later_toast)
+                            val text = resources.getString(R.string.devices_perm_later_toast)
                             scope.launch {
                                 snackbar.currentSnackbarData?.dismiss()
                                 snackbar.showSnackbar(text)
@@ -327,7 +329,7 @@ private fun DeviceRow(device: LanDevice, shape: Shape, copy: CopyAction, onClick
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                // Chips quebram para a linha de baixo quando não cabem (ex.: "MAC indisponível").
+                // Chips wrap to the next line when they don't fit (e.g. "MAC unavailable").
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     CopyChip("IP", device.ip, onClick = { copy.copy(device.ip, ipCopied) })
                     val mac = device.mac?.value
@@ -400,7 +402,7 @@ fun badge(device: LanDevice): String? = when {
     else -> null
 }
 
-/** Ícone pelo papel na rede ou pelos serviços que o próprio dispositivo anuncia. */
+/** Icon from the role on the network or from the services the device itself announces. */
 @Composable
 fun deviceIcon(device: LanDevice): Triple<Int, Color, Color> {
     val c = MaterialTheme.colorScheme
@@ -417,7 +419,7 @@ fun deviceIcon(device: LanDevice): Triple<Int, Color, Color> {
     }
 }
 
-/** ETA pela velocidade média até agora. */
+/** ETA from the average speed so far. */
 private fun etaSeconds(state: DevicesUiState): Int? {
     if (state.scanned < 8 || state.startedAt == 0L) return null
     val elapsed = System.currentTimeMillis() - state.startedAt
@@ -430,4 +432,4 @@ private const val LOCAL_NETWORK = LocalNetworkAccess.PERMISSION
 private fun currentLocalNetworkPermission(context: Context): LocalNetworkPermission =
     if (LocalNetworkAccess.isGranted(context)) LocalNetworkPermission.Granted else LocalNetworkPermission.NotGranted
 
-private fun seconds(millis: Long): String = String.format(Locale.forLanguageTag("pt-BR"), "%.1f", millis / 1000.0)
+private fun seconds(millis: Long): String = String.format(Locale.getDefault(), "%.1f", millis / 1000.0)

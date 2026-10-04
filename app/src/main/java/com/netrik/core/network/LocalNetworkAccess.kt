@@ -7,14 +7,14 @@ import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-/** Permissão de rede local do Android 17+ (`ACCESS_LOCAL_NETWORK`, grupo Dispositivos próximos). */
+/** Android 17+ local network permission (`ACCESS_LOCAL_NETWORK`, Nearby devices group). */
 fun interface LocalNetworkAccess {
     fun isGranted(): Boolean
 
     companion object {
         const val PERMISSION = "android.permission.ACCESS_LOCAL_NETWORK"
 
-        /** A permissão só existe a partir do Android 17 (API 37); antes disso o acesso é livre. */
+        /** The permission only exists from Android 17 (API 37) on; before that, access is free. */
         const val SINCE_API = 37
 
         fun isGranted(context: Context): Boolean =

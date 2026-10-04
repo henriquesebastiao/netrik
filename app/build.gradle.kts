@@ -8,10 +8,14 @@ plugins {
 }
 
 android {
+    // The app language can be changed in Settings: every language must ship in the APK/bundle.
+    bundle {
+        language { enableSplit = false }
+    }
     packaging {
         jniLibs {
-            // JNI do Termux (TerminalSession abre um shell local): o app só usa o emulador e o
-            // renderizador, em Java puro. A lib também não é alinhada a 16 KB (Android 15+).
+            // Termux JNI (TerminalSession opens a local shell): the app only uses the emulator and the
+            // renderer, in pure Java. The lib also isn't 16 KB aligned (Android 15+).
             excludes += "**/libtermux.so"
         }
     }
@@ -49,7 +53,7 @@ android {
 }
 
 room {
-    // Esquemas versionados para migrações futuras
+    // Versioned schemas for future migrations
     schemaDirectory("$projectDir/schemas")
 }
 
@@ -75,12 +79,12 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    // SSH: JSch (fork mantido, BSD) + BouncyCastle para Ed25519/X25519 sem trocar o provedor do Android
+    // SSH: JSch (maintained fork, BSD) + BouncyCastle for Ed25519/X25519 without replacing Android's provider
     implementation(libs.jsch)
     implementation(libs.bouncycastle.prov)
-    // Terminal: emulação xterm e renderizador do Termux (Apache 2.0); a View e a sessão SSH são nossas
+    // Terminal: Termux xterm emulation and renderer (Apache 2.0); the View and the SSH session are ours
     implementation(libs.termux.terminal.view)
-    // Preferências (tamanho da fonte do terminal)
+    // Preferences (settings and terminal font size)
     implementation(libs.androidx.datastore.preferences)
 
     implementation(libs.kotlinx.coroutines.android)

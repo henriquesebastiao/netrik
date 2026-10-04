@@ -33,7 +33,7 @@ import com.netrik.core.wifi.WifiNetwork
 import com.netrik.core.wifi.WifiSecurity
 import com.netrik.core.ui.CopyAction
 
-/** Linha de rede do design: ícone de sinal, SSID, BSSID · fabricante, chips, canal e dBm. */
+/** Network row from the design: signal icon, SSID, BSSID · vendor, chips, channel and dBm. */
 @Composable
 fun WifiNetworkRow(
     network: WifiNetwork,
@@ -118,7 +118,10 @@ private fun SecurityChip(security: WifiSecurity) {
     Surface(shape = RoundedCornerShape(6.dp), color = bg, contentColor = fg, modifier = Modifier.height(24.dp)) {
         Row(modifier = Modifier.padding(start = 6.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             Icon(painterResource(icon), contentDescription = null, modifier = Modifier.size(14.dp))
-            Text(security.label, style = MaterialTheme.typography.labelMedium)
+            Text(
+                if (security == WifiSecurity.Open) stringResource(R.string.wifi_security_open) else security.label,
+                style = MaterialTheme.typography.labelMedium,
+            )
         }
     }
 }
@@ -174,5 +177,5 @@ private fun signalIcon(quality: SignalQuality): Int = when (quality) {
     SignalQuality.VeryWeak -> R.drawable.ic_network_wifi_1_bar
 }
 
-/** Sinal de menos tipográfico, como no design (−54 dBm). */
+/** Typographic minus sign, as in the design (−54 dBm). */
 fun formatDbm(dbm: Int): String = dbm.toString().replace('-', '−')

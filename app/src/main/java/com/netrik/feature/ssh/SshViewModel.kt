@@ -12,6 +12,7 @@ import com.netrik.core.ssh.SshConnectResult
 import com.netrik.core.ssh.SshConnector
 import com.netrik.core.ssh.SshFailure
 import com.netrik.core.ssh.SshField
+import com.netrik.core.ssh.SshFieldError
 import com.netrik.core.ssh.SshForm
 import com.netrik.core.ssh.SshHostDraft
 import com.netrik.core.ssh.SshRepository
@@ -35,8 +36,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Estado da aba SSH (lista de hosts e formulário), compartilhado pelas telas do grafo da aba.
- * Nesta etapa a conexão termina na autenticação; o terminal entra na Etapa 7.
+ * SSH tab state (host list, form and terminal sessions), shared by the screens of the tab graph.
+ * After authenticating, the connection becomes a terminal session in [SshSessionManager].
  */
 @HiltViewModel
 class SshViewModel @Inject constructor(
@@ -47,7 +48,7 @@ class SshViewModel @Inject constructor(
     private val terminalPrefs: TerminalPreferences,
 ) : ViewModel() {
 
-    /** Sessões de terminal abertas (faixa "sessões ativas", ponto verde nos hosts, abas do terminal). */
+    /** Open terminal sessions ("active sessions" banner, green dot on hosts, terminal tabs). */
     val terminals: StateFlow<List<SshTerminal>> = sessions.sessions
     val activeTerminalId: StateFlow<Long?> = sessions.activeId
     val fontSize: StateFlow<Int> = terminalPrefs.fontSize.stateIn(viewModelScope, SharingStarted.Eagerly, TerminalFont.DEFAULT)
@@ -76,18 +77,18 @@ class SshViewModel @Inject constructor(
     private val _events = Channel<SshEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
-    /** Entrada da pilha cujo formulário já foi preparado (evita resetar ao recompor). */
+    /** Back stack entry whose form was already prepared (avoids resetting on recomposition). */
     private var formEntry: String? = null
     private var connectJob: Job? = null
-    /** Última tentativa, para repetir depois de confiar na chave ou conceder a permissão. */
+    /** Last attempt, to retry after trusting the key or granting the permission. */
     private var pending: Pending? = null
 
     private data class SearchState(val open: Boolean = false, val query: String = "")
 
-    /** [hostId] salvo (lista ou formulário com "Salvar conexão") ou [draft] avulso (só conectar). */
+    /** Saved [hostId] (list or form with "Save connection") or one-off [draft] (just connect). */
     private class Pending(val hostId: Long?, val draft: SshHostDraft?, val fromForm: Boolean)
 
-    // Lista
+    // List
 
     fun openSearch() = search.update { it.copy(open = true) }
     fun closeSearch() = search.update { SearchState() }
@@ -151,7 +152,7 @@ class SshViewModel @Inject constructor(
         }
     }
 
-    /** Toque num host: com sessão aberta, volta para ela; senão conecta. */
+    /** Tapping a host: with an open session, go back to it; otherwise connect. */
     fun connectSaved(hostId: Long) {
         val open = sessions.forHost(hostId)
         if (open != null) {
@@ -171,9 +172,9 @@ class SshViewModel @Inject constructor(
         viewModelScope.launch { terminalPrefs.setFontSize(fontSize.value + delta) }
     }
 
-    // Formulário
+    // Form
 
-    /** Prepara o formulário uma vez por entrada da pilha: novo (com [target] opcional) ou edição de [hostId]. */
+    /** Prepares the form once per back stack entry: new (with an optional [target]) or editing [hostId]. */
     fun prepareForm(entryId: String, hostId: Long?, target: String?, passwordRejected: Boolean) {
         if (formEntry == entryId) return
         formEntry = entryId
@@ -199,7 +200,7 @@ class SshViewModel @Inject constructor(
                 hasStoredPassword = stored.password,
                 hasStoredPassphrase = stored.keyPassphrase,
                 passwordRejected = passwordRejected,
-                errors = if (passwordRejected) mapOf(SshField.Password to REJECTED) else emptyMap(),
+                errors = if (passwordRejected) mapOf(SshField.Password to SshFieldError.PasswordRejected) else emptyMap(),
             )
         }
     }
@@ -212,7 +213,7 @@ class SshViewModel @Inject constructor(
 
     fun updateForm(transform: (SshFormState) -> SshFormState) = _form.update { old ->
         val new = transform(old)
-        // Mexer num campo limpa o erro dele.
+        // Editing a field clears its error.
         val cleared = old.errors.filterKeys { field ->
             when (field) {
                 SshField.Host -> new.host == old.host
@@ -244,7 +245,7 @@ class SshViewModel @Inject constructor(
         }
     }
 
-    /** "Salvar e conectar" / "Conectar". [connect] falso: só salva (edição). */
+    /** "Save and connect" / "Connect". [connect] false: only saves (editing). */
     fun submitForm(connect: Boolean = true) {
         val f = _form.value
         val errors = SshForm.validate(
@@ -262,7 +263,7 @@ class SshViewModel @Inject constructor(
             _form.update { it.copy(errors = errors) }
             return
         }
-        // Chave cifrada: confere a senha antes de ir à rede.
+        // Encrypted key: checks the passphrase before going to the network.
         val passphrase = f.keyPassphrase.toByteArray()
         if (f.auth == SshAuth.Key && f.key != null) {
             when (val inspection = PrivateKeys.inspect(f.key.bytes, passphrase)) {
@@ -294,7 +295,7 @@ class SshViewModel @Inject constructor(
             val id = repository.save(draft)
             draft.password?.fill(0)
             draft.keyPassphrase?.fill(0)
-            // Daqui em diante o formulário edita o host salvo: tentar de novo não duplica.
+            // From here on the form edits the saved host: retrying doesn't duplicate it.
             _form.update {
                 it.copy(
                     editingId = id,
@@ -312,7 +313,7 @@ class SshViewModel @Inject constructor(
         }
     }
 
-    // Conexão
+    // Connection
 
     private fun startConnect(attempt: Pending) {
         connectJob?.cancel()
@@ -354,7 +355,7 @@ class SshViewModel @Inject constructor(
         }
     }
 
-    /** Identificador no known_hosts da última tentativa, para "Confiar e conectar". */
+    /** known_hosts id of the last attempt, for "Trust and connect". */
     private var trustTarget: String? = null
 
     private fun hostIdLabel(host: String, port: Int) = if (port == 22) host else "$host:$port"
@@ -364,7 +365,7 @@ class SshViewModel @Inject constructor(
         _dialog.value = null
     }
 
-    /** "Confiar e conectar" / "Substituir chave": grava a chave apresentada e tenta de novo. */
+    /** "Trust and connect" / "Replace key": stores the presented key and tries again. */
     fun trustAndConnect() {
         val key = when (val d = _dialog.value) {
             is SshDialog.Fingerprint -> d.key
@@ -390,14 +391,14 @@ class SshViewModel @Inject constructor(
         }
     }
 
-    /** "Editar dados" depois de uma recusa de autenticação. */
+    /** "Edit details" after an authentication rejection. */
     fun editAfterAuthFailure() {
         val failure = _dialog.value as? SshDialog.Failure ?: return
         _dialog.value = null
         val passwordRejected = failure.auth == SshAuth.Password
         if (pending?.fromForm == true) {
             if (passwordRejected) {
-                _form.update { it.copy(passwordRejected = true, errors = it.errors + (SshField.Password to REJECTED)) }
+                _form.update { it.copy(passwordRejected = true, errors = it.errors + (SshField.Password to SshFieldError.PasswordRejected)) }
             }
             return
         }
@@ -420,10 +421,10 @@ class SshViewModel @Inject constructor(
     )
 
     init {
-        // Fim de sessão (aba fechada, "Desconectar", exit ou queda): aviso, e volta à lista se acabaram.
+        // End of session (closed tab, "Disconnect", exit or drop): notice, and back to the list if none are left.
         viewModelScope.launch {
             sessions.ended.collect { end ->
-                // Fecha o terminal antes do aviso: quem mostra o aviso é a lista, que continua na tela.
+                // Closes the terminal before the notice: the list shows the notice, since it stays on screen.
                 if (sessions.sessions.value.isEmpty()) _events.send(SshEvent.CloseTerminal)
                 _events.send(SshEvent.Message(if (end.disconnect) SshMessage.Disconnected(end.name) else SshMessage.SessionClosed(end.name)))
             }
@@ -432,9 +433,5 @@ class SshViewModel @Inject constructor(
 
     override fun onCleared() {
         connectJob?.cancel()
-    }
-
-    companion object {
-        const val REJECTED = "Senha recusada pelo servidor"
     }
 }

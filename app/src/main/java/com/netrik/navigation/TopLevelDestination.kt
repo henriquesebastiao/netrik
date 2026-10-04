@@ -6,13 +6,13 @@ import com.netrik.R
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
-// Grafos de cada aba. Cada aba tem pilha própria, salva e restaurada ao alternar.
+// Graphs of each tab. Each tab has its own stack, saved and restored when switching.
 @Serializable data object ToolsGraph
 @Serializable data object DevicesGraph
 @Serializable data object WifiGraph
 @Serializable data object SshGraph
 
-/** As quatro abas da barra de navegação (destinos de primeiro nível). */
+/** The four navigation bar tabs (top-level destinations). */
 enum class TopLevelDestination(
     @param:StringRes val title: Int,
     @param:DrawableRes val icon: Int,

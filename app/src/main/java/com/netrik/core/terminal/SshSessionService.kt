@@ -14,6 +14,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import com.netrik.MainActivity
 import com.netrik.R
+import com.netrik.core.settings.AppLanguages
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,8 +24,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Serviço em primeiro plano enquanto houver sessão SSH aberta: sem ele o Android derruba a rede do
- * app pouco depois de ele ir para o fundo. A notificação lista as sessões e oferece "Desconectar todas".
+ * Foreground service while there is an open SSH session: without it Android drops the app's
+ * network shortly after it goes to the background. The notification lists the sessions and offers "Disconnect all".
  */
 @AndroidEntryPoint
 class SshSessionService : Service() {
@@ -34,11 +35,16 @@ class SshSessionService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var started = false
 
+    /** Android 12 and older: notification texts in the language chosen in Settings. */
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguages.wrap(newBase))
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_DISCONNECT_ALL) manager.closeAll()
-        // startForegroundService exige startForeground logo, mesmo que a lista já esteja vazia.
+        // startForegroundService requires startForeground right away, even if the list is already empty.
         promote(manager.sessions.value)
         if (!started) {
             started = true

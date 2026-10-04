@@ -1,9 +1,9 @@
 package com.netrik.core.lan
 
-/** De onde veio cada informação: mostrado na tela de detalhes, para nada parecer inventado. */
+/** Where each piece of information came from: shown on the details screen, so nothing looks made up. */
 enum class InfoSource { Dns, Mdns, Netbios, Upnp, Oui }
 
-/** Como o host foi detectado. */
+/** How the host was detected. */
 sealed interface Detection {
     data object Icmp : Detection
     data class Tcp(val port: Int) : Detection
@@ -19,11 +19,11 @@ data class LanDevice(
     val detection: Detection,
     val rttMs: Double? = null,
     val hostname: Sourced? = null,
-    /** Só preenchido quando um protocolo da rede informou o MAC (o Android não expõe a tabela ARP). */
+    /** Only set when a network protocol reported the MAC (Android doesn't expose the ARP table). */
     val mac: Sourced? = null,
     val vendor: Sourced? = null,
     val model: String? = null,
-    /** Tipos de serviço anunciados por mDNS (ex.: "_ipp._tcp"). */
+    /** Service types announced via mDNS (e.g. "_ipp._tcp"). */
     val services: Set<String> = emptySet(),
     val isGateway: Boolean = false,
     val isSelf: Boolean = false,
@@ -31,7 +31,7 @@ data class LanDevice(
     val ipValue: Long get() = ip.split('.').fold(0L) { acc, part -> (acc shl 8) or (part.toLongOrNull() ?: 0L) }
 }
 
-/** Atualização parcial vinda de uma das fontes de descoberta. */
+/** Partial update coming from one of the discovery sources. */
 data class DeviceUpdate(
     val ip: String,
     val detection: Detection? = null,
@@ -43,10 +43,10 @@ data class DeviceUpdate(
     val services: Set<String> = emptySet(),
 )
 
-/** Prioridade dos nomes: o DNS da rede é o mais confiável; o nome amigável do UPnP é o último recurso. */
+/** Name priority: the network DNS is the most reliable; the UPnP friendly name is the last resort. */
 private val NAME_PRIORITY = listOf(InfoSource.Dns, InfoSource.Mdns, InfoSource.Netbios, InfoSource.Upnp)
 
-/** Fabricante pelo OUI (do MAC) vence o declarado pelo próprio dispositivo via UPnP. */
+/** Vendor from the OUI (of the MAC) wins over the one declared by the device itself via UPnP. */
 private val VENDOR_PRIORITY = listOf(InfoSource.Oui, InfoSource.Upnp)
 
 private fun Sourced?.better(other: Sourced?, priority: List<InfoSource>): Sourced? = when {
@@ -56,11 +56,11 @@ private fun Sourced?.better(other: Sourced?, priority: List<InfoSource>): Source
     else -> this
 }
 
-/** Junta uma atualização ao que já se sabe do host, sem perder informação melhor. Lógica pura. */
+/** Merges an update into what is already known about the host, without losing better information. Pure logic. */
 fun LanDevice?.merge(update: DeviceUpdate): LanDevice {
     val base = this ?: LanDevice(ip = update.ip, detection = update.detection ?: Detection.Icmp)
     return base.copy(
-        // ICMP/TCP dizem que o host respondeu agora; mantém a primeira detecção registrada.
+        // ICMP/TCP say the host answered now; keeps the first detection recorded.
         detection = this?.detection ?: base.detection,
         rttMs = base.rttMs ?: update.rttMs,
         hostname = base.hostname.better(update.hostname, NAME_PRIORITY),
@@ -71,7 +71,7 @@ fun LanDevice?.merge(update: DeviceUpdate): LanDevice {
     )
 }
 
-/** Filtro da busca: IP, MAC, fabricante ou hostname. */
+/** Search filter: IP, MAC, vendor or hostname. */
 fun LanDevice.matches(query: String): Boolean {
     val q = query.trim().lowercase()
     if (q.isEmpty()) return true

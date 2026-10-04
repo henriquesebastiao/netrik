@@ -65,7 +65,7 @@ class OuiViewModelTest {
     }
 
     @Test
-    fun `MAC completo é consultado sozinho após a pausa de digitação`() = runTest(dispatcher) {
+    fun `full MAC is looked up on its own after the typing pause`() = runTest(dispatcher) {
         val vm = viewModel()
         vm.onInputChange("3c-22-fb-9a-10-7e")
         advanceTimeBy(100)
@@ -79,7 +79,7 @@ class OuiViewModelTest {
     }
 
     @Test
-    fun `prefixo só é consultado ao confirmar`() = runTest(dispatcher) {
+    fun `prefix is only looked up on confirm`() = runTest(dispatcher) {
         val vm = viewModel()
         vm.onInputChange("3C:22:FB")
         advanceUntilIdle()
@@ -91,7 +91,7 @@ class OuiViewModelTest {
     }
 
     @Test
-    fun `poucos dígitos mostram erro só ao tentar consultar`() = runTest(dispatcher) {
+    fun `too few digits show an error only when trying to look up`() = runTest(dispatcher) {
         val vm = viewModel()
         vm.onInputChange("3C:22")
         advanceUntilIdle()
@@ -104,7 +104,7 @@ class OuiViewModelTest {
     }
 
     @Test
-    fun `MAC aleatório é sinalizado sem fabricante`() = runTest(dispatcher) {
+    fun `random MAC is flagged without a vendor`() = runTest(dispatcher) {
         val vm = viewModel()
         vm.onPaste("da:a1:19:6e:03:5c")
         advanceUntilIdle()
@@ -114,7 +114,7 @@ class OuiViewModelTest {
     }
 
     @Test
-    fun `MAC recebido pela navegação já abre consultado`() = runTest(dispatcher) {
+    fun `MAC received through navigation opens already looked up`() = runTest(dispatcher) {
         val vm = viewModel(mac = "3C22FB9A107E")
         advanceUntilIdle()
         assertEquals("Apple, Inc.", (vm.uiState.value.result as OuiResult.Done).match?.record?.organization)

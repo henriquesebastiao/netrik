@@ -366,6 +366,6 @@ private fun runLine(state: PingUiState): String {
 private fun copyText(runLine: String, labels: StatLabels, stats: PingStats): String =
     (listOf(runLine) + statCells(stats, labels).map { "${it.label}: ${it.value}" }).joinToString("\n")
 
-/** Tempos com uma casa decimal e ponto, como a saída do próprio ping. */
+/** Times with one decimal place and a dot, like ping's own output. */
 internal fun ms(value: Double?): String = value?.let { String.format(Locale.ROOT, "%.1f ms", it) } ?: "—"
 

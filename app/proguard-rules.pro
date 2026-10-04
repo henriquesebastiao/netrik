@@ -1,16 +1,16 @@
-# Regras específicas do Netrik. As bibliotecas usadas (Compose, Hilt, Navigation,
-# kotlinx-serialization) já trazem suas próprias regras de consumidor.
+# Netrik-specific rules. The libraries used (Compose, Hilt, Navigation,
+# kotlinx-serialization) already ship their own consumer rules.
 
-# JSch instancia algoritmos por nome (Class.forName) a partir da configuração.
+# JSch instantiates algorithms by name (Class.forName) from its configuration.
 -keep class com.jcraft.jsch.** { *; }
-# Integrações opcionais do JSch que o app não usa.
+# Optional JSch integrations the app doesn't use.
 -dontwarn org.apache.logging.log4j.**
 -dontwarn org.slf4j.**
 -dontwarn com.sun.jna.**
 -dontwarn org.newsclub.net.unix.**
 -dontwarn org.ietf.jgss.**
-# BouncyCastle é referenciado diretamente por com.jcraft.jsch.bc: o R8 mantém só o que é usado.
+# BouncyCastle is referenced directly by com.jcraft.jsch.bc: R8 keeps only what is used.
 -dontwarn org.bouncycastle.**
 
-# Navigation type-safe: argumentos enum das rotas são achados pelo nome da classe (Class.forName).
+# Type-safe Navigation: enum arguments of the routes are found by class name (Class.forName).
 -keepnames enum com.netrik.navigation.** { *; }

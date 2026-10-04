@@ -1,5 +1,5 @@
-terminal-emulator e terminal-view (Termux, https://github.com/termux/termux-app), derivados do
-Terminal Emulator for Android de Jack Palevich. Licença Apache 2.0, texto abaixo.
+terminal-emulator and terminal-view (Termux, https://github.com/termux/termux-app), derived from
+Jack Palevich's Terminal Emulator for Android. Apache License 2.0, text below.
 
 
                                  Apache License

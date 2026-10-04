@@ -1,8 +1,8 @@
 package com.netrik.core.wifi
 
 /**
- * Limite do Android para scans pedidos por apps em primeiro plano: 4 a cada 2 minutos (Android 9+).
- * Guarda os horários dos scans pedidos por este app para prever quando o próximo será aceito.
+ * Android limit for scans requested by foreground apps: 4 every 2 minutes (Android 9+).
+ * Keeps the times of the scans requested by this app to predict when the next one will be accepted.
  */
 class ScanThrottle(
     private val maxScans: Int = MAX_SCANS,
@@ -15,7 +15,7 @@ class ScanThrottle(
         return scans.size < maxScans
     }
 
-    /** Quando o próximo scan será aceito (agora, se já puder). */
+    /** When the next scan will be accepted (now, if it already can). */
     fun nextAllowedAt(now: Long): Long {
         prune(now)
         return if (scans.size < maxScans) now else scans.first() + windowMillis
@@ -26,7 +26,7 @@ class ScanThrottle(
         scans.addLast(now)
     }
 
-    /** O sistema recusou o scan: a janela está cheia mesmo que a conta local não mostre (scans de antes). */
+    /** The system refused the scan: the window is full even if the local count doesn't show it (earlier scans). */
     fun markRejected(now: Long) {
         prune(now)
         while (scans.size < maxScans) scans.addFirst(now)

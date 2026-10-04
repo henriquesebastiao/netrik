@@ -10,7 +10,7 @@ import com.netrik.core.designsystem.component.NetrikTopAppBar
 import com.netrik.core.designsystem.component.PlaceholderContent
 import com.netrik.navigation.NetrikTool
 
-// Tela provisória para ferramentas do catálogo ainda sem rota própria (ver ToolRoute).
+// Temporary screen for catalog tools that don't have their own route yet (see ToolRoute).
 
 @Composable
 fun ToolPlaceholderScreen(tool: NetrikTool, onBack: () -> Unit) {

@@ -1,10 +1,10 @@
 package com.netrik.core.network.ping
 
-/** Interpreta, linha a linha, a saída do ping do Android (iputils), executado com `-n -O`. */
+/** Parses, line by line, the output of Android's ping (iputils), run with `-n -O`. */
 object PingOutputParser {
 
     private val header = Regex("""^PING\s+(\S+)\s*\(([^)]+)\)\s+(\d+)""")
-    // Origem não-gananciosa: aceita IPv6 ("from ::1: icmp_seq=1").
+    // Non-greedy source: accepts IPv6 ("from ::1: icmp_seq=1").
     private val reply = Regex("""^\d+\s+bytes from\s+(\S+?):?\s+icmp_seq=(\d+)(?:\s+ttl=(\d+))?\s+time=([\d.]+)\s*ms""")
     private val noAnswer = Regex("""^no answer yet for icmp_seq=(\d+)""")
     private val fromError = Regex("""^From\s+(\S+?):?\s+icmp_seq=(\d+)\s+(.+)$""")
@@ -12,7 +12,7 @@ object PingOutputParser {
     private val failure = Regex("""^(?:ping6?: |connect: )(.+)$""")
 
     fun parse(rawLine: String): PingEvent? {
-        // -D adiciona "[timestamp] " no começo; não usamos, mas toleramos.
+        // -D adds "[timestamp] " at the start; we don't use it, but tolerate it.
         val line = rawLine.trim().replace(Regex("""^\[[\d.]+\]\s*"""), "")
         if (line.isEmpty()) return null
 

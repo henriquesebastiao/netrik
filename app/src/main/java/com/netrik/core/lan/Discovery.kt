@@ -36,7 +36,7 @@ import java.net.URL
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
-/** Verifica se um IP está ativo: ping ou conexão TCP aceita/recusada (recusa também prova o host). */
+/** Checks whether an IP is alive: ping or a TCP connection accepted/refused (a refusal also proves the host). */
 class ReachabilityProber @Inject constructor(
     private val ping: PingRunner,
     @param:IoDispatcher private val io: CoroutineDispatcher,
@@ -70,7 +70,7 @@ class ReachabilityProber @Inject constructor(
                 socket.connect(InetSocketAddress(ip, port), TCP_TIMEOUT_MS)
                 true
             } catch (e: ConnectException) {
-                // ECONNREFUSED: o host existe e respondeu com RST. EHOSTUNREACH: não existe.
+                // ECONNREFUSED: the host exists and answered with RST. EHOSTUNREACH: it doesn't exist.
                 e.message?.contains("ECONNREFUSED") == true || e.message?.contains("refused", ignoreCase = true) == true
             } catch (_: SocketTimeoutException) {
                 false
@@ -81,13 +81,13 @@ class ReachabilityProber @Inject constructor(
     }
 
     companion object {
-        /** Portas comuns em redes domésticas/escritório; 62078 é o serviço de sincronização do iPhone. */
+        /** Common ports on home/office networks; 62078 is the iPhone sync service. */
         val PROBE_PORTS = listOf(80, 443, 22, 445, 139, 53, 8080, 62078)
         const val TCP_TIMEOUT_MS = 500
     }
 }
 
-/** NetBIOS node status (UDP 137): nome e MAC de máquinas Windows/Samba. */
+/** NetBIOS node status (UDP 137): name and MAC of Windows/Samba machines. */
 class NetbiosClient @Inject constructor(@param:IoDispatcher private val io: CoroutineDispatcher) {
     suspend fun query(ip: String): Netbios.NodeStatus? = runInterruptible(io) {
         try {
@@ -106,7 +106,7 @@ class NetbiosClient @Inject constructor(@param:IoDispatcher private val io: Coro
     }
 }
 
-/** SSDP: M-SEARCH em multicast e leitura do XML de descrição de cada dispositivo que responder. */
+/** SSDP: multicast M-SEARCH and reading the description XML of each device that answers. */
 class SsdpClient @Inject constructor(@param:IoDispatcher private val io: CoroutineDispatcher) {
 
     fun discover(windowMillis: Long = 4_000): Flow<DeviceUpdate> = channelFlow {
@@ -127,7 +127,7 @@ class SsdpClient @Inject constructor(@param:IoDispatcher private val io: Corouti
         }
     }
 
-    /** IP → LOCATION de quem respondeu na janela. */
+    /** IP → LOCATION of whoever answered within the window. */
     private fun search(windowMillis: Long): Map<String, String> {
         val found = mutableMapOf<String, String>()
         try {
@@ -151,12 +151,12 @@ class SsdpClient @Inject constructor(@param:IoDispatcher private val io: Corouti
                 }
             }
         } catch (_: IOException) {
-            // Multicast indisponível (rede sem suporte): segue sem UPnP.
+            // Multicast unavailable (network without support): carry on without UPnP.
         }
         return found
     }
 
-    /** Só busca descrições hospedadas no próprio IP que respondeu, e com tamanho limitado. */
+    /** Only fetches descriptions hosted on the same IP that answered, and with a size limit. */
     private suspend fun fetchDescription(ip: String, location: String): Ssdp.Description? = runInterruptible(io) {
         try {
             val url = URL(location)
@@ -183,11 +183,11 @@ class SsdpClient @Inject constructor(@param:IoDispatcher private val io: Corouti
     }
 }
 
-/** mDNS / DNS-SD via NsdManager: nome anunciado, serviços e, quando presente no TXT, o MAC. */
+/** mDNS / DNS-SD via NsdManager: announced name, services and, when present in TXT, the MAC. */
 class MdnsBrowser @Inject constructor(@ApplicationContext context: Context) {
 
     private val nsd = context.getSystemService(NsdManager::class.java)
-    /** Antes do Android 14, o NsdManager resolve um serviço por vez. */
+    /** Before Android 14, NsdManager resolves one service at a time. */
     private val resolveLock = Mutex()
 
     fun browse(): Flow<DeviceUpdate> = channelFlow {
@@ -222,12 +222,12 @@ class MdnsBrowser @Inject constructor(@ApplicationContext context: Context) {
             try {
                 manager.stopServiceDiscovery(listener)
             } catch (_: IllegalArgumentException) {
-                // já parado
+                // already stopped
             }
         }
     }
 
-    @Suppress("DEPRECATION") // resolveService segue funcionando; a alternativa só existe no Android 14+
+    @Suppress("DEPRECATION") // resolveService still works; the alternative only exists on Android 14+
     private suspend fun resolve(manager: NsdManager, info: NsdServiceInfo): NsdServiceInfo? =
         suspendCancellableCoroutine { cont ->
             manager.resolveService(
@@ -267,13 +267,13 @@ class MdnsBrowser @Inject constructor(@ApplicationContext context: Context) {
     }
 }
 
-/** Leitura de MAC e nome a partir dos registros mDNS. Pura. */
+/** Reads the MAC and name from mDNS records. Pure. */
 object MdnsText {
     private val macPattern = Regex("""([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}""")
 
     /**
-     * MAC real anunciado pelo próprio dispositivo:
-     * `_workstation._tcp` usa "nome [aa:bb:cc:dd:ee:ff]"; AirPlay usa `deviceid`; alguns usam `mac`.
+     * Real MAC announced by the device itself:
+     * `_workstation._tcp` uses "name [aa:bb:cc:dd:ee:ff]"; AirPlay uses `deviceid`; some use `mac`.
      */
     fun macFrom(serviceName: String?, txt: Map<String, String>): String? {
         val candidates = listOfNotNull(

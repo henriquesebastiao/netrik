@@ -23,7 +23,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface NetworkInfoRepository {
-    /** Rede padrão atual; emite de novo a cada mudança de rede, endereço ou sinal. */
+    /** Current default network; emits again on every change of network, address or signal. */
     val currentNetwork: Flow<CurrentNetwork>
 }
 
@@ -47,7 +47,7 @@ class AndroidNetworkInfoRepository @Inject constructor(
             )
         }
 
-        val callback = object : ConnectivityManager.NetworkCallback(callbackFlags()) {
+        val callback = defaultNetworkCallback(object : DefaultNetworkListener {
             override fun onAvailable(net: Network) {
                 network = net
                 capabilities = connectivity.getNetworkCapabilities(net)
@@ -75,9 +75,9 @@ class AndroidNetworkInfoRepository @Inject constructor(
                     publish()
                 }
             }
-        }
+        })
 
-        // Sem rede padrão o callback nunca é chamado; parte de "desconectado".
+        // Without a default network the callback is never called; start from "disconnected".
         if (connectivity.activeNetwork == null) trySend(CurrentNetwork.Disconnected)
         connectivity.registerDefaultNetworkCallback(callback)
         awaitClose { connectivity.unregisterNetworkCallback(callback) }
@@ -118,7 +118,7 @@ class AndroidNetworkInfoRepository @Inject constructor(
         )
     }
 
-    @SuppressLint("MissingPermission") // ACCESS_WIFI_STATE está declarada no manifesto
+    @SuppressLint("MissingPermission") // ACCESS_WIFI_STATE is declared in the manifest
     private fun wifiDetails(caps: NetworkCapabilities): WifiDetails? {
         val info: WifiInfo? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             caps.transportInfo as? WifiInfo
@@ -129,7 +129,7 @@ class AndroidNetworkInfoRepository @Inject constructor(
         info ?: return null
         return WifiDetails(
             ssid = info.ssid?.let(::cleanSsid),
-            // RSSI inválido é reportado como -127 (WifiInfo.INVALID_RSSI)
+            // An invalid RSSI is reported as -127 (WifiInfo.INVALID_RSSI)
             rssiDbm = info.rssi.takeIf { it in -126..0 },
             frequencyMhz = info.frequency.takeIf { it > 0 },
             bssid = info.bssid?.uppercase()?.takeUnless { it == HIDDEN_BSSID },
@@ -141,18 +141,44 @@ class AndroidNetworkInfoRepository @Inject constructor(
             ?.networkOperatorName
             ?.takeIf { it.isNotBlank() }
 
-    private fun callbackFlags(): Int =
-        // Pede SSID/BSSID; o Android só os entrega se o app tiver permissão de localização.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ConnectivityManager.NetworkCallback.FLAG_INCLUDE_LOCATION_INFO else 0
 }
 
-/** O Android devolve o SSID entre aspas, ou "<unknown ssid>" quando o oculta. */
+/** Default network events, independent of how the callback is built for each Android version. */
+private interface DefaultNetworkListener {
+    fun onAvailable(net: Network)
+    fun onCapabilitiesChanged(net: Network, caps: NetworkCapabilities)
+    fun onLinkPropertiesChanged(net: Network, props: LinkProperties)
+    fun onLost(net: Network)
+}
+
+/**
+ * On Android 12+ the callback asks for SSID/BSSID (FLAG_INCLUDE_LOCATION_INFO; Android only fills
+ * them in with the location permission). The constructor with flags doesn't exist before API 31.
+ */
+private fun defaultNetworkCallback(listener: DefaultNetworkListener): ConnectivityManager.NetworkCallback =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        object : ConnectivityManager.NetworkCallback(ConnectivityManager.NetworkCallback.FLAG_INCLUDE_LOCATION_INFO) {
+            override fun onAvailable(network: Network) = listener.onAvailable(network)
+            override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) = listener.onCapabilitiesChanged(network, caps)
+            override fun onLinkPropertiesChanged(network: Network, props: LinkProperties) = listener.onLinkPropertiesChanged(network, props)
+            override fun onLost(network: Network) = listener.onLost(network)
+        }
+    } else {
+        object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) = listener.onAvailable(network)
+            override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) = listener.onCapabilitiesChanged(network, caps)
+            override fun onLinkPropertiesChanged(network: Network, props: LinkProperties) = listener.onLinkPropertiesChanged(network, props)
+            override fun onLost(network: Network) = listener.onLost(network)
+        }
+    }
+
+/** Android returns the SSID in quotes, or "<unknown ssid>" when it hides it. */
 internal fun cleanSsid(raw: String): String? {
     val unquoted = raw.removeSurrounding("\"")
     return unquoted.takeUnless { it.isBlank() || it == WifiManager.UNKNOWN_SSID || it == "<unknown ssid>" }
 }
 
-/** BSSID que o Android devolve quando o app não pode vê-lo. */
+/** BSSID Android returns when the app isn't allowed to see it. */
 private const val HIDDEN_BSSID = "02:00:00:00:00:00"
 
 private fun InetAddress.plainAddress(): String = hostAddress.orEmpty().substringBefore('%')
