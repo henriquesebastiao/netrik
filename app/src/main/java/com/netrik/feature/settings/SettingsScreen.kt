@@ -60,6 +60,9 @@ import java.util.Locale
 /** Where "Report a bug" leads. */
 private const val ISSUES_URL = "https://github.com/henriquesebastiao/netrik/issues"
 
+/** The security policy (SECURITY.md in the repository). */
+private const val SECURITY_POLICY_URL = "https://github.com/henriquesebastiao/netrik/blob/main/SECURITY.md"
+
 /** Dynamic color (Material You) exists from Android 12 on. */
 private val dynamicColorSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
@@ -127,7 +130,7 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                         subtitle = BuildConfig.VERSION_NAME,
                         subtitleMono = true,
                         index = 0,
-                        count = 3,
+                        count = 4,
                     )
                     SettingsRow(
                         icon = R.drawable.ic_bug_report,
@@ -135,14 +138,23 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                         subtitle = stringResource(R.string.settings_report_bug_sub),
                         trailing = R.drawable.ic_open_in_new,
                         index = 1,
-                        count = 3,
+                        count = 4,
                         onClick = { openLink(context, ISSUES_URL) },
+                    )
+                    SettingsRow(
+                        icon = R.drawable.ic_shield_lock,
+                        title = stringResource(R.string.settings_security_policy),
+                        subtitle = stringResource(R.string.settings_security_policy_sub),
+                        trailing = R.drawable.ic_open_in_new,
+                        index = 2,
+                        count = 4,
+                        onClick = { openLink(context, SECURITY_POLICY_URL) },
                     )
                     SettingsRow(
                         icon = R.drawable.ic_description,
                         title = stringResource(R.string.settings_licenses),
-                        index = 2,
-                        count = 3,
+                        index = 3,
+                        count = 4,
                         onClick = { showLicenses = true },
                     )
                 }

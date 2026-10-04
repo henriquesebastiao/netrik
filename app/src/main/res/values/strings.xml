@@ -606,6 +606,8 @@
     <string name="settings_version">Version</string>
     <string name="settings_report_bug">Report a bug</string>
     <string name="settings_report_bug_sub">Opens the issues page on GitHub</string>
+    <string name="settings_security_policy">Security policy</string>
+    <string name="settings_security_policy_sub">How Netrik protects your SSH credentials and data</string>
     <string name="settings_licenses">Open source licenses</string>
     <string name="settings_no_browser">No app to open the link</string>
 

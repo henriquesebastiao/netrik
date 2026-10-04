@@ -42,6 +42,8 @@ Open a new issue at <https://github.com/henriquesebastiao/netrik/issues> (the ap
 4. Screenshots or a screen recording, if they help.
 
 > ⚠️ Never paste passwords, private keys, the contents of your SSH sessions or your public IP in an issue. Issues are public.
+>
+> Found a **security vulnerability**? Don't open a public issue: follow [SECURITY.md](SECURITY.md) to report it privately.
 
 ## Setting up your computer
 

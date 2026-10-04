@@ -19,11 +19,12 @@ Available in English and Brazilian Portuguese.
 
 Settings let you pick the theme (system, light or dark), use your wallpaper colors (Material You) or the Netrik colors, enable pure black for AMOLED screens and choose the app language.
 
-## Privacy
+## Privacy and security
 
 - No ads, no analytics, no tracking.
 - The app only reaches the internet when you ask it to: the public IP lookup (`api.ipify.org`), the OUI database update (`standards-oui.ieee.org`) and, of course, the hosts you ping, scan or connect to.
 - SSH passwords and private keys are encrypted with a key kept in the Android Keystore and never leave the device.
+- Read the full [security policy](SECURITY.md), also available in Settings → Security policy. Found a vulnerability? Report it privately as described there, not in a public issue.
 
 ## Requirements
 
