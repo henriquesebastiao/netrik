@@ -1,6 +1,7 @@
 package com.netrik.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
@@ -23,7 +24,9 @@ import com.netrik.feature.ping.PingScreen
 import com.netrik.feature.portscan.PortScanScreen
 import com.netrik.feature.traceroute.TracerouteScreen
 import com.netrik.feature.wifi.WifiScreen
-import com.netrik.feature.placeholder.TabPlaceholderScreen
+import com.netrik.feature.ssh.SshFormScreen
+import com.netrik.feature.ssh.SshHostsScreen
+import com.netrik.feature.ssh.SshViewModel
 import com.netrik.feature.placeholder.ToolPlaceholderScreen
 
 @Composable
@@ -55,7 +58,20 @@ fun NetrikNavHost(navController: NavHostController, modifier: Modifier = Modifie
             composable<WifiRoute> { WifiScreen() }
         }
         navigation<SshGraph>(startDestination = SshRoute) {
-            composable<SshRoute> { TabPlaceholder(TopLevelDestination.Ssh, navController) }
+            // Lista e formulário compartilham o ViewModel do grafo (conexão em andamento, diálogos).
+            composable<SshRoute> { entry ->
+                SshHostsScreen(
+                    viewModel = sshViewModel(navController, entry),
+                    onNewHost = { navController.navigate(SshFormRoute()) },
+                    onEditHost = { id, rejected -> navController.navigate(SshFormRoute(hostId = id, passwordRejected = rejected)) },
+                )
+            }
+            composable<SshFormRoute> { entry ->
+                val route = entry.toRoute<SshFormRoute>()
+                val viewModel = sshViewModel(navController, entry)
+                LaunchedEffect(entry.id) { viewModel.prepareForm(entry.id, route.hostId, route.target, route.passwordRejected) }
+                SshFormScreen(viewModel = viewModel, onClose = { navController.popBackStack() })
+            }
         }
         composable<OuiRoute> {
             OuiScreen(
@@ -80,8 +96,9 @@ private fun devicesViewModel(navController: NavController, entry: NavBackStackEn
 }
 
 @Composable
-private fun TabPlaceholder(tab: TopLevelDestination, navController: NavController) {
-    TabPlaceholderScreen(tab = tab, onBackToTools = { navController.navigateToTab(TopLevelDestination.Tools) })
+private fun sshViewModel(navController: NavController, entry: NavBackStackEntry): SshViewModel {
+    val parent = remember(entry) { navController.getBackStackEntry(SshGraph) }
+    return hiltViewModel(parent)
 }
 
 /** Rota inicial de cada aba. */
@@ -106,6 +123,11 @@ fun NavController.navigateToTab(tab: TopLevelDestination) {
 fun NavController.openTool(tool: NetrikTool, origin: TopLevelDestination, target: String? = null) {
     val tab = tool.tab
     when {
+        // SSH com alvo (ação rápida de um dispositivo): abre a aba e o formulário já com o host.
+        tool == NetrikTool.Ssh && target != null -> {
+            navigateToTab(TopLevelDestination.Ssh)
+            navigate(SshFormRoute(target = target))
+        }
         tab != null -> navigateToTab(tab)
         tool == NetrikTool.Oui -> navigate(OuiRoute(origin = origin, mac = target))
         tool == NetrikTool.Ping -> navigate(PingRoute(origin = origin, target = target))

@@ -1,0 +1,13 @@
+package com.netrik.core.ssh
+
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class SshModule {
+    @Binds
+    abstract fun bindSecretCipher(impl: KeystoreSecretCipher): SecretCipher
+}

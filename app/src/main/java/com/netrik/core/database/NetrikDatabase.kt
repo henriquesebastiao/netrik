@@ -13,17 +13,23 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 @Database(
-    entities = [OuiPrefixEntity::class, OuiMetaEntity::class, OuiHistoryEntity::class, TargetHistoryEntity::class],
-    version = 2,
+    entities = [
+        OuiPrefixEntity::class, OuiMetaEntity::class, OuiHistoryEntity::class, TargetHistoryEntity::class,
+        SshGroupEntity::class, SshHostEntity::class, KnownHostEntity::class,
+    ],
+    version = 3,
     exportSchema = true,
     autoMigrations = [
         // v2: histórico de alvos das ferramentas (Ping, Traceroute, Port Scanner)
         AutoMigration(from = 1, to = 2),
+        // v3: hosts e grupos SSH e chaves de host confiadas
+        AutoMigration(from = 2, to = 3),
     ],
 )
 abstract class NetrikDatabase : RoomDatabase() {
     abstract fun ouiDao(): OuiDao
     abstract fun targetHistoryDao(): TargetHistoryDao
+    abstract fun sshDao(): SshDao
 }
 
 @Module
@@ -40,4 +46,7 @@ object DatabaseModule {
 
     @Provides
     fun provideTargetHistoryDao(database: NetrikDatabase): TargetHistoryDao = database.targetHistoryDao()
+
+    @Provides
+    fun provideSshDao(database: NetrikDatabase): SshDao = database.sshDao()
 }

@@ -9,6 +9,7 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -57,6 +58,7 @@ import com.netrik.core.designsystem.component.NetrikTopAppBar
 import com.netrik.core.designsystem.component.PermissionRationale
 import com.netrik.core.designsystem.component.PlaceholderContent
 import com.netrik.core.designsystem.component.StatusChip
+import com.netrik.core.designsystem.component.SearchTopBar
 import com.netrik.core.designsystem.component.StatusTone
 import com.netrik.core.designsystem.component.groupedItemShape
 import com.netrik.core.designsystem.theme.NetrikTheme
@@ -102,7 +104,13 @@ fun DevicesScreen(viewModel: DevicesViewModel, onOpenDevice: (String) -> Unit) {
     Scaffold(
         topBar = {
             if (state.searchOpen) {
-                SearchBar(state.query, viewModel::onQueryChange, viewModel::onSearchClose)
+                SearchTopBar(
+                    query = state.query,
+                    hint = stringResource(R.string.devices_search_hint),
+                    closeLabel = stringResource(R.string.devices_search_close),
+                    onQueryChange = viewModel::onQueryChange,
+                    onClose = viewModel::onSearchClose,
+                )
             } else {
                 NetrikTopAppBar(
                     title = stringResource(R.string.tab_devices),
@@ -226,40 +234,6 @@ fun DevicesScreen(viewModel: DevicesViewModel, onOpenDevice: (String) -> Unit) {
 }
 
 @Composable
-private fun SearchBar(query: String, onQueryChange: (String) -> Unit, onClose: () -> Unit) {
-    Box(modifier = Modifier.statusBarsPadding().heightIn(min = 64.dp).padding(horizontal = 16.dp, vertical = 4.dp)) {
-        TextField(
-            value = query,
-            onValueChange = onQueryChange,
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text(stringResource(R.string.devices_search_hint)) },
-            singleLine = true,
-            shape = RoundedCornerShape(24.dp),
-            leadingIcon = {
-                IconButton(onClick = onClose) {
-                    Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = stringResource(R.string.devices_search_close))
-                }
-            },
-            trailingIcon = if (query.isNotEmpty()) {
-                {
-                    IconButton(onClick = { onQueryChange("") }) {
-                        Icon(painterResource(R.drawable.ic_close), contentDescription = stringResource(R.string.oui_action_clear))
-                    }
-                }
-            } else {
-                null
-            },
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-            ),
-        )
-    }
-}
-
-@Composable
 private fun SubnetCard(state: DevicesUiState, network: LocalNetwork, onScan: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     Surface(shape = RoundedCornerShape(16.dp), color = colors.surfaceContainer, modifier = Modifier.fillMaxWidth()) {
@@ -353,7 +327,8 @@ private fun DeviceRow(device: LanDevice, shape: Shape, copy: CopyAction, onClick
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                // Chips quebram para a linha de baixo quando não cabem (ex.: "MAC indisponível").
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     CopyChip("IP", device.ip, onClick = { copy.copy(device.ip, ipCopied) })
                     val mac = device.mac?.value
                     if (mac != null) {
@@ -384,6 +359,8 @@ private fun CopyChip(label: String, value: String, onClick: (() -> Unit)?) {
                 style = if (onClick != null) NetrikTheme.dataTypography.dataMedium.copy(fontSize = 13.sp) else MaterialTheme.typography.bodySmall,
                 color = if (onClick != null) colors.onSurface else colors.onSurfaceVariant,
                 maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
             )
             if (onClick != null) {
                 Icon(painterResource(R.drawable.ic_content_copy), contentDescription = null, tint = colors.outline, modifier = Modifier.size(14.dp))

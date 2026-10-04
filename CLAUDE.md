@@ -23,6 +23,8 @@ Esse protótipo navegável é a fonte da verdade visual: siga cores, tipografia,
 - Rede local (Android 17+): com targetSdk 37, qualquer TCP/UDP para IPs da LAN (e o mDNS) exige a permissão de execução `ACCESS_LOCAL_NETWORK` (grupo Dispositivos próximos); sem ela o tráfego é descartado em silêncio (timeout/EPERM), inclusive o ping. Use `LocalNetworkAccess`/`LocalAddress` antes de falar com a LAN e `rememberLocalNetworkPermissionRequest` para pedir. Vale para Port Scanner e SSH.
 - MACs na LAN: o app não lê `/proc/net/arp` nem `ip neigh` (negado pelo SELinux). MAC só quando o próprio dispositivo anuncia (NetBIOS, mDNS); senão "MAC indisponível".
 - Portas: `assets/ports/top-tcp.txt` e `top-udp.txt` têm só os números das 1000 portas mais comuns na ordem do Nmap (o arquivo `nmap-services` é NPSL e não é embutido); nomes de serviço vêm do registro da IANA (`services.tsv.gzip`). Fontes em `assets/ports/SOURCES.txt`.
+- SSH: JSch (fork `com.github.mwiede:jsch`, BSD) + Bouncy Castle (`bcprov-jdk18on`, MIT). `JschSetup.install()` força as classes `com.jcraft.jsch.bc.*` para Ed25519/Ed448/X25519/ML-KEM: no Android o JSch escolheria as JCE, que dependem do provedor do sistema. Senha, chave privada e senha da chave ficam cifradas (AES-GCM, chave não exportável no Android Keystore, `KeystoreSecretCipher`); nada disso vai para log. Chaves de host confiadas ficam no Room (`ssh_known_host`, id `host` ou `[host]:porta`, como no OpenSSH); chave desconhecida ou alterada encerra a conexão antes da autenticação e a interface pergunta; ao confiar, o app reconecta.
+- Release: o R8 renomeia enums usados como argumento das rotas type-safe; `proguard-rules.pro` mantém os nomes dos enums de `com.netrik.navigation`. Teste o APK release no emulador ao mexer em rotas.
 - OUI: a base IEEE vai em `assets/oui/*.csv.gzip` (extensão `.gzip`, não `.gz`: o AGP descompacta `.gz` no build) e é importada no Room no primeiro uso. Downloads do IEEE precisam de User-Agent próprio (`Netrik/<versão>`): o padrão do Android leva HTTP 418. Os CSVs do IEEE não têm data de registro, então ela não é exibida.
 
 ## Regras de Git (OBRIGATÓRIAS)
@@ -84,5 +86,6 @@ Trabalhe UMA etapa por vez. Ao fim de cada uma: garanta build e testes passando,
 - Etapa 2 — Ping e Traceroute: concluída. O traceroute ainda precisa de validação num aparelho físico: no emulador o ICMP é simulado (TTL sempre 255, sem "TTL excedido").
 - Etapa 3 — Scanner Wi-Fi: concluída. O emulador só tem a rede "AndroidWifi" (2,4 GHz, sem 6 GHz).
 - Etapa 4 — Scanner de dispositivos LAN: concluída. No emulador a rede é simulada: sem nomes nem MACs reais; mDNS/NetBIOS/UPnP precisam de validação num aparelho físico.
-- Etapa 5 — Port Scanner: concluída (aguardando commit/aprovação). No emulador, 10.0.2.2 é o loopback do PC: serve de gabarito para portas TCP abertas.
-- Próxima: Etapa 6 — SSH. Comece relendo `NetrikSSH.dc.html` no design e apresente o plano antes de codar.
+- Etapa 5 — Port Scanner: concluída. No emulador, 10.0.2.2 é o loopback do PC: serve de gabarito para portas TCP abertas.
+- Etapa 6 — SSH: concluída (aguardando commit/aprovação). Nesta etapa a conexão termina na autenticação (Snackbar "Autenticado como…") e fecha a sessão; `SshConnector.connect` já devolve a `SshSession` para o terminal. Testado no emulador com sshd local sem root (chave, 10.0.2.2:2222) e o container `lscr.io/linuxserver/openssh-server` (senha).
+- Próxima: Etapa 7 — Terminal SSH. Comece relendo o estado "terminal" de `NetrikSSH.dc.html` no design e apresente o plano antes de codar.

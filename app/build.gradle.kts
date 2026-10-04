@@ -68,6 +68,10 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    // SSH: JSch (fork mantido, BSD) + BouncyCastle para Ed25519/X25519 sem trocar o provedor do Android
+    implementation(libs.jsch)
+    implementation(libs.bouncycastle.prov)
+
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.core)
 

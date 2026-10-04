@@ -9,24 +9,8 @@ import com.netrik.R
 import com.netrik.core.designsystem.component.NetrikTopAppBar
 import com.netrik.core.designsystem.component.PlaceholderContent
 import com.netrik.navigation.NetrikTool
-import com.netrik.navigation.TopLevelDestination
 
-// Telas provisórias da Etapa 0. Cada etapa substitui a sua pela tela real.
-
-@Composable
-fun TabPlaceholderScreen(tab: TopLevelDestination, onBackToTools: () -> Unit) {
-    val title = stringResource(tab.title)
-    Scaffold(topBar = { NetrikTopAppBar(title = title) }) { padding ->
-        PlaceholderContent(
-            icon = tab.icon,
-            title = title,
-            text = stringResource(R.string.placeholder_tab),
-            actionLabel = stringResource(R.string.action_back_to_tools),
-            onAction = onBackToTools,
-            modifier = Modifier.padding(padding),
-        )
-    }
-}
+// Tela provisória para ferramentas do catálogo ainda sem rota própria (ver ToolRoute).
 
 @Composable
 fun ToolPlaceholderScreen(tool: NetrikTool, onBack: () -> Unit) {

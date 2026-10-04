@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.netrik.core.ui.LocalSnackbarHostState
@@ -34,7 +35,8 @@ fun NetrikApp() {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             bottomBar = {
-                NetrikNavigationBar(
+                // O formulário SSH ocupa a tela toda, como no protótipo.
+                if (backStackEntry?.destination?.hasRoute<SshFormRoute>() != true) NetrikNavigationBar(
                     current = currentTab,
                     onSelect = { tab ->
                         if (tab == currentTab) {

@@ -50,3 +50,14 @@ data class PortScanRoute(
     val origin: TopLevelDestination,
     val target: String? = null,
 )
+
+/**
+ * Formulário SSH em tela cheia (sem a barra de navegação), dentro da aba SSH: [hostId] edita um
+ * host salvo; [target] pré-preenche o host de uma conexão nova (ex.: ação rápida de um dispositivo).
+ */
+@Serializable
+data class SshFormRoute(
+    val hostId: Long? = null,
+    val target: String? = null,
+    val passwordRejected: Boolean = false,
+)

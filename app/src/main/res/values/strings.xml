@@ -33,11 +33,9 @@
     <string name="action_close">Fechar</string>
     <string name="action_copy">Copiar</string>
     <string name="action_copy_all">Copiar tudo</string>
-    <string name="action_back_to_tools">Voltar às Ferramentas</string>
     <string name="action_retry">Tentar novamente</string>
 
     <!-- Placeholders de telas futuras -->
-    <string name="placeholder_tab">Esta tela será construída numa próxima etapa.</string>
     <string name="placeholder_tool">Esta ferramenta será construída numa próxima etapa.</string>
 
     <!-- Card "Rede atual" -->
@@ -431,8 +429,117 @@
     <string name="ports_copied">%1$s copiado</string>
     <string name="ports_no_hostname">Sem hostname</string>
 
+    <!-- SSH: hosts -->
+    <string name="ssh_search">Buscar</string>
+    <string name="ssh_search_hint">Nome, usuário ou host</string>
+    <string name="ssh_search_clear">Limpar</string>
+    <string name="ssh_no_match">Nenhum host corresponde a “%1$s”.</string>
+    <string name="ssh_new_group">Novo grupo</string>
+    <string name="ssh_collapse_all">Recolher todos</string>
+    <string name="ssh_expand_all">Expandir todos</string>
+    <string name="ssh_no_group">Sem grupo</string>
+    <string name="ssh_group_options">Opções do grupo</string>
+    <string name="ssh_group_rename">Renomear</string>
+    <string name="ssh_group_delete">Excluir grupo</string>
+    <string name="ssh_group_empty">Nenhum host neste grupo. Escolha este grupo ao criar uma conexão.</string>
+    <string name="ssh_new_host">Novo host</string>
+    <string name="ssh_auth_key_short">Chave</string>
+    <string name="ssh_auth_password_short">Senha</string>
+    <string name="ssh_empty">Nenhum host salvo. Toque em Novo host para adicionar uma conexão.</string>
+    <string name="ssh_host_edit">Editar</string>
+    <string name="ssh_host_delete">Excluir</string>
+    <string name="ssh_host_delete_title">Excluir “%1$s”?</string>
+    <string name="ssh_host_delete_body">A conexão e as credenciais salvas dela serão apagadas deste aparelho.</string>
+    <string name="ssh_host_deleted">Host excluído</string>
+    <string name="ssh_connecting">Conectando a %1$s…</string>
+    <string name="ssh_authenticated">Autenticado como %1$s. O terminal chega na próxima etapa.</string>
+    <!-- SSH: grupos -->
+    <string name="ssh_group_dialog_new">Novo grupo</string>
+    <string name="ssh_group_dialog_rename">Renomear grupo</string>
+    <string name="ssh_group_name">Nome do grupo</string>
+    <string name="ssh_group_created">Grupo “%1$s” criado</string>
+    <string name="ssh_group_renamed">Grupo renomeado</string>
+    <string name="ssh_group_deleted">Grupo excluído</string>
+    <string name="ssh_group_delete_title">Excluir “%1$s”?</string>
+    <string name="ssh_group_delete_empty">O grupo está vazio.</string>
+    <string name="ssh_group_delete_one">O host deste grupo será movido para Sem grupo. Nenhuma conexão é apagada.</string>
+    <string name="ssh_group_delete_many">Os %1$d hosts deste grupo serão movidos para Sem grupo. Nenhuma conexão é apagada.</string>
+    <string name="action_save">Salvar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_delete">Excluir</string>
+    <!-- SSH: formulário -->
+    <string name="ssh_form_new">Nova conexão</string>
+    <string name="ssh_form_edit">Editar conexão</string>
+    <string name="ssh_form_name">Nome (opcional)</string>
+    <string name="ssh_form_name_hint">ex.: srv-01</string>
+    <string name="ssh_form_host">Hostname ou IP</string>
+    <string name="ssh_form_host_hint">192.168.0.7 ou srv.empresa.com</string>
+    <string name="ssh_form_host_sup">IPv4, IPv6 ou nome DNS</string>
+    <string name="ssh_form_port">Porta</string>
+    <string name="ssh_form_port_sup">Padrão 22</string>
+    <string name="ssh_form_user">Usuário</string>
+    <string name="ssh_form_user_hint">root</string>
+    <string name="ssh_form_auth">Autenticação</string>
+    <string name="ssh_form_auth_password">Senha</string>
+    <string name="ssh_form_auth_key">Chave privada</string>
+    <string name="ssh_form_password">Senha</string>
+    <string name="ssh_form_password_sup">Armazenada criptografada no Android Keystore</string>
+    <string name="ssh_form_password_keep">Em branco mantém a senha salva</string>
+    <string name="ssh_form_password_show">Mostrar senha</string>
+    <string name="ssh_form_password_hide">Ocultar senha</string>
+    <string name="ssh_form_key">Chave privada (IdentityFile)</string>
+    <string name="ssh_form_key_none">Nenhum arquivo selecionado</string>
+    <string name="ssh_form_key_formats">OpenSSH ou PEM</string>
+    <string name="ssh_form_key_pick">Selecionar</string>
+    <string name="ssh_form_key_change">Trocar</string>
+    <string name="ssh_form_key_encrypted">%1$s · protegida por senha</string>
+    <string name="ssh_form_key_invalid">O arquivo não é uma chave privada OpenSSH, PEM ou PuTTY</string>
+    <string name="ssh_form_key_too_large">Arquivo grande demais para ser uma chave privada</string>
+    <string name="ssh_form_key_unreadable">Não foi possível ler o arquivo</string>
+    <string name="ssh_form_key_passphrase">Senha da chave (opcional)</string>
+    <string name="ssh_form_key_passphrase_required">A chave é protegida: informe a senha dela</string>
+    <string name="ssh_form_key_passphrase_wrong">Senha da chave incorreta</string>
+    <string name="ssh_form_key_passphrase_keep">Em branco mantém a senha salva</string>
+    <string name="ssh_form_group">Grupo</string>
+    <string name="ssh_form_save">Salvar conexão</string>
+    <string name="ssh_form_save_on">Aparece em %1$s na lista de hosts</string>
+    <string name="ssh_form_save_off">Conecta uma vez, sem guardar os dados</string>
+    <string name="ssh_form_submit_save">Salvar e conectar</string>
+    <string name="ssh_form_submit">Conectar</string>
+    <string name="ssh_form_password_rejected">Senha recusada pelo servidor</string>
+    <!-- SSH: diálogos de conexão -->
+    <string name="ssh_fp_title">Host desconhecido</string>
+    <string name="ssh_fp_body">A autenticidade de %1$s não pôde ser verificada. Confira a impressão digital com o administrador do servidor antes de continuar.</string>
+    <string name="ssh_fp_type">Tipo de chave</string>
+    <string name="ssh_fp_fingerprint">Impressão digital</string>
+    <string name="ssh_fp_trust">Confiar e conectar</string>
+    <string name="ssh_changed_title">A chave do host mudou</string>
+    <string name="ssh_changed_body">A chave apresentada por %1$s é diferente da que foi confiada antes. Pode ser uma reinstalação do servidor ou alguém interceptando a conexão (man-in-the-middle). Só substitua se o administrador confirmar a nova impressão digital.</string>
+    <string name="ssh_changed_old">Impressão digital confiada</string>
+    <string name="ssh_changed_new">Impressão digital apresentada</string>
+    <string name="ssh_changed_replace">Substituir chave</string>
+    <string name="ssh_unreach_title">Host inalcançável</string>
+    <string name="ssh_unreach_body">Sem resposta de %1$s:%2$d após 10 s. Confira o endereço, a porta e se você está na rede certa.</string>
+    <string name="ssh_refused_title">Conexão recusada</string>
+    <string name="ssh_refused_body">%1$s recusou a conexão na porta %2$d. Confira a porta e se o serviço SSH está ativo.</string>
+    <string name="ssh_noroute_body">Não há rota até %1$s. Confira se você está na rede certa.</string>
+    <string name="ssh_notfound_title">Host não encontrado</string>
+    <string name="ssh_notfound_body">Não foi possível resolver “%1$s”. Confira o nome ou use o endereço IP.</string>
+    <string name="ssh_auth_title">Falha de autenticação</string>
+    <string name="ssh_auth_password_body">O servidor recusou a senha de %1$s. Confira a senha ou use uma chave privada.</string>
+    <string name="ssh_auth_key_body">O servidor recusou a chave de %1$s. Confira se a chave pública está no authorized_keys do servidor.</string>
+    <string name="ssh_auth_edit">Editar dados</string>
+    <string name="ssh_algo_title">Sem algoritmos em comum</string>
+    <string name="ssh_algo_body">O servidor e o app não têm algoritmos de criptografia em comum. Detalhe: %1$s</string>
+    <string name="ssh_other_title">Falha na conexão</string>
+    <string name="ssh_other_body">A conexão SSH falhou: %1$s</string>
+    <string name="ssh_unknown_error">erro desconhecido</string>
+    <string name="ssh_retrying">Tentando %1$s novamente…</string>
+    <string name="ssh_key_invalid_title">Chave privada ilegível</string>
+    <string name="ssh_key_invalid_body">A chave salva para este host não pôde ser lida. Edite a conexão e selecione o arquivo de novo.</string>
+
     <!-- Sobre -->
     <string name="about_title">Sobre o Netrik</string>
     <string name="about_version">Versão %1$s</string>
-    <string name="about_licenses">Fontes Roboto Flex e JetBrains Mono: SIL Open Font License 1.1.\nÍcones Material Symbols: Apache License 2.0.\nFabricantes: registros MA-L, MA-M e MA-S do IEEE.\nPortas mais comuns: ranking do projeto Nmap (só os números). Nomes de serviço: registro de portas da IANA.</string>
+    <string name="about_licenses">Fontes Roboto Flex e JetBrains Mono: SIL Open Font License 1.1.\nÍcones Material Symbols: Apache License 2.0.\nFabricantes: registros MA-L, MA-M e MA-S do IEEE.\nPortas mais comuns: ranking do projeto Nmap (só os números). Nomes de serviço: registro de portas da IANA.\nSSH: JSch (fork mwiede, licença BSD) e Bouncy Castle (licença MIT).</string>
 </resources>
