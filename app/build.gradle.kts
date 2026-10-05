@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -5,6 +7,47 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.androidx.room)
+}
+
+/**
+ * Release signing: from the environment (CI) or from a local `keystore.properties` (git-ignored) with
+ * storeFile, storePassword, keyAlias and keyPassword. Without them the release APK is left unsigned,
+ * unless `-Pnetrik.requireSigning=true` (CI), which fails the build.
+ */
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.isFile) file.inputStream().use(::load)
+}
+
+fun signingValue(env: String, key: String): String? =
+    providers.environmentVariable(env).orNull?.takeIf { it.isNotBlank() } ?: keystoreProperties.getProperty(key)
+
+val releaseStoreFile = signingValue("NETRIK_KEYSTORE_FILE", "storeFile")
+val releaseSigningConfigured = releaseStoreFile != null &&
+    listOf(
+        signingValue("NETRIK_KEYSTORE_PASSWORD", "storePassword"),
+        signingValue("NETRIK_KEY_ALIAS", "keyAlias"),
+        signingValue("NETRIK_KEY_PASSWORD", "keyPassword"),
+    ).all { it != null }
+
+if (providers.gradleProperty("netrik.requireSigning").orNull == "true" && !releaseSigningConfigured) {
+    throw GradleException(
+        "Release signing required but not configured: set NETRIK_KEYSTORE_FILE, NETRIK_KEYSTORE_PASSWORD, " +
+            "NETRIK_KEY_ALIAS and NETRIK_KEY_PASSWORD.",
+    )
+}
+
+/**
+ * Version from the release tag: `-Pnetrik.version=1.2.3` (or `v1.2.3`) gives versionName 1.2.3 and
+ * versionCode 1002003 (major * 1_000_000 + minor * 1_000 + patch). Without it, the defaults below.
+ */
+val releaseVersion: Pair<String, Int>? = providers.gradleProperty("netrik.version").orNull?.let { raw ->
+    val match = Regex("""^v?(\d+)\.(\d{1,3})\.(\d{1,3})$""").matchEntire(raw.trim())
+        ?: throw GradleException("netrik.version must look like 1.2.3 or v1.2.3, got \"$raw\".")
+    val (major, minor, patch) = match.destructured
+    val code = major.toInt() * 1_000_000 + minor.toInt() * 1_000 + patch.toInt()
+    if (code <= 0 || major.toInt() > 2_000) throw GradleException("netrik.version out of range: \"$raw\".")
+    "$major.$minor.$patch" to code
 }
 
 android {
@@ -23,14 +66,34 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.netrik"
+        applicationId = "com.henriquesebastiao.netrik"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = releaseVersion?.second ?: 1
+        versionName = releaseVersion?.first ?: "0.1.0"
+    }
+
+    signingConfigs {
+        if (releaseSigningConfigured) {
+            create("release") {
+                storeFile = file(releaseStoreFile!!)
+                storePassword = signingValue("NETRIK_KEYSTORE_PASSWORD", "storePassword")
+                keyAlias = signingValue("NETRIK_KEY_ALIAS", "keyAlias")
+                keyPassword = signingValue("NETRIK_KEY_PASSWORD", "keyPassword")
+                // minSdk 26: APK Signature Scheme v2 and v3 (v3 allows rotating the key later); v1 isn't needed.
+                enableV1Signing = false
+                enableV2Signing = true
+                enableV3Signing = true
+            }
+        }
     }
 
     buildTypes {
+        debug {
+            // Debug and release side by side on the same device; the debug build is "Netrik Debug".
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -38,7 +101,15 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            signingConfig = signingConfigs.findByName("release")
         }
+    }
+
+    // The dependency list AGP embeds in the APK signing block is encrypted with a Google key: stores outside
+    // Google Play (F-Droid, IzzyOnDroid) can't read it and flag it as an unknown blob. The app isn't on Play.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 
     compileOptions {

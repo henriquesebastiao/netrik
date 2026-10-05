@@ -16,7 +16,8 @@ Thanks for wanting to help! This guide assumes **no experience with Kotlin or An
 10. [Testing your change](#testing-your-change)
 11. [Commit messages](#commit-messages)
 12. [Opening a pull request](#opening-a-pull-request)
-13. [Glossary](#glossary)
+13. [Releasing a version (maintainers)](#releasing-a-version-maintainers)
+14. [Glossary](#glossary)
 
 ---
 
@@ -391,6 +392,56 @@ fix: keep the ping chart scale when the first reply times out
 - [ ] Code, comments and commit messages are in English.
 - [ ] Tested on a device or emulator in light/dark theme and both languages.
 - [ ] Screenshots attached for UI changes.
+
+## Releasing a version (maintainers)
+
+Releases are built and signed by GitHub Actions ([`.github/workflows/release.yml`](.github/workflows/release.yml)) when a release is published on GitHub.
+
+### Once: the release key
+
+The release key identifies the app: Android only installs updates signed with the same key. **Losing it means users can never update; leaking it lets anyone publish "updates".** Keep it out of the repository (`*.jks` and `keystore.properties` are git-ignored) and keep an offline backup.
+
+```bash
+keytool -genkeypair -v -keystore netrik-release.jks -alias netrik \
+  -keyalg RSA -keysize 4096 -validity 10000
+```
+
+Add it to the repository secrets (Settings → Secrets and variables → Actions, or with the GitHub CLI):
+
+```bash
+base64 -w0 netrik-release.jks | gh secret set NETRIK_KEYSTORE_BASE64
+gh secret set NETRIK_KEYSTORE_PASSWORD   # prompts for the value
+gh secret set NETRIK_KEY_ALIAS           # netrik
+gh secret set NETRIK_KEY_PASSWORD
+```
+
+Optionally, pin the certificate so the workflow refuses to publish an APK signed with anything else:
+
+```bash
+keytool -list -v -keystore netrik-release.jks -alias netrik | grep SHA256
+gh variable set NETRIK_CERT_SHA256 --body "<the SHA256 value>"
+```
+
+Publish the same fingerprint in [SECURITY.md](SECURITY.md#verifying-a-release).
+
+### Each release
+
+1. Make sure `main` builds, tests pass and the release APK works (see below).
+2. On GitHub, create a release with a new tag in the form `v1.2.3` and publish it.
+3. The workflow runs the unit tests, builds `assembleRelease` with versionName `1.2.3` and versionCode `1002003`, checks the signature and attaches `netrik-release.apk` and `netrik-release.apk.sha256` to the release.
+
+### A signed release build on your computer
+
+Create `keystore.properties` in the project root (it's git-ignored):
+
+```properties
+storeFile=/path/to/netrik-release.jks
+storePassword=...
+keyAlias=netrik
+keyPassword=...
+```
+
+Then `./gradlew assembleRelease -Pnetrik.version=1.2.3`. Without signing configured, the release APK is built unsigned. R8 shrinks and obfuscates the release build: test it on a device or emulator (SSH, Port Knocking import, OUI lookup) before publishing, because code found by reflection can break only there.
 
 ## Glossary
 

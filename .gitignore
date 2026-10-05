@@ -9,6 +9,7 @@ build/
 local.properties
 *.keystore
 *.jks
+keystore.properties
 
 # IDE
 .idea/

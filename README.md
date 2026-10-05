@@ -43,6 +43,17 @@ Settings let you lock Netrik with a 4-digit PIN or your fingerprint, pick the th
 - SSH passwords and private keys are encrypted with a key kept in the Android Keystore and never leave the device.
 - Read the full [security policy](SECURITY.md), also available in Settings → Security policy. Found a vulnerability? Report it privately as described there, not in a public issue.
 
+## Installing
+
+Download `netrik-release.apk` from the [latest release](https://github.com/henriquesebastiao/netrik/releases/latest) and open it on your phone. Android asks you to allow installing apps from your browser or file manager the first time.
+
+Before installing, you can check that the file is genuine:
+
+- **Checksum:** each release also has `netrik-release.apk.sha256`. On a computer, run `sha256sum -c netrik-release.apk.sha256` in the folder where you saved both files.
+- **Signature:** every release is signed with the same key. `apksigner verify --print-certs netrik-release.apk` must show the certificate fingerprint published in [SECURITY.md](SECURITY.md#verifying-a-release). Android itself refuses an update signed with a different key.
+
+Google Play Protect may offer to scan the app, since it doesn't come from Google Play. In some countries (Brazil since September 2026, more later) certified Android devices also ask for apps from verified developers; if Android blocks the install, see [Verifying a release](SECURITY.md#verifying-a-release) for the options.
+
 ## Requirements
 
 - Android 8.0 (API 26) or later.

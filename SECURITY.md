@@ -8,18 +8,19 @@ The short version: **everything stays on your device, secrets are encrypted with
 
 1. [Supported versions](#supported-versions)
 2. [Reporting a vulnerability](#reporting-a-vulnerability)
-3. [What Netrik stores](#what-netrik-stores)
-4. [How SSH credentials are protected](#how-ssh-credentials-are-protected)
-5. [App lock (PIN and fingerprint)](#app-lock-pin-and-fingerprint)
-6. [SSH connections and host key verification](#ssh-connections-and-host-key-verification)
-7. [Network activity](#network-activity)
-8. [Permissions](#permissions)
-9. [Logging, clipboard and screenshots](#logging-clipboard-and-screenshots)
-10. [Backups](#backups)
-11. [Known limitations](#known-limitations)
-12. [Recommendations for users](#recommendations-for-users)
-13. [Responsible use](#responsible-use)
-14. [Third-party components](#third-party-components)
+3. [Verifying a release](#verifying-a-release)
+4. [What Netrik stores](#what-netrik-stores)
+5. [How SSH credentials are protected](#how-ssh-credentials-are-protected)
+6. [App lock (PIN and fingerprint)](#app-lock-pin-and-fingerprint)
+7. [SSH connections and host key verification](#ssh-connections-and-host-key-verification)
+8. [Network activity](#network-activity)
+9. [Permissions](#permissions)
+10. [Logging, clipboard and screenshots](#logging-clipboard-and-screenshots)
+11. [Backups](#backups)
+12. [Known limitations](#known-limitations)
+13. [Recommendations for users](#recommendations-for-users)
+14. [Responsible use](#responsible-use)
+15. [Third-party components](#third-party-components)
 
 ---
 
@@ -72,6 +73,15 @@ Netrik is maintained by volunteers, so these are goals, not guarantees. You'll b
 - Vulnerabilities in Android itself or in the SSH servers you connect to.
 - Information that Android freely gives to any app with the same permissions.
 - Results of scans being visible to the networks you scan (that's how networking works).
+
+## Verifying a release
+
+Releases are built by GitHub Actions from the release tag ([`.github/workflows/release.yml`](.github/workflows/release.yml)), signed with the project's release key and attached to the GitHub release as `netrik-release.apk`, with its SHA-256 in `netrik-release.apk.sha256`.
+
+- **Signing certificate (SHA-256):** `SHA256: D5:D0:25:AA:72:1B:6A:59:C0:7D:C8:27:D8:AE:45:E8:5F:D0:C9:AE:EA:E3:6D:E3:27:B9:88:2C:D3:0D:72:70`. Check it with `apksigner verify --print-certs netrik-release.apk`. An APK signed with any other certificate is not an official build.
+- The APK uses APK Signature Scheme v2 and v3 (v3 allows the key to be rotated later without breaking updates). It is not debuggable, and the encrypted dependency list Google adds for Play is left out, so the file only contains what the source code produces.
+- **Google Play Protect** scans apps installed from outside Google Play and may show a warning for apps it hasn't seen before. Netrik asks for no SMS, accessibility, notification-listener or similar high-risk permissions (see [Permissions](#permissions)).
+- **Android developer verification:** since September 30, 2026, certified Android devices in Brazil, Indonesia, Singapore and Thailand (and other countries from 2027) require apps to be registered to a verified developer. Until Netrik is registered, Android may block the install: you can use Android's "advanced flow" for apps from unverified developers (Developer options, confirmations, a restart and a 24-hour wait) or install with `adb install netrik-release.apk`.
 
 ## What Netrik stores
 

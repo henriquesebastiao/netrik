@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Cleartext HTTP is allowed because UPnP devices on the local network publish their description XML over
+    plain http:// (Devices scan); without this, Android 9+ refuses those requests. Every fixed endpoint the
+    app talks to (api.ipify.org, standards-oui.ieee.org) is HTTPS in the code.
+    Only the system certificate authorities are trusted, never user-installed ones.
+-->
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+    <!-- Intentional, see above: lint's InsecureBaseConfiguration doesn't apply. -->
+    <base-config cleartextTrafficPermitted="true" tools:ignore="InsecureBaseConfiguration">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
