@@ -105,7 +105,7 @@ class PortScanLogicTest {
         val hostProber = ReachabilityProber(object : com.netrik.core.network.ping.PingRunner {
             override fun run(command: List<String>) = kotlinx.coroutines.flow.emptyFlow<com.netrik.core.network.ping.PingEvent>()
         }, StandardTestDispatcher(testScheduler))
-        val events = PortScanner(prober, hostProber).scan(listOf("10.0.0.7"), listOf(22, 80, 443), Protocol.Tcp, 500, discoverFirst = false).toList()
+        val events = PortScanner(prober, hostProber, { _, _, _ -> null }).scan(listOf("10.0.0.7"), listOf(22, 80, 443), Protocol.Tcp, 500, discoverFirst = false).toList()
 
         val ports = events.filterIsInstance<PortScanEvent.Port>().associate { it.port to it.state }
         assertEquals(mapOf(22 to PortState.Open, 80 to PortState.Closed, 443 to PortState.Filtered), ports)
@@ -120,7 +120,7 @@ class PortScanLogicTest {
         val hostProber = ReachabilityProber(object : com.netrik.core.network.ping.PingRunner {
             override fun run(command: List<String>) = kotlinx.coroutines.flow.emptyFlow<com.netrik.core.network.ping.PingEvent>()
         }, StandardTestDispatcher(testScheduler))
-        val events = PortScanner(FakeProber(emptySet(), emptySet()), hostProber)
+        val events = PortScanner(FakeProber(emptySet(), emptySet()), hostProber, { _, _, _ -> null })
             .scan(listOf("10.0.0.7", "10.0.0.8"), listOf(53, 161), Protocol.Udp, 500, discoverFirst = false).toList()
         val ports = events.filterIsInstance<PortScanEvent.Port>()
         assertEquals(4, ports.size)

@@ -27,7 +27,7 @@ Netrik is available on GitHub Releases page.
 | **Devices** | Finds the devices on your local network (ping + TCP probing, mDNS, NetBIOS, UPnP, MNDP and Ubiquiti discovery), with vendor, hostname and quick actions. |
 | **Neighbor Discovery** | Finds MikroTik routers via MNDP (identity, board, RouterOS version, MAC, interface, uptime) and Ubiquiti devices via their discovery protocol, with quick actions. The Devices scan uses the same announcements to fill in names, MACs and models. |
 | **Wi-Fi** | Nearby networks with security, channel, width and signal quality, plus a 2.4/5/6 GHz spectrum chart. |
-| **Port Scanner** | TCP and UDP scans of a single host or a whole network (up to /22), with Top 100/Top 1000/custom port lists and service names. |
+| **Port Scanner** | TCP and UDP scans of a single host or a whole network (up to /22), with Top 100/Top 1000/custom port lists and service names. Reads what each open service says (SSH/FTP/SMTP greetings, HTTP Server header, TLS certificate) and flags services that are risky when exposed (Telnet, SMB, RDP, VNC, UPnP, unauthenticated databases...). |
 | **MAC/OUI Lookup** | Vendor of a MAC address from the offline IEEE database (MA-L, MA-M and MA-S), updatable from the official files. |
 | **Port Knocking** | Saved knock sequences (TCP, UDP and ICMP steps) in groups, with a delay between knocks, an optional check that the port opened, and JSON export/import. |
 | **Subnet Calculator** | IPv4 and IPv6: network, mask, wildcard, broadcast, host range and count, address type and reverse DNS zone; split a network into equal parts or with VLSM; summarize networks, addresses and ranges into the fewest CIDR blocks and a single supernet. Works offline. |

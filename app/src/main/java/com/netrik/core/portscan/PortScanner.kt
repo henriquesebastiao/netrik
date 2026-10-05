@@ -33,6 +33,8 @@ sealed interface PortScanEvent {
     data class HostUp(val ip: String) : PortScanEvent
     data class Port(val ip: String, val port: Int, val state: PortState) : PortScanEvent
     data class Progress(val checksDone: Long, val checksTotal: Long, val hostsDone: Int, val hostsTotal: Int) : PortScanEvent
+    /** What an open TCP port said about itself (only when banner grabbing is on). */
+    data class Banner(val ip: String, val port: Int, val banner: ServiceBanner) : PortScanEvent
 }
 
 /** Checks one port; kept separate so the scanner tests don't open sockets. */
@@ -95,6 +97,7 @@ class SocketPortProber @Inject constructor(@param:IoDispatcher private val io: C
 class PortScanner @Inject constructor(
     private val prober: PortProber,
     private val hostProber: ReachabilityProber,
+    private val bannerGrabber: BannerGrabber,
 ) {
 
     fun scan(
@@ -103,6 +106,7 @@ class PortScanner @Inject constructor(
         protocol: Protocol,
         timeoutMs: Int,
         discoverFirst: Boolean,
+        grabBanners: Boolean = false,
     ): Flow<PortScanEvent> = channelFlow {
         val alive = if (discoverFirst) discover(hosts) else hosts.onEach { send(PortScanEvent.HostUp(it)) }
 
@@ -115,6 +119,8 @@ class PortScanner @Inject constructor(
         // Fixed pool of workers reading from a channel: constant memory even with 65,535 ports × 1,022 hosts.
         val workers = ScanEstimate.concurrency(protocol)
         val work = Channel<Pair<String, Int>>(capacity = workers * 2)
+        // Banners run beside the scan (their own small pool), so a slow service doesn't hold a scan worker.
+        val banners = Semaphore(BANNER_CONCURRENCY)
         coroutineScope {
             launch {
                 for (ip in alive) for (port in ports) work.send(ip to port)
@@ -128,6 +134,11 @@ class PortScanner @Inject constructor(
                             Protocol.Udp -> prober.udp(ip, port, timeoutMs)
                         }
                         send(PortScanEvent.Port(ip, port, state))
+                        if (grabBanners && protocol == Protocol.Tcp && state == PortState.Open) {
+                            launch {
+                                banners.withPermit { bannerGrabber.grab(ip, port, timeoutMs) }?.let { send(PortScanEvent.Banner(ip, port, it)) }
+                            }
+                        }
                         val n = done.incrementAndGet()
                         val hostFinished = remaining.getValue(ip).decrementAndGet() == 0
                         val finishedHosts = if (hostFinished) hostsDone.incrementAndGet() else hostsDone.get()
@@ -167,6 +178,8 @@ class PortScanner @Inject constructor(
         /** UDP depends on ICMP replies, which hosts rate-limit (Linux: ~1/s); more parallelism only yields false "filtered". */
         const val UDP_CONCURRENCY = 16
         const val DISCOVERY_CONCURRENCY = 32
+        /** Banner grabbing holds a connection for up to a few seconds per open port. */
+        const val BANNER_CONCURRENCY = 16
         private const val PROGRESS_EVERY = 16L
     }
 }
@@ -179,4 +192,7 @@ abstract class PortScanModule {
 
     @Binds
     abstract fun bindPortCatalog(impl: AssetPortCatalog): PortCatalog
+
+    @Binds
+    abstract fun bindBannerGrabber(impl: SocketBannerGrabber): BannerGrabber
 }

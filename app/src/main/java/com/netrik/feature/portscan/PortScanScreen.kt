@@ -51,6 +51,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.netrik.R
+import com.netrik.core.portscan.ServiceBanner
+import com.netrik.core.portscan.RiskReason
+import com.netrik.core.portscan.RiskLevel
+import com.netrik.core.portscan.PortRisks
+import androidx.compose.foundation.clickable
 import com.netrik.core.designsystem.component.ErrorCard
 import com.netrik.core.designsystem.component.IconAvatar
 import com.netrik.core.designsystem.component.NetrikTopAppBar
@@ -190,6 +195,7 @@ private fun Config(state: PortScanUiState, viewModel: PortScanViewModel) {
                 if (state.timeoutMs == null) {
                     Text(stringResource(R.string.ports_timeout_invalid), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 16.dp))
                 }
+                if (state.protocol == Protocol.Tcp) BannerOption(state.grabBanners, viewModel::onToggleBanners)
             }
         }
         item(key = "ports") {
@@ -345,6 +351,17 @@ private fun Results(state: PortScanUiState, viewModel: PortScanViewModel) {
                 }
             }
         }
+        val protocol = state.spec?.protocol ?: Protocol.Tcp
+        if (state.hosts.any { it.risky(protocol) > 0 }) {
+            item(key = "risk-note") {
+                Text(
+                    stringResource(R.string.ports_risk_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                )
+            }
+        }
         items(visible, key = { it.ip }) { host ->
             HostCard(host, state, copy, expanded = host.ip in state.expanded, onToggle = { viewModel.onToggleHost(host.ip) })
         }
@@ -437,6 +454,8 @@ private fun ResultsHeader(state: PortScanUiState, onStop: () -> Unit, onNew: () 
                         NetrikTheme.extendedColors.warning,
                         Modifier.weight(1f),
                     )
+                    val risky = state.hosts.sumOf { it.risky(spec?.protocol ?: Protocol.Tcp) }
+                    Kpi(stringResource(R.string.ports_kpi_risky), risky.toString(), if (risky > 0) colors.error else colors.onSurface, Modifier.weight(1f))
                 }
             }
         }
@@ -476,6 +495,10 @@ private fun HostCard(host: HostResult, state: PortScanUiState, copy: CopyAction,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
+                    val risky = host.risky(proto)
+                    if (risky > 0) {
+                        StatusChip(pluralStringResource(R.plurals.ports_risky_count, risky, risky), StatusTone.Error, icon = R.drawable.ic_warning_filled, size = StatusChipSize.Small)
+                    }
                     StatusChip(
                         pluralStringResource(R.plurals.ports_open_count, host.open, host.open),
                         if (host.open > 0) StatusTone.Success else StatusTone.Neutral,
@@ -507,6 +530,10 @@ private fun HostCard(host: HostResult, state: PortScanUiState, copy: CopyAction,
                                 )
                                 PortStateChip(portState)
                             }
+                        }
+                        if (portState == PortState.Open) {
+                            PortRisks.of(proto, port)?.let { RiskLine(it) }
+                            host.banners[port]?.let { BannerLine(it, copy) }
                         }
                     }
                 }
@@ -560,3 +587,85 @@ internal fun duration(seconds: Long): String = when {
     else -> "~" + String.format(Locale.getDefault(), "%.1f", seconds / 3600.0) + " h"
 }
 
+/** "Capture banners" switch (TCP): asks each open port what it is. */
+@Composable
+private fun BannerOption(checked: Boolean, onToggle: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(onClick = onToggle).padding(start = 16.dp, end = 4.dp, top = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(stringResource(R.string.ports_banners), style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.ports_banners_sub), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Switch(checked = checked, onCheckedChange = { onToggle() })
+    }
+}
+
+/** "High risk · Telnet sends logins without encryption". */
+@Composable
+private fun RiskLine(reason: RiskReason) {
+    val colors = MaterialTheme.colorScheme
+    val color = if (reason.level == RiskLevel.High) colors.error else NetrikTheme.extendedColors.warning
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(start = 4.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(painterResource(R.drawable.ic_warning_filled), contentDescription = null, tint = color, modifier = Modifier.size(16.dp).padding(top = 1.dp))
+        Text(
+            stringResource(if (reason.level == RiskLevel.High) R.string.ports_risk_high else R.string.ports_risk_medium) + " · " + riskReasonText(reason),
+            style = MaterialTheme.typography.bodySmall,
+            color = color,
+        )
+    }
+}
+
+/** The service's own words (greeting, HTTP Server header) and TLS certificate; tap to copy. */
+@Composable
+private fun BannerLine(banner: ServiceBanner, copy: CopyAction) {
+    val colors = MaterialTheme.colorScheme
+    val tls = banner.tls?.let { tls ->
+        val name = tls.subject ?: stringResource(R.string.ports_tls_no_name)
+        when {
+            !tls.trusted -> stringResource(R.string.ports_tls_untrusted, name)
+            else -> stringResource(R.string.ports_tls, tls.protocol.orEmpty(), name)
+        }
+    }
+    val text = listOfNotNull(banner.text, tls).joinToString(" · ")
+    if (text.isEmpty()) return
+    val copied = stringResource(R.string.ports_banner_copied)
+    Surface(onClick = { copy.copy(text, copied) }, shape = RoundedCornerShape(8.dp), color = colors.surfaceContainerHigh, modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+        Row(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
+            Icon(painterResource(R.drawable.ic_info), contentDescription = stringResource(R.string.ports_banner), tint = colors.onSurfaceVariant, modifier = Modifier.size(16.dp).padding(top = 1.dp))
+            Text(text, style = NetrikTheme.dataTypography.dataSmall.copy(fontSize = 12.sp, lineHeight = 17.sp), color = colors.onSurface, maxLines = 3, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
+
+@Composable
+private fun riskReasonText(reason: RiskReason): String = stringResource(
+    when (reason) {
+        RiskReason.Telnet -> R.string.ports_risk_telnet
+        RiskReason.RemoteShell -> R.string.ports_risk_rsh
+        RiskReason.Smb -> R.string.ports_risk_smb
+        RiskReason.RemoteDesktop -> R.string.ports_risk_rdp
+        RiskReason.Vnc -> R.string.ports_risk_vnc
+        RiskReason.DockerApi -> R.string.ports_risk_docker
+        RiskReason.Adb -> R.string.ports_risk_adb
+        RiskReason.UnauthenticatedStore -> R.string.ports_risk_store
+        RiskReason.SmartInstall -> R.string.ports_risk_smart_install
+        RiskReason.Ftp -> R.string.ports_risk_ftp
+        RiskReason.Tftp -> R.string.ports_risk_tftp
+        RiskReason.NetbiosRpc -> R.string.ports_risk_netbios
+        RiskReason.Database -> R.string.ports_risk_database
+        RiskReason.Snmp -> R.string.ports_risk_snmp
+        RiskReason.Upnp -> R.string.ports_risk_upnp
+        RiskReason.Tr069 -> R.string.ports_risk_tr069
+        RiskReason.MikrotikManagement -> R.string.ports_risk_mikrotik
+        RiskReason.Mqtt -> R.string.ports_risk_mqtt
+        RiskReason.Nfs -> R.string.ports_risk_nfs
+        RiskReason.WinRm -> R.string.ports_risk_winrm
+    },
+)

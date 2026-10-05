@@ -936,4 +936,42 @@
         <item quantity="many">%1$s endereços</item>
         <item quantity="other">%1$s endereços</item>
     </plurals>
+
+    <!-- Port Scanner: banners and risky ports -->
+    <string name="ports_banners">Capturar banners</string>
+    <string name="ports_banners_sub">Conecta de novo em cada porta aberta para ler o que o serviço diz: saudação de SSH/FTP/SMTP, o header Server do HTTP e o certificado TLS (envia um pedido HEAD às portas web).</string>
+    <string name="ports_banner">Banner</string>
+    <string name="ports_banner_copied">Banner copiado</string>
+    <string name="ports_tls">%1$s · certificado %2$s</string>
+    <string name="ports_tls_untrusted">TLS · certificado %1$s (não confiável)</string>
+    <string name="ports_tls_no_name">sem nome</string>
+    <string name="ports_kpi_risky">Em risco</string>
+    <plurals name="ports_risky_count">
+        <item quantity="one">%1$d em risco</item>
+        <item quantity="many">%1$d em risco</item>
+        <item quantity="other">%1$d em risco</item>
+    </plurals>
+    <string name="ports_risk_note">As marcas de risco apontam serviços que costumam ser perigosos quando expostos. Não são vulnerabilidades confirmadas: confira se cada um deveria estar acessível.</string>
+    <string name="ports_risk_high">Risco alto</string>
+    <string name="ports_risk_medium">Risco médio</string>
+    <string name="ports_risk_telnet">Telnet envia logins e todo o resto sem criptografia</string>
+    <string name="ports_risk_rsh">Shell remoto antigo (rexec/rlogin/rsh), sem criptografia</string>
+    <string name="ports_risk_smb">Compartilhamento de arquivos do Windows (SMB): alvo de ransomware e falhas que se espalham sozinhas</string>
+    <string name="ports_risk_rdp">Área de trabalho remota: alvo de força bruta e execução remota de código</string>
+    <string name="ports_risk_vnc">Compartilhamento de tela, muitas vezes com senha fraca ou sem senha</string>
+    <string name="ports_risk_docker">API do Docker sem TLS dá controle total do host</string>
+    <string name="ports_risk_adb">Depuração do Android pela rede dá controle total do aparelho</string>
+    <string name="ports_risk_store">Costuma rodar sem autenticação: os dados podem ser lidos ou apagados (Redis, MongoDB, Elasticsearch, Memcached, CouchDB)</string>
+    <string name="ports_risk_smart_install">Cisco Smart Install: a configuração pode ser trocada sem autenticação</string>
+    <string name="ports_risk_ftp">FTP envia senhas sem criptografia</string>
+    <string name="ports_risk_tftp">TFTP transfere arquivos sem nenhuma autenticação</string>
+    <string name="ports_risk_netbios">NetBIOS/RPC do Windows: expõe nomes e compartilhamentos, superfície de ataque antiga do Windows</string>
+    <string name="ports_risk_database">Banco de dados acessível pela rede: alvo de força bruta</string>
+    <string name="ports_risk_snmp">SNMP com communities padrão expõe ou altera a configuração do aparelho</string>
+    <string name="ports_risk_upnp">UPnP deixa aparelhos abrirem portas no roteador sozinhos e é usado em ataques DDoS</string>
+    <string name="ports_risk_tr069">Gerência remota do roteador (TR-069): alvo frequente de botnets</string>
+    <string name="ports_risk_mikrotik">Gerência do MikroTik (Winbox, API do RouterOS): mantenha fora de redes não confiáveis</string>
+    <string name="ports_risk_mqtt">Broker MQTT sem TLS, muitas vezes sem autenticação</string>
+    <string name="ports_risk_nfs">NFS/rpcbind: pastas compartilhadas que podem ser montadas sem autenticação</string>
+    <string name="ports_risk_winrm">Gerência remota do Windows por HTTP sem criptografia</string>
 </resources>

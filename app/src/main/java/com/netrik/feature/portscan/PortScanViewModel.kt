@@ -16,7 +16,9 @@ import com.netrik.core.portscan.PortCatalog
 import com.netrik.core.portscan.PortList
 import com.netrik.core.portscan.PortScanEvent
 import com.netrik.core.portscan.PortScanner
+import com.netrik.core.portscan.PortRisks
 import com.netrik.core.portscan.PortState
+import com.netrik.core.portscan.ServiceBanner
 import com.netrik.core.portscan.Protocol
 import com.netrik.core.ui.RunFailure
 import com.netrik.core.ui.RunPhase
@@ -44,8 +46,13 @@ data class HostResult(
     /** Ports with a useful answer: open, filtered, open|filtered. */
     val ports: Map<Int, PortState> = emptyMap(),
     val closed: Int = 0,
+    /** Banners of open TCP ports, as they arrive. */
+    val banners: Map<Int, ServiceBanner> = emptyMap(),
 ) {
     val open: Int get() = ports.values.count { it == PortState.Open }
+
+    /** Open ports with a service that is commonly risky when exposed. */
+    fun risky(protocol: Protocol): Int = ports.count { (port, state) -> state == PortState.Open && PortRisks.of(protocol, port) != null }
 }
 
 data class ScanSpec(
@@ -68,6 +75,8 @@ data class PortScanUiState(
     val preset: PortPreset = PortPreset.Top100,
     val customText: String = "",
     val timeoutText: String = "1000",
+    /** TCP: ask each open port what it is (greeting, HTTP Server header, TLS certificate). */
+    val grabBanners: Boolean = true,
     val targetError: TargetError? = null,
     val recents: List<String> = emptyList(),
     val connected: Boolean = true,
@@ -149,6 +158,7 @@ class PortScanViewModel @Inject constructor(
     fun onCustomChange(v: String) = state.update { it.copy(customText = v.filter { c -> c.isDigit() || c == ',' || c == '-' || c == ' ' }) }
     fun onTimeoutChange(v: String) = state.update { it.copy(timeoutText = v.filter(Char::isDigit).take(5)) }
     fun onToggleOnlyOpen() = state.update { it.copy(onlyOpen = !it.onlyOpen) }
+    fun onToggleBanners() = state.update { it.copy(grabBanners = !it.grabBanners) }
     fun onToggleHost(ip: String) = state.update { it.copy(expanded = if (ip in it.expanded) it.expanded - ip else it.expanded + ip) }
 
     fun onClearHistory() {
@@ -226,12 +236,12 @@ class PortScanViewModel @Inject constructor(
                     spec = ScanSpec(s.mode, label, s.protocol, s.preset, ports.size, hosts.size),
                 )
             }
-            run(hosts, ports, s.protocol, timeout, discoverFirst = s.mode == ScanMode.Network)
+            run(hosts, ports, s.protocol, timeout, discoverFirst = s.mode == ScanMode.Network, grabBanners = s.grabBanners && s.protocol == Protocol.Tcp)
         }
     }
 
     /** Gathers the events in memory and publishes at most every 250 ms. */
-    private suspend fun run(hosts: List<String>, ports: List<Int>, protocol: Protocol, timeoutMs: Int, discoverFirst: Boolean) {
+    private suspend fun run(hosts: List<String>, ports: List<Int>, protocol: Protocol, timeoutMs: Int, discoverFirst: Boolean, grabBanners: Boolean) {
         val results = LinkedHashMap<String, HostResult>()
         var progress: PortScanEvent.Progress? = null
         var discovery: PortScanEvent.Discovery? = null
@@ -265,7 +275,7 @@ class PortScanViewModel @Inject constructor(
             }
         }
         try {
-            scanner.scan(hosts, ports, protocol, timeoutMs, discoverFirst).collect { event ->
+            scanner.scan(hosts, ports, protocol, timeoutMs, discoverFirst, grabBanners).collect { event ->
                 synchronized(lock) {
                     dirty = true
                     when (event) {
@@ -283,6 +293,10 @@ class PortScanViewModel @Inject constructor(
                             }
                         }
                         is PortScanEvent.Progress -> progress = event
+                        is PortScanEvent.Banner -> {
+                            val host = results.getOrPut(event.ip) { HostResult(event.ip) }
+                            results[event.ip] = host.copy(banners = host.banners + (event.port to event.banner))
+                        }
                     }
                 }
             }

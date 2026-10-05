@@ -146,7 +146,7 @@ Netrik only sends traffic as a direct result of something you do:
 | Tapping **Show public IP**, or on every network change when Settings → **Always show public IP** is on (off by default) | `api.ipify.org` (HTTPS) | A request that reveals your public IP to that service |
 | Tapping **Update** in MAC/OUI Lookup | `standards-oui.ieee.org` (HTTPS) | Downloads of the public IEEE registries, with the `Netrik/<version>` user agent |
 | Ping, Traceroute | The target you typed | ICMP echo requests (via the system `ping` tool) |
-| Port Scanner | The host or network you typed | TCP connections / UDP probes to the chosen ports |
+| Port Scanner | The host or network you typed | TCP connections / UDP probes to the chosen ports; with "Capture banners" on (TCP, default), a second connection to each open port that reads its greeting and may send `HEAD / HTTP/1.0` and do a TLS handshake (the certificate is validated normally; the HTTP request only goes over a trusted connection) |
 | Devices scan | Your local subnet | Ping, TCP connections to common ports, mDNS, NetBIOS, SSDP/UPnP, MNDP and Ubiquiti discovery queries |
 | Neighbor Discovery (while the screen is open) | Broadcast on your local network | Empty MNDP requests (UDP 5678) and Ubiquiti discovery probes (UDP 10001), every 2 s at first, then every 10 s; Netrik also listens on UDP 5678 for MikroTik announcements |
 | SSH | The host you saved or typed | An SSH connection |
