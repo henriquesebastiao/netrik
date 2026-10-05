@@ -40,6 +40,8 @@ commit-message.md
 
 # Package Files #
 *.jar
+# The Gradle wrapper must be committed: CI and fresh clones run it (this exception has to come after *.jar).
+!gradle/wrapper/gradle-wrapper.jar
 *.war
 *.nar
 *.ear
