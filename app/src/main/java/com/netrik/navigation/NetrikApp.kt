@@ -37,8 +37,10 @@ fun NetrikApp() {
             // imePadding: with the keyboard open (SSH terminal) the notice shows above it.
             snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.imePadding()) },
             bottomBar = {
-                // The SSH form and terminal take the whole screen, as in the prototype.
-                val fullScreen = backStackEntry?.destination?.let { it.hasRoute<SshFormRoute>() || it.hasRoute<SshTerminalRoute>() } == true
+                // The SSH form and terminal take the whole screen, as in the prototype; the knock form follows the SSH form.
+                val fullScreen = backStackEntry?.destination?.let {
+                    it.hasRoute<SshFormRoute>() || it.hasRoute<SshTerminalRoute>() || it.hasRoute<KnockFormRoute>()
+                } == true
                 if (!fullScreen) NetrikNavigationBar(
                     current = currentTab,
                     onSelect = { tab ->

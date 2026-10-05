@@ -19,6 +19,8 @@ import com.netrik.feature.devices.DeviceDetailScreen
 import com.netrik.feature.devices.DevicesScreen
 import com.netrik.feature.devices.DevicesViewModel
 import com.netrik.feature.hub.HubScreen
+import com.netrik.feature.knock.KnockFormScreen
+import com.netrik.feature.knock.KnockListScreen
 import com.netrik.feature.oui.OuiScreen
 import com.netrik.feature.ping.PingScreen
 import com.netrik.feature.portscan.PortScanScreen
@@ -92,6 +94,16 @@ fun NetrikNavHost(navController: NavHostController, modifier: Modifier = Modifie
         composable<PingRoute> { PingScreen(onBack = { navController.popBackStack() }) }
         composable<TracerouteRoute> { TracerouteScreen(onBack = { navController.popBackStack() }) }
         composable<PortScanRoute> { PortScanScreen(onBack = { navController.popBackStack() }) }
+        composable<KnockRoute> { entry ->
+            val origin = entry.toRoute<KnockRoute>().origin
+            KnockListScreen(
+                viewModel = hiltViewModel(),
+                onBack = { navController.popBackStack() },
+                onNewKnock = { navController.navigate(KnockFormRoute(origin)) },
+                onEditKnock = { id -> navController.navigate(KnockFormRoute(origin, profileId = id)) },
+            )
+        }
+        composable<KnockFormRoute> { KnockFormScreen(viewModel = hiltViewModel(), onClose = { navController.popBackStack() }) }
         composable<ToolRoute> { entry ->
             val route = entry.toRoute<ToolRoute>()
             ToolPlaceholderScreen(tool = route.tool, onBack = { navController.popBackStack() })
@@ -143,6 +155,7 @@ fun NavController.openTool(tool: NetrikTool, origin: TopLevelDestination, target
         tool == NetrikTool.Ping -> navigate(PingRoute(origin = origin, target = target))
         tool == NetrikTool.Traceroute -> navigate(TracerouteRoute(origin = origin, target = target))
         tool == NetrikTool.PortScanner -> navigate(PortScanRoute(origin = origin, target = target))
+        tool == NetrikTool.PortKnock -> navigate(KnockRoute(origin = origin))
         else -> navigate(ToolRoute(tool = tool, origin = origin, target = target))
     }
 }
@@ -154,6 +167,8 @@ fun NavBackStackEntry.topLevelDestination(): TopLevelDestination? {
     if (destination.hasRoute<PingRoute>()) return toRoute<PingRoute>().origin
     if (destination.hasRoute<TracerouteRoute>()) return toRoute<TracerouteRoute>().origin
     if (destination.hasRoute<PortScanRoute>()) return toRoute<PortScanRoute>().origin
+    if (destination.hasRoute<KnockRoute>()) return toRoute<KnockRoute>().origin
+    if (destination.hasRoute<KnockFormRoute>()) return toRoute<KnockFormRoute>().origin
     return TopLevelDestination.entries.firstOrNull { tab ->
         destination.hierarchy.any { it.hasRoute(tab.graphClass) }
     }

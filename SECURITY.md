@@ -82,6 +82,7 @@ All data lives in the app's private storage on your device. Netrik has **no acco
 | SSH passwords, private keys and key passphrases | App database (Room) | **Encrypted** with AES-256-GCM; key in the Android Keystore (see below) |
 | SSH hosts: name, address, port, user, group, key file name | App database | Private app storage (not encrypted) |
 | Trusted SSH host keys (known_hosts) | App database | Private app storage |
+| Port knocking sequences and groups (name, host, protocols, ports) | App database | Private app storage. **Export** writes them as plain JSON to the file you choose; it holds no passwords or keys, but it does reveal your knock sequences, so keep it private |
 | Recent targets (Ping, Traceroute, Port Scanner) and MAC lookups | App database | Private app storage |
 | IEEE vendor (OUI) database | App database | Public data |
 | App lock PIN | Never stored; only a keyed verifier (see below) | HMAC-SHA256 with an Android Keystore key |
@@ -138,6 +139,7 @@ Netrik only sends traffic as a direct result of something you do:
 | Port Scanner | The host or network you typed | TCP connections / UDP probes to the chosen ports |
 | Devices scan | Your local subnet | Ping, TCP connections to common ports, mDNS, NetBIOS and SSDP/UPnP queries |
 | SSH | The host you saved or typed | An SSH connection |
+| Port Knocking | The host of the knock you tap | The sequence you saved: TCP SYNs (a connection attempt closed right away), empty UDP datagrams and ICMP echo requests; then, if set, one TCP connection to the port to test |
 | **Report a bug** in Settings | `github.com` (in your browser) | Opens the issues page |
 
 There are no background network requests, update checks, telemetry or ads.
@@ -201,6 +203,6 @@ Security issues in these libraries are tracked upstream; Netrik updates them whe
 - [JSch (mwiede fork)](https://github.com/mwiede/jsch) — SSH protocol (BSD).
 - [Bouncy Castle](https://www.bouncycastle.org/) — cryptography (MIT).
 - [Termux terminal-emulator / terminal-view](https://github.com/termux/termux-app) — terminal emulation and rendering (Apache 2.0). Only the Java emulator and renderer are used; Termux's native library isn't included.
-- AndroidX (Compose, Room, DataStore, Navigation), Hilt and Kotlin coroutines (Apache 2.0).
+- AndroidX (Compose, Room, DataStore, Navigation), Hilt, Kotlin coroutines and kotlinx.serialization (Apache 2.0).
 
 Dependency versions are listed in [`gradle/libs.versions.toml`](gradle/libs.versions.toml).

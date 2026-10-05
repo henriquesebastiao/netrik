@@ -65,5 +65,16 @@ data class SshFormRoute(
 /** Full-screen SSH terminal, with the tabs of the open sessions (inside the SSH tab). */
 @Serializable data object SshTerminalRoute
 
+/** Port Knocking: saved sequences by group. */
+@Serializable
+data class KnockRoute(val origin: TopLevelDestination)
+
+/** New ([profileId] null) or edit knock form, on top of the Port Knocking list. */
+@Serializable
+data class KnockFormRoute(
+    val origin: TopLevelDestination,
+    val profileId: Long? = null,
+)
+
 /** Settings screen, opened from the Tools tab top bar. */
 @Serializable data object SettingsRoute

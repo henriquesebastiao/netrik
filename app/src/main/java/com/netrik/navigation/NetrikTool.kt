@@ -30,4 +30,5 @@ enum class NetrikTool(
     Wifi(R.string.tab_wifi, R.string.tool_wifi_desc, R.drawable.ic_wifi, ToolGroup.Discovery, TopLevelDestination.Wifi),
     Oui(R.string.tool_oui, R.string.tool_oui_desc, R.drawable.ic_manage_search, ToolGroup.Discovery),
     Ssh(R.string.tab_ssh, R.string.tool_ssh_desc, R.drawable.ic_terminal, ToolGroup.RemoteAccess, TopLevelDestination.Ssh),
+    PortKnock(R.string.tool_port_knock, R.string.tool_port_knock_desc, R.drawable.ic_door_open, ToolGroup.RemoteAccess),
 }

@@ -15,6 +15,7 @@ Available in English and Brazilian Portuguese.
 | **Wi-Fi** | Nearby networks with security, channel, width and signal quality, plus a 2.4/5/6 GHz spectrum chart. |
 | **Port Scanner** | TCP and UDP scans of a single host or a whole network (up to /22), with Top 100/Top 1000/custom port lists and service names. |
 | **MAC/OUI Lookup** | Vendor of a MAC address from the offline IEEE database (MA-L, MA-M and MA-S), updatable from the official files. |
+| **Port Knocking** | Saved knock sequences (TCP, UDP and ICMP steps) in groups, with a delay between knocks, an optional check that the port opened, and JSON export/import. |
 | **SSH** | Saved hosts in groups, password or key authentication (Ed25519, RSA, ECDSA), host key verification and an xterm terminal with tabs, extra keys and background sessions. |
 
 Settings let you lock Netrik with a 4-digit PIN or your fingerprint, pick the theme (system, light or dark), use your wallpaper colors (Material You) or the Netrik colors, enable pure black for AMOLED screens and choose the app language.

@@ -16,20 +16,24 @@ import javax.inject.Singleton
     entities = [
         OuiPrefixEntity::class, OuiMetaEntity::class, OuiHistoryEntity::class, TargetHistoryEntity::class,
         SshGroupEntity::class, SshHostEntity::class, KnownHostEntity::class,
+        KnockGroupEntity::class, KnockProfileEntity::class, KnockStepEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
     autoMigrations = [
         // v2: target history of the tools (Ping, Traceroute, Port Scanner)
         AutoMigration(from = 1, to = 2),
         // v3: SSH hosts and groups and trusted host keys
         AutoMigration(from = 2, to = 3),
+        // v4: port knocking groups, sequences and steps
+        AutoMigration(from = 3, to = 4),
     ],
 )
 abstract class NetrikDatabase : RoomDatabase() {
     abstract fun ouiDao(): OuiDao
     abstract fun targetHistoryDao(): TargetHistoryDao
     abstract fun sshDao(): SshDao
+    abstract fun knockDao(): KnockDao
 }
 
 @Module
@@ -49,4 +53,7 @@ object DatabaseModule {
 
     @Provides
     fun provideSshDao(database: NetrikDatabase): SshDao = database.sshDao()
+
+    @Provides
+    fun provideKnockDao(database: NetrikDatabase): KnockDao = database.knockDao()
 }

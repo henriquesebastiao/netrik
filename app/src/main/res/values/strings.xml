@@ -667,4 +667,95 @@
 
     <!-- Open source licenses (Settings) -->
     <string name="about_licenses">Roboto Flex and JetBrains Mono fonts: SIL Open Font License 1.1.\nMaterial Symbols icons: Apache License 2.0.\nVendors: IEEE MA-L, MA-M and MA-S registries.\nMost common ports: Nmap project ranking (numbers only). Service names: IANA port registry.\nSSH: JSch (mwiede fork, BSD license) and Bouncy Castle (MIT license).\nTerminal: Termux emulator and renderer (terminal-emulator and terminal-view, Apache License 2.0).</string>
+
+    <!-- Port Knocking -->
+    <string name="tool_port_knock">Port Knocking</string>
+    <string name="tool_port_knock_desc">Knock sequences that open ports on a server</string>
+    <string name="knock_new">New knock</string>
+    <string name="knock_empty">No saved knocks yet. Create a sequence of TCP, UDP or ICMP knocks to open a port protected by port knocking.</string>
+    <string name="knock_group_empty">No knocks in this group. Move one here from its menu.</string>
+    <string name="knock_options">Knock options</string>
+    <string name="knock_run">Knock</string>
+    <string name="knock_duplicate">Duplicate</string>
+    <string name="knock_move">Move to group</string>
+    <string name="knock_move_title">Move “%1$s”</string>
+    <string name="knock_copy_name">%1$s (copy)</string>
+    <string name="knock_icmp_size">ICMP %1$d B</string>
+    <string name="knock_deleted">Knock deleted</string>
+    <string name="knock_moved">Knock moved</string>
+    <string name="knock_duplicated">“%1$s” created</string>
+    <string name="knock_delete_body">The sequence will be erased. This can\'t be undone.</string>
+    <plurals name="knock_group_delete_body">
+        <item quantity="one">The knock in this group will be moved to No group. No knock is erased.</item>
+        <item quantity="other">The %1$d knocks in this group will be moved to No group. No knock is erased.</item>
+    </plurals>
+    <string name="knock_import">Import</string>
+    <string name="knock_export_all">Export all</string>
+    <string name="knock_export_group">Export group</string>
+    <string name="knock_export_file">netrik-knocks</string>
+    <string name="knock_exported">Knocks exported</string>
+    <string name="knock_export_failed">Couldn\'t write the file</string>
+    <string name="knock_import_done">Import finished</string>
+    <plurals name="knock_import_added">
+        <item quantity="one">%1$d knock added.</item>
+        <item quantity="other">%1$d knocks added.</item>
+    </plurals>
+    <plurals name="knock_import_groups">
+        <item quantity="one">%1$d group created.</item>
+        <item quantity="other">%1$d groups created.</item>
+    </plurals>
+    <plurals name="knock_import_duplicates">
+        <item quantity="one">%1$d skipped: already saved.</item>
+        <item quantity="other">%1$d skipped: already saved.</item>
+    </plurals>
+    <plurals name="knock_import_invalid">
+        <item quantity="one">%1$d skipped: invalid host, port or protocol.</item>
+        <item quantity="other">%1$d skipped: invalid host, port or protocol.</item>
+    </plurals>
+    <string name="knock_import_failed">Couldn\'t import</string>
+    <string name="knock_import_unreadable">The file couldn\'t be read, or it\'s larger than 1 MB.</string>
+    <string name="knock_import_not_knock">This isn\'t a Netrik knock export file.</string>
+    <string name="knock_import_newer">This file was made by a newer version of Netrik. Update the app to import it.</string>
+    <string name="knock_import_empty">The file has no knocks or groups.</string>
+    <string name="knock_phase_resolving">Resolving…</string>
+    <string name="knock_phase_running">Knocking…</string>
+    <string name="knock_phase_done">Sequence sent</string>
+    <string name="knock_phase_stopped">Stopped</string>
+    <string name="knock_phase_failed">Failed</string>
+    <string name="knock_step_sent">Sent</string>
+    <string name="knock_step_failed_short">Not sent</string>
+    <string name="knock_step_failed">Knock %1$d couldn\'t be sent</string>
+    <string name="knock_error_blocked">Android refused to send it. A VPN, a firewall app or a missing permission may be blocking this traffic.</string>
+    <string name="knock_error_unreachable">There\'s no route to this host from the current network.</string>
+    <string name="knock_error_other">Unknown network error.</string>
+    <string name="knock_done_note">Knocks get no answer: Netrik can tell they were sent, not that the server accepted them. Set a port to test in the knock to check it.</string>
+    <string name="knock_again">Knock again</string>
+    <string name="knock_verify_label">Port %1$d (TCP)</string>
+    <string name="knock_verify_waiting">Waiting</string>
+    <string name="knock_verify_open">Open</string>
+    <string name="knock_verify_closed">Closed</string>
+    <string name="knock_verify_no_reply">No reply</string>
+    <string name="knock_verify_closed_note">The host refused the connection: the sequence may be wrong or the server didn\'t accept it.</string>
+    <string name="knock_verify_no_reply_note">No answer within 3 s: the port is still filtered, or the host is unreachable.</string>
+    <string name="knock_form_new">New knock</string>
+    <string name="knock_form_edit">Edit knock</string>
+    <string name="knock_form_name_hint">e.g. Home server</string>
+    <string name="knock_form_sequence">Sequence</string>
+    <string name="knock_form_step">Knock %1$d</string>
+    <string name="knock_form_step_up">Move up</string>
+    <string name="knock_form_step_down">Move down</string>
+    <string name="knock_form_step_remove">Remove knock</string>
+    <string name="knock_form_add_step">Add knock</string>
+    <string name="knock_form_port_invalid">Use a port from 1 to 65535</string>
+    <string name="knock_form_payload">Payload size (optional)</string>
+    <string name="knock_form_payload_sup">ICMP has no port: an echo request is sent. Firewalls often tell knocks apart by payload size, in bytes (default 56).</string>
+    <string name="knock_form_payload_invalid">Use a size from 0 to %1$d bytes</string>
+    <string name="knock_form_options">Options</string>
+    <string name="knock_form_delay">Delay (ms)</string>
+    <string name="knock_form_delay_sup">Between knocks</string>
+    <string name="knock_form_delay_invalid">Use 0 to %1$d ms</string>
+    <string name="knock_form_verify">Port to test</string>
+    <string name="knock_form_verify_sup">Optional, TCP</string>
+    <string name="knock_form_no_steps">Add at least one knock</string>
+    <string name="knock_form_too_many_steps">Too many knocks (limit: %1$d)</string>
 </resources>

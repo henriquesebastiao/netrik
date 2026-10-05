@@ -672,4 +672,100 @@
 
     <!-- Open source licenses (Settings) -->
     <string name="about_licenses">Fontes Roboto Flex e JetBrains Mono: SIL Open Font License 1.1.\nÍcones Material Symbols: Apache License 2.0.\nFabricantes: registros MA-L, MA-M e MA-S do IEEE.\nPortas mais comuns: ranking do projeto Nmap (só os números). Nomes de serviço: registro de portas da IANA.\nSSH: JSch (fork mwiede, licença BSD) e Bouncy Castle (licença MIT).\nTerminal: emulador e renderizador do Termux (terminal-emulator e terminal-view, Apache License 2.0).</string>
+
+    <!-- Port Knocking -->
+    <string name="tool_port_knock">Port Knocking</string>
+    <string name="tool_port_knock_desc">Sequências de batidas que abrem portas num servidor</string>
+    <string name="knock_new">Novo knock</string>
+    <string name="knock_empty">Nenhum knock salvo ainda. Crie uma sequência de batidas TCP, UDP ou ICMP para abrir uma porta protegida por port knocking.</string>
+    <string name="knock_group_empty">Nenhum knock neste grupo. Mova um para cá pelo menu dele.</string>
+    <string name="knock_options">Opções do knock</string>
+    <string name="knock_run">Bater</string>
+    <string name="knock_duplicate">Duplicar</string>
+    <string name="knock_move">Mover para grupo</string>
+    <string name="knock_move_title">Mover “%1$s”</string>
+    <string name="knock_copy_name">%1$s (cópia)</string>
+    <string name="knock_icmp_size">ICMP %1$d B</string>
+    <string name="knock_deleted">Knock apagado</string>
+    <string name="knock_moved">Knock movido</string>
+    <string name="knock_duplicated">“%1$s” criado</string>
+    <string name="knock_delete_body">A sequência será apagada. Não dá para desfazer.</string>
+    <plurals name="knock_group_delete_body">
+        <item quantity="one">%1$d knock deste grupo vai para Sem grupo. Nenhum knock é apagado.</item>
+        <item quantity="many">Os %1$d knocks deste grupo vão para Sem grupo. Nenhum knock é apagado.</item>
+        <item quantity="other">Os %1$d knocks deste grupo vão para Sem grupo. Nenhum knock é apagado.</item>
+    </plurals>
+    <string name="knock_import">Importar</string>
+    <string name="knock_export_all">Exportar tudo</string>
+    <string name="knock_export_group">Exportar grupo</string>
+    <string name="knock_export_file">netrik-knocks</string>
+    <string name="knock_exported">Knocks exportados</string>
+    <string name="knock_export_failed">Não foi possível gravar o arquivo</string>
+    <string name="knock_import_done">Importação concluída</string>
+    <plurals name="knock_import_added">
+        <item quantity="one">%1$d knock adicionado.</item>
+        <item quantity="many">%1$d knocks adicionados.</item>
+        <item quantity="other">%1$d knocks adicionados.</item>
+    </plurals>
+    <plurals name="knock_import_groups">
+        <item quantity="one">%1$d grupo criado.</item>
+        <item quantity="many">%1$d grupos criados.</item>
+        <item quantity="other">%1$d grupos criados.</item>
+    </plurals>
+    <plurals name="knock_import_duplicates">
+        <item quantity="one">%1$d ignorado: já estava salvo.</item>
+        <item quantity="many">%1$d ignorados: já estavam salvos.</item>
+        <item quantity="other">%1$d ignorados: já estavam salvos.</item>
+    </plurals>
+    <plurals name="knock_import_invalid">
+        <item quantity="one">%1$d ignorado: host, porta ou protocolo inválido.</item>
+        <item quantity="many">%1$d ignorados: host, porta ou protocolo inválido.</item>
+        <item quantity="other">%1$d ignorados: host, porta ou protocolo inválido.</item>
+    </plurals>
+    <string name="knock_import_failed">Não foi possível importar</string>
+    <string name="knock_import_unreadable">Não foi possível ler o arquivo, ou ele tem mais de 1 MB.</string>
+    <string name="knock_import_not_knock">Este não é um arquivo de knocks exportado pelo Netrik.</string>
+    <string name="knock_import_newer">Este arquivo foi feito por uma versão mais nova do Netrik. Atualize o app para importá-lo.</string>
+    <string name="knock_import_empty">O arquivo não tem knocks nem grupos.</string>
+    <string name="knock_phase_resolving">Resolvendo…</string>
+    <string name="knock_phase_running">Batendo…</string>
+    <string name="knock_phase_done">Sequência enviada</string>
+    <string name="knock_phase_stopped">Parado</string>
+    <string name="knock_phase_failed">Falhou</string>
+    <string name="knock_step_sent">Enviada</string>
+    <string name="knock_step_failed_short">Não enviada</string>
+    <string name="knock_step_failed">A batida %1$d não pôde ser enviada</string>
+    <string name="knock_error_blocked">O Android recusou o envio. Uma VPN, um app de firewall ou uma permissão faltando pode estar bloqueando esse tráfego.</string>
+    <string name="knock_error_unreachable">Não há rota para este host a partir da rede atual.</string>
+    <string name="knock_error_other">Erro de rede desconhecido.</string>
+    <string name="knock_done_note">Batidas não têm resposta: o Netrik sabe que foram enviadas, não que o servidor as aceitou. Defina uma porta para testar no knock para conferir.</string>
+    <string name="knock_again">Bater de novo</string>
+    <string name="knock_verify_label">Porta %1$d (TCP)</string>
+    <string name="knock_verify_waiting">Aguardando</string>
+    <string name="knock_verify_open">Aberta</string>
+    <string name="knock_verify_closed">Fechada</string>
+    <string name="knock_verify_no_reply">Sem resposta</string>
+    <string name="knock_verify_closed_note">O host recusou a conexão: a sequência pode estar errada ou o servidor não a aceitou.</string>
+    <string name="knock_verify_no_reply_note">Sem resposta em 3 s: a porta continua filtrada, ou o host está inacessível.</string>
+    <string name="knock_form_new">Novo knock</string>
+    <string name="knock_form_edit">Editar knock</string>
+    <string name="knock_form_name_hint">ex.: Servidor de casa</string>
+    <string name="knock_form_sequence">Sequência</string>
+    <string name="knock_form_step">Batida %1$d</string>
+    <string name="knock_form_step_up">Mover para cima</string>
+    <string name="knock_form_step_down">Mover para baixo</string>
+    <string name="knock_form_step_remove">Remover batida</string>
+    <string name="knock_form_add_step">Adicionar batida</string>
+    <string name="knock_form_port_invalid">Use uma porta de 1 a 65535</string>
+    <string name="knock_form_payload">Tamanho do payload (opcional)</string>
+    <string name="knock_form_payload_sup">ICMP não tem porta: é enviado um echo request. Firewalls costumam diferenciar as batidas pelo tamanho do payload, em bytes (padrão 56).</string>
+    <string name="knock_form_payload_invalid">Use um tamanho de 0 a %1$d bytes</string>
+    <string name="knock_form_options">Opções</string>
+    <string name="knock_form_delay">Intervalo (ms)</string>
+    <string name="knock_form_delay_sup">Entre as batidas</string>
+    <string name="knock_form_delay_invalid">Use de 0 a %1$d ms</string>
+    <string name="knock_form_verify">Porta para testar</string>
+    <string name="knock_form_verify_sup">Opcional, TCP</string>
+    <string name="knock_form_no_steps">Adicione pelo menos uma batida</string>
+    <string name="knock_form_too_many_steps">Batidas demais (limite: %1$d)</string>
 </resources>
