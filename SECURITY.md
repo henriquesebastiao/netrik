@@ -85,7 +85,7 @@ All data lives in the app's private storage on your device. Netrik has **no acco
 | Recent targets (Ping, Traceroute, Port Scanner) and MAC lookups | App database | Private app storage |
 | IEEE vendor (OUI) database | App database | Public data |
 | App lock PIN | Never stored; only a keyed verifier (see below) | HMAC-SHA256 with an Android Keystore key |
-| Settings (theme, language, terminal font size) | DataStore / preferences | Private app storage |
+| Settings (theme, language, terminal font size, network options) | DataStore / preferences | Private app storage |
 | Device scan, Wi-Fi scan and port scan results | Memory only | Gone when the app process ends |
 | SSH session output (terminal scrollback) | Memory only | Gone when the session closes |
 
@@ -132,7 +132,7 @@ Netrik only sends traffic as a direct result of something you do:
 
 | Action | Destination | What is sent |
 | --- | --- | --- |
-| Tapping **Show public IP** | `api.ipify.org` (HTTPS) | A request that reveals your public IP to that service |
+| Tapping **Show public IP**, or on every network change when Settings → **Always show public IP** is on (off by default) | `api.ipify.org` (HTTPS) | A request that reveals your public IP to that service |
 | Tapping **Update** in MAC/OUI Lookup | `standards-oui.ieee.org` (HTTPS) | Downloads of the public IEEE registries, with the `Netrik/<version>` user agent |
 | Ping, Traceroute | The target you typed | ICMP echo requests (via the system `ping` tool) |
 | Port Scanner | The host or network you typed | TCP connections / UDP probes to the chosen ports |

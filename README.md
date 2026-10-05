@@ -8,7 +8,7 @@ Available in English and Brazilian Portuguese.
 
 | Tool | What it does |
 | --- | --- |
-| **Current network** | Network name, signal, band and channel, local IP, gateway, mask/CIDR, DNS and IPv6, with one-tap copy. The public IP is only looked up when you ask for it. |
+| **Current network** | Local IP, gateway and public IP at a glance; a details sheet with network name, signal, band, channel, BSSID, mask/CIDR, DNS and IPv6, with one-tap copy. The public IP is only looked up when you ask for it (or always, if you turn that on in Settings). |
 | **Ping** | Real-time replies with seq, TTL and time, count or continuous mode, latency chart and statistics (loss, min/avg/max, jitter). |
 | **Traceroute** | Hop-by-hop route with reverse DNS and the latency of each router. |
 | **Devices** | Finds the devices on your local network (ping + TCP probing, mDNS, NetBIOS and UPnP), with vendor, hostname and quick actions. |
@@ -22,7 +22,7 @@ Settings let you lock Netrik with a 4-digit PIN or your fingerprint, pick the th
 ## Privacy and security
 
 - No ads, no analytics, no tracking.
-- The app only reaches the internet when you ask it to: the public IP lookup (`api.ipify.org`), the OUI database update (`standards-oui.ieee.org`) and, of course, the hosts you ping, scan or connect to.
+- The app only reaches the internet when you ask it to: the public IP lookup (`api.ipify.org`, on tap or automatically if you enable it), the OUI database update (`standards-oui.ieee.org`) and, of course, the hosts you ping, scan or connect to.
 - SSH passwords and private keys are encrypted with a key kept in the Android Keystore and never leave the device.
 - Read the full [security policy](SECURITY.md), also available in Settings → Security policy. Found a vulnerability? Report it privately as described there, not in a public issue.
 

@@ -25,6 +25,17 @@ class SettingsViewModel @Inject constructor(
 
     val lock: StateFlow<AppLockState> = appLock.state
 
+    val alwaysShowPublicIp: StateFlow<Boolean> = settings.alwaysShowPublicIp.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+    val hideHiddenWifi: StateFlow<Boolean> = settings.hideHiddenWifi.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    fun setAlwaysShowPublicIp(enabled: Boolean) {
+        viewModelScope.launch { settings.setAlwaysShowPublicIp(enabled) }
+    }
+
+    fun setHideHiddenWifi(enabled: Boolean) {
+        viewModelScope.launch { settings.setHideHiddenWifi(enabled) }
+    }
+
     val appearance: StateFlow<AppearanceSettings> =
         settings.appearance.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppearanceSettings())
 

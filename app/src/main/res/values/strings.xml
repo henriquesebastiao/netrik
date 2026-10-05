@@ -75,11 +75,25 @@
 
     <string name="copied_local_ip">Local IP copied</string>
     <string name="copied_gateway">Gateway copied</string>
-    <string name="copied_mask">Mask copied</string>
-    <string name="copied_dns">DNS copied</string>
-    <string name="copied_ipv6">IPv6 copied</string>
     <string name="copied_public_ip">Public IP copied</string>
     <string name="copied_network">Network details copied</string>
+    <string name="copied_value">%1$s copied</string>
+    <string name="network_details">Network details</string>
+    <string name="field_carrier">Carrier</string>
+    <string name="field_connection">Connection</string>
+    <string name="field_internet">Internet</string>
+    <string name="field_signal">Signal</string>
+    <string name="field_frequency">Frequency</string>
+    <string name="field_band">Band</string>
+    <string name="field_channel">Channel</string>
+    <string name="field_channel_width">Channel width</string>
+    <string name="field_bssid">BSSID</string>
+    <string name="field_interface">Interface</string>
+    <string name="transport_wifi">Wi-Fi</string>
+    <string name="transport_cellular">Mobile data</string>
+    <string name="transport_ethernet">Ethernet</string>
+    <string name="transport_vpn">VPN</string>
+    <string name="transport_other">Other</string>
 
     <string name="public_ip_show">Show public IP</string>
     <string name="public_ip_hint">Queries the external service api.ipify.org, which learns your IP.</string>
@@ -635,6 +649,11 @@
     <string name="pin_enabled">App lock on</string>
     <string name="pin_disabled">App lock off</string>
     <string name="pin_changed">PIN changed</string>
+    <string name="settings_section_network">Network</string>
+    <string name="settings_always_public_ip">Always show public IP</string>
+    <string name="settings_always_public_ip_sub">Looks up your public IP on api.ipify.org whenever the network changes, which reveals your IP to that service</string>
+    <string name="settings_hide_hidden_wifi">Hide hidden networks</string>
+    <string name="settings_hide_hidden_wifi_sub">Networks that don\'t broadcast their name aren\'t listed in the Wi-Fi tab</string>
     <string name="settings_section_security">Security</string>
     <string name="settings_app_lock">App lock</string>
     <string name="settings_app_lock_on">Asks for your PIN when you open Netrik and after the device locks</string>

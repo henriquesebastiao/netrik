@@ -81,6 +81,8 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
     var showLicenses by rememberSaveable { mutableStateOf(false) }
     val language = remember(showLanguage) { AppLanguages.current(context) }
     val lock by viewModel.lock.collectAsStateWithLifecycle()
+    val alwaysShowPublicIp by viewModel.alwaysShowPublicIp.collectAsStateWithLifecycle()
+    val hideHiddenWifi by viewModel.hideHiddenWifi.collectAsStateWithLifecycle()
     var pinFlow by rememberSaveable { mutableStateOf<PinFlow?>(null) }
     val snackbar = LocalSnackbarHostState.current
     val scope = rememberCoroutineScope()
@@ -126,6 +128,28 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                         onCheckedChange = viewModel::setAmoled,
                         index = 2,
                         count = 3,
+                    )
+                }
+            }
+            item(key = "network") {
+                SettingsSection(stringResource(R.string.settings_section_network)) {
+                    SwitchRow(
+                        icon = R.drawable.ic_public,
+                        title = stringResource(R.string.settings_always_public_ip),
+                        subtitle = stringResource(R.string.settings_always_public_ip_sub),
+                        checked = alwaysShowPublicIp,
+                        onCheckedChange = viewModel::setAlwaysShowPublicIp,
+                        index = 0,
+                        count = 2,
+                    )
+                    SwitchRow(
+                        icon = R.drawable.ic_wifi_off,
+                        title = stringResource(R.string.settings_hide_hidden_wifi),
+                        subtitle = stringResource(R.string.settings_hide_hidden_wifi_sub),
+                        checked = hideHiddenWifi,
+                        onCheckedChange = viewModel::setHideHiddenWifi,
+                        index = 1,
+                        count = 2,
                     )
                 }
             }

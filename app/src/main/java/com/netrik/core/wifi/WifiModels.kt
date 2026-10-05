@@ -109,3 +109,7 @@ fun List<WifiNetwork>.nearby(bands: Set<WifiBand>, sort: WifiSort): List<WifiNet
 
 internal fun bandAndChannel(frequencyMhz: Int): Pair<WifiBand?, Int?> =
     WifiChannels.bandOf(frequencyMhz) to WifiChannels.frequencyToChannel(frequencyMhz)
+
+/** Drops networks that don't broadcast their name when [hide] is on; the connected one always stays. */
+fun List<WifiNetwork>.withoutHidden(hide: Boolean): List<WifiNetwork> =
+    if (!hide) this else filter { it.ssid != null || it.connected }

@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.netrik.core.network.CurrentNetwork
 import com.netrik.core.network.NetworkInfoRepository
+import com.netrik.core.settings.NetworkPreferences
 import com.netrik.core.network.WifiBand
 import com.netrik.core.wifi.ScanThrottle
 import com.netrik.core.wifi.WifiNetwork
+import com.netrik.core.wifi.withoutHidden
 import com.netrik.core.wifi.WifiScanRepository
 import com.netrik.core.wifi.WifiSort
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -76,6 +78,7 @@ class WifiViewModel @Inject constructor(
     private val scanner: WifiScanRepository,
     networkInfo: NetworkInfoRepository,
     private val clock: Clock,
+    networkPreferences: NetworkPreferences,
 ) : ViewModel() {
 
     private val throttle = ScanThrottle()
@@ -103,17 +106,26 @@ class WifiViewModel @Inject constructor(
         }
     }.onEach { now -> autoScan(now) }
 
-    val uiState: StateFlow<WifiUiState> = combine(
-        local,
+    /** Scan results, without hidden networks when the user asked for it in Settings (the connected one always stays). */
+    private val visibleResults: Flow<List<WifiNetwork>?> = combine(
         results.onStart { emit(null) },
         connectedBssid,
+        networkPreferences.hideHiddenWifi.onStart { emit(false) },
+    ) { list, bssid, hideHidden ->
+        list?.map { it.copy(connected = bssid != null && it.bssid.equals(bssid, ignoreCase = true)) }
+            ?.withoutHidden(hideHidden)
+    }
+
+    val uiState: StateFlow<WifiUiState> = combine(
+        local,
+        visibleResults,
         combine(scanner.wifiEnabled, scanner.locationEnabled) { w, l -> w to l },
         ticker,
-    ) { s, list, bssid, (wifiOn, locationOn), now ->
+    ) { s, list, (wifiOn, locationOn), now ->
         s.copy(
             wifiEnabled = wifiOn,
             locationEnabled = locationOn,
-            networks = list.orEmpty().map { it.copy(connected = bssid != null && it.bssid.equals(bssid, ignoreCase = true)) },
+            networks = list.orEmpty(),
             secondsToRefresh = ((nextAutoScanAt - now).coerceAtLeast(0) / 1000).toInt(),
             throttled = !throttle.canScan(now),
         )

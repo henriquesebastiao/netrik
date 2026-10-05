@@ -112,4 +112,13 @@ class WifiLogicTest {
         assertEquals(listOf("D", "B", "C"), all.nearby(WifiBand.entries.toSet(), WifiSort.Name).map { it.bssid })
         assertEquals(listOf("D"), all.nearby(setOf(WifiBand.GHz5), WifiSort.Signal).map { it.bssid })
     }
+
+    @Test
+    fun `hidden networks can be left out, except the connected one`() {
+        fun net(ssid: String?, bssid: String, connected: Boolean = false) =
+            WifiNetwork(ssid, bssid, -60, 0, WifiBand.GHz2_4, 6, 20, 0, WifiSecurity.Wpa2, connected)
+        val all = listOf(net("Home", "A"), net(null, "B"), net(null, "C", connected = true))
+        assertEquals(listOf("A", "B", "C"), all.withoutHidden(false).map { it.bssid })
+        assertEquals(listOf("A", "C"), all.withoutHidden(true).map { it.bssid })
+    }
 }

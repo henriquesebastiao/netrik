@@ -9,6 +9,14 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -33,7 +41,7 @@ import com.netrik.core.network.CurrentNetwork.Transport
 import com.netrik.core.ui.CopyAction
 import com.netrik.core.ui.rememberCopyAction
 
-/** Hub "Current network" card: tapping a value copies it; "Copy all" copies the summary. */
+/** Hub "Current network" card: the main addresses (tap to copy) and a "Network details" sheet with everything else. */
 @Composable
 fun NetworkCard(
     network: NetworkCardState,
@@ -101,42 +109,80 @@ private fun ConnectedContent(network: NetworkCardState.Connected, publicIp: Publ
     }
     network.signal?.let { SignalLine(it) }
 
-    val fields = listOf(
-        Field(stringResource(R.string.field_local_ip), network.localIp, stringResource(R.string.copied_local_ip)),
-        Field(stringResource(R.string.field_gateway), network.gateway, stringResource(R.string.copied_gateway)),
-        Field(stringResource(R.string.field_mask_cidr), network.maskCidr, stringResource(R.string.copied_mask)),
-        Field(stringResource(R.string.field_dns), network.dns, stringResource(R.string.copied_dns)),
-    )
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        fields.chunked(2).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                row.forEach { FieldTile(it, unavailable, copy, Modifier.weight(1f)) }
-            }
-        }
-        if (network.ipv6 != null) {
-            FieldTile(Field(stringResource(R.string.field_ipv6), network.ipv6, stringResource(R.string.copied_ipv6)), unavailable, copy)
-        }
-        PublicIpTile(publicIp, onShowPublicIp, copy)
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FieldTile(Field(stringResource(R.string.field_local_ip), network.localIp, stringResource(R.string.copied_local_ip)), unavailable, copy, Modifier.weight(1f))
+        FieldTile(Field(stringResource(R.string.field_gateway), network.gateway, stringResource(R.string.copied_gateway)), unavailable, copy, Modifier.weight(1f))
     }
+    PublicIpTile(publicIp, onShowPublicIp, copy)
 
-    val ssidLabel = stringResource(R.string.field_ssid)
-    val publicIpLabel = stringResource(R.string.field_public_ip)
-    val ipv6Label = stringResource(R.string.field_ipv6)
-    val copiedAll = stringResource(R.string.copied_network)
+    var showDetails by rememberSaveable { mutableStateOf(false) }
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-        TextButton(
-            onClick = {
-                val lines = buildList {
-                    if (network.transport == Transport.Wifi && network.name != null) add("$ssidLabel: ${network.name}")
-                    fields.forEach { add("${it.label}: ${it.value ?: unavailable}") }
-                    network.ipv6?.let { add("$ipv6Label: $it") }
-                    (publicIp as? PublicIpUi.Loaded)?.let { add("$publicIpLabel: ${it.ip}") }
-                }
-                copy.copy(lines.joinToString("\n"), copiedAll)
-            },
+        TextButton(onClick = { showDetails = true }) {
+            Icon(painterResource(R.drawable.ic_info), contentDescription = null, modifier = Modifier.size(18.dp))
+            Text(stringResource(R.string.network_details), modifier = Modifier.padding(start = 8.dp))
+        }
+    }
+    if (showDetails) NetworkDetailsSheet(network, publicIp, onShowPublicIp, onDismiss = { showDetails = false })
+}
+
+/** Every detail Netrik knows about the current network, each one copyable. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NetworkDetailsSheet(network: NetworkCardState.Connected, publicIp: PublicIpUi, onShowPublicIp: () -> Unit, onDismiss: () -> Unit) {
+    val copy = rememberCopyAction()
+    val unavailable = stringResource(R.string.field_unavailable)
+    val signal = network.signal
+    val wifi = network.transport == Transport.Wifi
+    val rows = buildList {
+        if (wifi) add(stringResource(R.string.field_ssid) to network.name)
+        if (network.transport == Transport.Cellular) add(stringResource(R.string.field_carrier) to network.name)
+        add(stringResource(R.string.field_connection) to stringResource(network.transport.typeName))
+        add(
+            stringResource(R.string.field_internet) to stringResource(
+                if (network.hasInternet) R.string.network_status_connected else R.string.network_status_no_internet,
+            ),
+        )
+        if (wifi) {
+            add(stringResource(R.string.field_signal) to signal?.rssiDbm?.let { stringResource(R.string.wifi_dbm, formatDbm(it)) })
+            add(stringResource(R.string.field_frequency) to network.frequencyMhz?.let { "$it MHz" })
+            add(stringResource(R.string.field_band) to signal?.band?.let { stringResource(R.string.wifi_band, it.label) })
+            add(stringResource(R.string.field_channel) to signal?.channel?.toString())
+            add(stringResource(R.string.field_channel_width) to signal?.widthMhz?.let { "$it MHz" })
+            add(stringResource(R.string.field_bssid) to network.bssid)
+        }
+        add(stringResource(R.string.field_interface) to network.interfaceName)
+        add(stringResource(R.string.field_local_ip) to network.localIp)
+        add(stringResource(R.string.field_mask_cidr) to network.maskCidr)
+        add(stringResource(R.string.field_gateway) to network.gateway)
+        add(stringResource(R.string.field_dns) to network.dns)
+        add(stringResource(R.string.field_ipv6) to network.ipv6)
+    }
+    val publicIpLabel = stringResource(R.string.field_public_ip)
+    val copiedAll = stringResource(R.string.copied_network)
+    val copiedOne = stringResource(R.string.copied_value)
+
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Icon(painterResource(R.drawable.ic_copy_all), contentDescription = null, modifier = Modifier.size(18.dp))
-            Text(stringResource(R.string.action_copy_all), modifier = Modifier.padding(start = 8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.network_details), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+                TextButton(
+                    onClick = {
+                        val lines = rows.map { (label, value) -> "$label: ${value ?: unavailable}" } +
+                            listOfNotNull((publicIp as? PublicIpUi.Loaded)?.let { "$publicIpLabel: ${it.ip}" })
+                        copy.copy(lines.joinToString("\n"), copiedAll)
+                    },
+                ) {
+                    Icon(painterResource(R.drawable.ic_copy_all), contentDescription = null, modifier = Modifier.size(18.dp))
+                    Text(stringResource(R.string.action_copy_all), modifier = Modifier.padding(start = 8.dp))
+                }
+            }
+            rows.forEach { (label, value) -> FieldTile(Field(label, value, copiedOne.format(label)), unavailable, copy) }
+            PublicIpTile(publicIp, onShowPublicIp, copy)
         }
     }
 }
@@ -323,6 +369,15 @@ private val Transport.icon: Int
         Transport.Cellular -> R.drawable.ic_signal_cellular_alt_filled
         Transport.Ethernet -> R.drawable.ic_lan
         Transport.Vpn, Transport.Other -> R.drawable.ic_public
+    }
+
+private val Transport.typeName: Int
+    get() = when (this) {
+        Transport.Wifi -> R.string.transport_wifi
+        Transport.Cellular -> R.string.transport_cellular
+        Transport.Ethernet -> R.string.transport_ethernet
+        Transport.Vpn -> R.string.transport_vpn
+        Transport.Other -> R.string.transport_other
     }
 
 private val Transport.label: Int

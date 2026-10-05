@@ -71,11 +71,25 @@
 
     <string name="copied_local_ip">IP local copiado</string>
     <string name="copied_gateway">Gateway copiado</string>
-    <string name="copied_mask">Máscara copiada</string>
-    <string name="copied_dns">DNS copiado</string>
-    <string name="copied_ipv6">IPv6 copiado</string>
     <string name="copied_public_ip">IP público copiado</string>
     <string name="copied_network">Dados da rede copiados</string>
+    <string name="copied_value">%1$s copiado</string>
+    <string name="network_details">Detalhes da rede</string>
+    <string name="field_carrier">Operadora</string>
+    <string name="field_connection">Conexão</string>
+    <string name="field_internet">Internet</string>
+    <string name="field_signal">Sinal</string>
+    <string name="field_frequency">Frequência</string>
+    <string name="field_band">Banda</string>
+    <string name="field_channel">Canal</string>
+    <string name="field_channel_width">Largura do canal</string>
+    <string name="field_bssid">BSSID</string>
+    <string name="field_interface">Interface</string>
+    <string name="transport_wifi">Wi-Fi</string>
+    <string name="transport_cellular">Dados móveis</string>
+    <string name="transport_ethernet">Ethernet</string>
+    <string name="transport_vpn">VPN</string>
+    <string name="transport_other">Outra</string>
 
     <string name="public_ip_show">Mostrar IP público</string>
     <string name="public_ip_hint">Consulta o serviço externo api.ipify.org, que fica sabendo do seu IP.</string>
@@ -640,6 +654,11 @@
     <string name="pin_enabled">Bloqueio do app ativado</string>
     <string name="pin_disabled">Bloqueio do app desativado</string>
     <string name="pin_changed">PIN alterado</string>
+    <string name="settings_section_network">Rede</string>
+    <string name="settings_always_public_ip">Sempre mostrar o IP público</string>
+    <string name="settings_always_public_ip_sub">Consulta seu IP público no api.ipify.org sempre que a rede muda, o que revela seu IP a esse serviço</string>
+    <string name="settings_hide_hidden_wifi">Ocultar redes ocultas</string>
+    <string name="settings_hide_hidden_wifi_sub">Redes que não divulgam o nome não aparecem na aba Wi-Fi</string>
     <string name="settings_section_security">Segurança</string>
     <string name="settings_app_lock">Bloqueio do app</string>
     <string name="settings_app_lock_on">Pede o PIN ao abrir o Netrik e depois que o aparelho é bloqueado</string>

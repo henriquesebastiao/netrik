@@ -1,6 +1,7 @@
 package com.netrik.feature.wifi
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,7 @@ import com.netrik.core.wifi.WifiNetwork
 import com.netrik.core.wifi.WifiSecurity
 import com.netrik.core.ui.CopyAction
 
-/** Network row from the design: signal icon, SSID, BSSID · vendor, chips, channel and dBm. */
+/** Network row from the design: signal icon, SSID, vendor, BSSID, chips, channel and dBm. */
 @Composable
 fun WifiNetworkRow(
     network: WifiNetwork,
@@ -77,18 +78,24 @@ fun WifiNetworkRow(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
-                        Surface(onClick = { copy.copy(network.bssid, bssidCopied) }, color = Color.Transparent) {
-                            Row(modifier = Modifier.padding(vertical = 2.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Text(network.bssid, style = NetrikTheme.dataTypography.dataSmall, color = colors.onSurfaceVariant)
-                                Text(
-                                    "· " + vendorLabel(network),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = colors.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
+                        // Vendor on its own line above the BSSID, so a long name isn't cut off by the address.
+                        if (network.vendor != null || network.bssidLocal) {
+                            Text(
+                                vendorLabel(network),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
                         }
+                        Text(
+                            network.bssid,
+                            style = NetrikTheme.dataTypography.dataSmall,
+                            color = colors.onSurfaceVariant,
+                            modifier = Modifier
+                                .clickable { copy.copy(network.bssid, bssidCopied) }
+                                .padding(vertical = 2.dp),
+                        )
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         SecurityChip(network.security)

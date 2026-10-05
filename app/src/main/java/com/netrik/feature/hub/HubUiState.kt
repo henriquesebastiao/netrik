@@ -27,6 +27,10 @@ sealed interface NetworkCardState {
         /** "1.1.1.1, 8.8.8.8" */
         val dns: String?,
         val ipv6: String?,
+        /** Shown only in the details sheet. */
+        val bssid: String? = null,
+        val frequencyMhz: Int? = null,
+        val interfaceName: String? = null,
         /** Identifies the network; a queried public IP is only valid while it doesn't change. */
         val networkKey: String,
     ) : NetworkCardState {
@@ -70,6 +74,9 @@ fun CurrentNetwork.toCardState(channelWidths: Map<String, Int> = emptyMap()): Ne
         gateway = gateway,
         dns = dnsServers.takeIf { it.isNotEmpty() }?.joinToString(", "),
         ipv6 = ipv6,
+        bssid = wifi?.bssid,
+        frequencyMhz = wifi?.frequencyMhz,
+        interfaceName = interfaceName,
         networkKey = listOf(transport.name, wifi?.ssid, ipv4?.address, gateway, ipv6).joinToString("|"),
     )
 }

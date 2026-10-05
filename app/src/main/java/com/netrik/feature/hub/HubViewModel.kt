@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.netrik.core.network.NetworkInfoRepository
 import com.netrik.core.network.PublicIpRepository
+import com.netrik.core.settings.NetworkPreferences
 import com.netrik.core.wifi.WifiScanRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -22,6 +24,7 @@ class HubViewModel @Inject constructor(
     networkInfoRepository: NetworkInfoRepository,
     private val publicIpRepository: PublicIpRepository,
     wifiScan: WifiScanRepository,
+    networkPreferences: NetworkPreferences,
 ) : ViewModel() {
 
     /** Public IP lookup, tied to the network it was made on. */
@@ -40,10 +43,11 @@ class HubViewModel @Inject constructor(
         .map { list -> list.associate { it.bssid to it.widthMhz } }
         .onStart { emit(emptyMap()) }
 
-    val uiState: StateFlow<HubUiState> = combine(
-        combine(networkInfoRepository.currentNetwork, channelWidths) { network, widths -> network.toCardState(widths) },
-        publicIpQuery,
-    ) { card, query ->
+    private val card: StateFlow<NetworkCardState> =
+        combine(networkInfoRepository.currentNetwork, channelWidths) { network, widths -> network.toCardState(widths) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), NetworkCardState.Loading)
+
+    val uiState: StateFlow<HubUiState> = combine(card, publicIpQuery) { card, query ->
         // If the network changed after the lookup, the old public IP is no longer valid.
         val key = (card as? NetworkCardState.Connected)?.networkKey
         val publicIp = when {
@@ -55,10 +59,22 @@ class HubViewModel @Inject constructor(
         HubUiState(network = card, publicIp = publicIp)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HubUiState())
 
-    /** Only on an explicit user action: the lookup reveals the IP to an external service. */
+    init {
+        // "Always show public IP" (Settings): look it up on its own whenever the network changes.
+        viewModelScope.launch {
+            combine(card, networkPreferences.alwaysShowPublicIp) { card, always -> (card as? NetworkCardState.Connected)?.networkKey.takeIf { always } }
+                .distinctUntilChanged()
+                .collect { key -> if (key != null && publicIpQuery.value?.networkKey != key) fetchPublicIp(key) }
+        }
+    }
+
+    /** On an explicit user action, or automatically when the user turned that on in Settings: the lookup reveals the IP to an external service. */
     fun onShowPublicIp() {
-        val card = uiState.value.network as? NetworkCardState.Connected ?: return
-        val key = card.networkKey
+        val connected = card.value as? NetworkCardState.Connected ?: return
+        fetchPublicIp(connected.networkKey)
+    }
+
+    private fun fetchPublicIp(key: String) {
         publicIpJob?.cancel()
         publicIpQuery.value = PublicIpQuery.Loading(key)
         publicIpJob = viewModelScope.launch {
