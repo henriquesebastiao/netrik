@@ -2,8 +2,6 @@
 
 **Netrik** is an open source network toolkit for Android, made for network analysts, pentesters and anyone curious about the network they're on. It runs entirely on the phone, without root, and doesn't track you.
 
-Available in English and Brazilian Portuguese.
-
 ## Screenshots
 
 <img width="30%" vspace="20" src="https://github.com/user-attachments/assets/5da888d2-4a16-45a3-a0bb-e7e6ac61cbb0" />
@@ -13,11 +11,11 @@ Available in English and Brazilian Portuguese.
 <img width="30%" vspace="20" src="https://github.com/user-attachments/assets/db745634-b6fd-4518-a056-d5eeca9131f6" />
 <img width="30%" vspace="20" src="https://github.com/user-attachments/assets/dc4ef25d-448d-4f35-b788-23db615784ba" />
 
+# Download
 
+Netrik is available on GitHub Releases page.  
 
-
-
-
+[<img height="75" src="https://github.com/user-attachments/assets/ea9ecc83-372a-4ef5-8595-1423873f2faf" />](https://github.com/henriquesebastiao/netrik/releases)
 
 ## Features
 
