@@ -18,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +49,7 @@ fun NetworkCard(
     publicIp: PublicIpUi,
     onShowPublicIp: () -> Unit,
     modifier: Modifier = Modifier,
+    onCalculateSubnet: (String) -> Unit = {},
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -58,7 +60,7 @@ fun NetworkCard(
             when (network) {
                 NetworkCardState.Loading -> LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 NetworkCardState.Disconnected -> DisconnectedContent()
-                is NetworkCardState.Connected -> ConnectedContent(network, publicIp, onShowPublicIp)
+                is NetworkCardState.Connected -> ConnectedContent(network, publicIp, onShowPublicIp, onCalculateSubnet)
             }
         }
     }
@@ -83,7 +85,7 @@ private fun DisconnectedContent() {
 }
 
 @Composable
-private fun ConnectedContent(network: NetworkCardState.Connected, publicIp: PublicIpUi, onShowPublicIp: () -> Unit) {
+private fun ConnectedContent(network: NetworkCardState.Connected, publicIp: PublicIpUi, onShowPublicIp: () -> Unit, onCalculateSubnet: (String) -> Unit) {
     val copy = rememberCopyAction()
     val unavailable = stringResource(R.string.field_unavailable)
 
@@ -122,13 +124,30 @@ private fun ConnectedContent(network: NetworkCardState.Connected, publicIp: Publ
             Text(stringResource(R.string.network_details), modifier = Modifier.padding(start = 8.dp))
         }
     }
-    if (showDetails) NetworkDetailsSheet(network, publicIp, onShowPublicIp, onDismiss = { showDetails = false })
+    if (showDetails) {
+        NetworkDetailsSheet(
+            network = network,
+            publicIp = publicIp,
+            onShowPublicIp = onShowPublicIp,
+            onCalculateSubnet = { cidr ->
+                showDetails = false
+                onCalculateSubnet(cidr)
+            },
+            onDismiss = { showDetails = false },
+        )
+    }
 }
 
 /** Every detail Netrik knows about the current network, each one copyable. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun NetworkDetailsSheet(network: NetworkCardState.Connected, publicIp: PublicIpUi, onShowPublicIp: () -> Unit, onDismiss: () -> Unit) {
+private fun NetworkDetailsSheet(
+    network: NetworkCardState.Connected,
+    publicIp: PublicIpUi,
+    onShowPublicIp: () -> Unit,
+    onCalculateSubnet: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
     val copy = rememberCopyAction()
     val unavailable = stringResource(R.string.field_unavailable)
     val signal = network.signal
@@ -183,6 +202,12 @@ private fun NetworkDetailsSheet(network: NetworkCardState.Connected, publicIp: P
             }
             rows.forEach { (label, value) -> FieldTile(Field(label, value, copiedOne.format(label)), unavailable, copy) }
             PublicIpTile(publicIp, onShowPublicIp, copy)
+            network.localCidr?.let { cidr ->
+                FilledTonalButton(onClick = { onCalculateSubnet(cidr) }, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                    Icon(painterResource(R.drawable.ic_calculate), contentDescription = null, modifier = Modifier.size(18.dp))
+                    Text(stringResource(R.string.network_open_subnet), modifier = Modifier.padding(start = 8.dp))
+                }
+            }
         }
     }
 }

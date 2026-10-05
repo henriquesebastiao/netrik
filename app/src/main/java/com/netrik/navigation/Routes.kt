@@ -69,6 +69,13 @@ data class SshFormRoute(
 @Serializable
 data class NeighborsRoute(val origin: TopLevelDestination)
 
+/** Subnet calculator; [target] prefills the address ("192.168.1.10/24"). */
+@Serializable
+data class SubnetRoute(
+    val origin: TopLevelDestination,
+    val target: String? = null,
+)
+
 /** Port Knocking: saved sequences by group. */
 @Serializable
 data class KnockRoute(val origin: TopLevelDestination)

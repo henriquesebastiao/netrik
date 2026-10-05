@@ -8,6 +8,7 @@ enum class ToolGroup(@param:StringRes val title: Int) {
     Diagnostics(R.string.group_diagnostics),
     Discovery(R.string.group_discovery),
     RemoteAccess(R.string.group_remote_access),
+    Utilities(R.string.group_utilities),
 }
 
 /**
@@ -32,4 +33,5 @@ enum class NetrikTool(
     Oui(R.string.tool_oui, R.string.tool_oui_desc, R.drawable.ic_manage_search, ToolGroup.Discovery),
     Ssh(R.string.tab_ssh, R.string.tool_ssh_desc, R.drawable.ic_terminal, ToolGroup.RemoteAccess, TopLevelDestination.Ssh),
     PortKnock(R.string.tool_port_knock, R.string.tool_port_knock_desc, R.drawable.ic_door_open, ToolGroup.RemoteAccess),
+    SubnetCalculator(R.string.tool_subnet, R.string.tool_subnet_desc, R.drawable.ic_calculate, ToolGroup.Utilities),
 }

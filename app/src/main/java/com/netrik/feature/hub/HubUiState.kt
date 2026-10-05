@@ -31,6 +31,8 @@ sealed interface NetworkCardState {
         val bssid: String? = null,
         val frequencyMhz: Int? = null,
         val interfaceName: String? = null,
+        /** "192.168.1.10/24", to open the subnet calculator. */
+        val localCidr: String? = null,
         /** Identifies the network; a queried public IP is only valid while it doesn't change. */
         val networkKey: String,
     ) : NetworkCardState {
@@ -71,6 +73,7 @@ fun CurrentNetwork.toCardState(channelWidths: Map<String, Int> = emptyMap()): Ne
         },
         localIp = ipv4?.address,
         maskCidr = ipv4?.prefixLength?.takeIf { it in 0..32 }?.let { "${Ipv4.prefixToMask(it)} /$it" },
+        localCidr = ipv4?.takeIf { it.prefixLength in 0..32 }?.let { "${it.address}/${it.prefixLength}" },
         gateway = gateway,
         dns = dnsServers.takeIf { it.isNotEmpty() }?.joinToString(", "),
         ipv6 = ipv6,

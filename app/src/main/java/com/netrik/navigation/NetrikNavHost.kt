@@ -22,6 +22,7 @@ import com.netrik.feature.hub.HubScreen
 import com.netrik.feature.knock.KnockFormScreen
 import com.netrik.feature.knock.KnockListScreen
 import com.netrik.feature.neighbors.NeighborsScreen
+import com.netrik.feature.subnet.SubnetScreen
 import com.netrik.feature.oui.OuiScreen
 import com.netrik.feature.ping.PingScreen
 import com.netrik.feature.portscan.PortScanScreen
@@ -42,6 +43,7 @@ fun NetrikNavHost(navController: NavHostController, modifier: Modifier = Modifie
                 HubScreen(
                     onOpenTool = { tool -> navController.openTool(tool, TopLevelDestination.Tools) },
                     onOpenSettings = { navController.navigate(SettingsRoute) },
+                    onCalculateSubnet = { cidr -> navController.openTool(NetrikTool.SubnetCalculator, TopLevelDestination.Tools, cidr) },
                 )
             }
         }
@@ -95,6 +97,7 @@ fun NetrikNavHost(navController: NavHostController, modifier: Modifier = Modifie
         composable<PingRoute> { PingScreen(onBack = { navController.popBackStack() }) }
         composable<TracerouteRoute> { TracerouteScreen(onBack = { navController.popBackStack() }) }
         composable<PortScanRoute> { PortScanScreen(onBack = { navController.popBackStack() }) }
+        composable<SubnetRoute> { SubnetScreen(onBack = { navController.popBackStack() }) }
         composable<NeighborsRoute> { entry ->
             val origin = entry.toRoute<NeighborsRoute>().origin
             NeighborsScreen(
@@ -165,6 +168,7 @@ fun NavController.openTool(tool: NetrikTool, origin: TopLevelDestination, target
         tool == NetrikTool.PortScanner -> navigate(PortScanRoute(origin = origin, target = target))
         tool == NetrikTool.PortKnock -> navigate(KnockRoute(origin = origin))
         tool == NetrikTool.Neighbors -> navigate(NeighborsRoute(origin = origin))
+        tool == NetrikTool.SubnetCalculator -> navigate(SubnetRoute(origin = origin, target = target))
         else -> navigate(ToolRoute(tool = tool, origin = origin, target = target))
     }
 }
@@ -178,6 +182,7 @@ fun NavBackStackEntry.topLevelDestination(): TopLevelDestination? {
     if (destination.hasRoute<PortScanRoute>()) return toRoute<PortScanRoute>().origin
     if (destination.hasRoute<KnockRoute>()) return toRoute<KnockRoute>().origin
     if (destination.hasRoute<NeighborsRoute>()) return toRoute<NeighborsRoute>().origin
+    if (destination.hasRoute<SubnetRoute>()) return toRoute<SubnetRoute>().origin
     if (destination.hasRoute<KnockFormRoute>()) return toRoute<KnockFormRoute>().origin
     return TopLevelDestination.entries.firstOrNull { tab ->
         destination.hierarchy.any { it.hasRoute(tab.graphClass) }

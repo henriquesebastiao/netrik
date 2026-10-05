@@ -40,10 +40,11 @@ import com.netrik.navigation.ToolGroup
 fun HubScreen(
     onOpenTool: (NetrikTool) -> Unit,
     onOpenSettings: () -> Unit,
+    onCalculateSubnet: (String) -> Unit = {},
     viewModel: HubViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    HubContent(state = state, onOpenTool = onOpenTool, onShowPublicIp = viewModel::onShowPublicIp, onOpenSettings = onOpenSettings)
+    HubContent(state = state, onOpenTool = onOpenTool, onShowPublicIp = viewModel::onShowPublicIp, onOpenSettings = onOpenSettings, onCalculateSubnet = onCalculateSubnet)
 }
 
 @Composable
@@ -52,6 +53,7 @@ fun HubContent(
     onOpenTool: (NetrikTool) -> Unit,
     onShowPublicIp: () -> Unit,
     onOpenSettings: () -> Unit = {},
+    onCalculateSubnet: (String) -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -71,7 +73,7 @@ fun HubContent(
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             item(key = "network") {
-                NetworkCard(network = state.network, publicIp = state.publicIp, onShowPublicIp = onShowPublicIp)
+                NetworkCard(network = state.network, publicIp = state.publicIp, onShowPublicIp = onShowPublicIp, onCalculateSubnet = onCalculateSubnet)
             }
             items(ToolGroup.entries, key = { it.name }) { group ->
                 ToolGroupSection(group = group, onOpenTool = onOpenTool)
