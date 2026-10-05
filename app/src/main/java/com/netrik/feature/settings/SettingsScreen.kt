@@ -64,6 +64,9 @@ import com.netrik.core.settings.AppLanguages
 import com.netrik.core.settings.ThemeMode
 import java.util.Locale
 
+/** The repository: Netrik is GPL-3.0, so the code is one tap away. */
+private const val SOURCE_URL = "https://github.com/henriquesebastiao/netrik"
+
 /** Where "Report a bug" leads. */
 private const val ISSUES_URL = "https://github.com/henriquesebastiao/netrik/issues"
 
@@ -213,15 +216,24 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                         subtitle = BuildConfig.VERSION_NAME,
                         subtitleMono = true,
                         index = 0,
-                        count = 4,
+                        count = 5,
+                    )
+                    SettingsRow(
+                        icon = R.drawable.ic_code,
+                        title = stringResource(R.string.settings_source_code),
+                        subtitle = stringResource(R.string.settings_source_code_sub),
+                        trailing = R.drawable.ic_open_in_new,
+                        index = 1,
+                        count = 5,
+                        onClick = { openLink(context, SOURCE_URL) },
                     )
                     SettingsRow(
                         icon = R.drawable.ic_bug_report,
                         title = stringResource(R.string.settings_report_bug),
                         subtitle = stringResource(R.string.settings_report_bug_sub),
                         trailing = R.drawable.ic_open_in_new,
-                        index = 1,
-                        count = 4,
+                        index = 2,
+                        count = 5,
                         onClick = { openLink(context, ISSUES_URL) },
                     )
                     SettingsRow(
@@ -229,15 +241,15 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                         title = stringResource(R.string.settings_security_policy),
                         subtitle = stringResource(R.string.settings_security_policy_sub),
                         trailing = R.drawable.ic_open_in_new,
-                        index = 2,
-                        count = 4,
+                        index = 3,
+                        count = 5,
                         onClick = { openLink(context, SECURITY_POLICY_URL) },
                     )
                     SettingsRow(
                         icon = R.drawable.ic_description,
                         title = stringResource(R.string.settings_licenses),
-                        index = 3,
-                        count = 4,
+                        index = 4,
+                        count = 5,
                         onClick = { showLicenses = true },
                     )
                 }

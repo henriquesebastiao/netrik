@@ -626,6 +626,8 @@
     <string name="settings_language_system_current">Padrão do sistema (%1$s)</string>
     <string name="settings_language_system_fallback">Padrão do sistema (%1$s não está disponível, usando inglês)</string>
     <string name="settings_version">Versão</string>
+    <string name="settings_source_code">Código-fonte</string>
+    <string name="settings_source_code_sub">Software livre sob GPL-3.0, no GitHub</string>
     <string name="settings_report_bug">Relatar um bug</string>
     <string name="settings_report_bug_sub">Abre a página de issues no GitHub</string>
     <string name="settings_security_policy">Política de segurança</string>

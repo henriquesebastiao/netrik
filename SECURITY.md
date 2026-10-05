@@ -141,7 +141,7 @@ Netrik only sends traffic as a direct result of something you do:
 | Neighbor Discovery (while the screen is open) | Broadcast on your local network | Empty MNDP requests (UDP 5678) and Ubiquiti discovery probes (UDP 10001), every 2 s at first, then every 10 s; Netrik also listens on UDP 5678 for MikroTik announcements |
 | SSH | The host you saved or typed | An SSH connection |
 | Port Knocking | The host of the knock you tap | The sequence you saved: TCP SYNs (a connection attempt closed right away), empty UDP datagrams and ICMP echo requests; then, if set, one TCP connection to the port to test |
-| **Report a bug** in Settings | `github.com` (in your browser) | Opens the issues page |
+| **Source code**, **Report a bug** or **Security policy** in Settings | `github.com` (in your browser) | Opens the repository, its issues page or this policy |
 
 There are no background network requests, update checks, telemetry or ads.
 

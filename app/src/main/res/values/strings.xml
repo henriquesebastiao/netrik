@@ -622,6 +622,8 @@
     <string name="settings_language_system_current">System default (%1$s)</string>
     <string name="settings_language_system_fallback">System default (%1$s isn\'t available, using English)</string>
     <string name="settings_version">Version</string>
+    <string name="settings_source_code">Source code</string>
+    <string name="settings_source_code_sub">Free software under GPL-3.0, on GitHub</string>
     <string name="settings_report_bug">Report a bug</string>
     <string name="settings_report_bug_sub">Opens the issues page on GitHub</string>
     <string name="settings_security_policy">Security policy</string>
