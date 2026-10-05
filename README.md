@@ -4,6 +4,21 @@
 
 Available in English and Brazilian Portuguese.
 
+## Screenshots
+
+<img width="30%" vspace="20" src="https://github.com/user-attachments/assets/5da888d2-4a16-45a3-a0bb-e7e6ac61cbb0" />
+<img width="30%" vspace="20" src="https://github.com/user-attachments/assets/7fe13df8-8428-44ee-b08f-f1a790276992" />
+<img width="30%" vspace="20" src="https://github.com/user-attachments/assets/579b981e-399a-4050-9987-ad121001218b" />
+<img width="30%" vspace="20" src="https://github.com/user-attachments/assets/ff9ff985-8d40-46ec-98c2-ce57098bfd39" />
+<img width="30%" vspace="20" src="https://github.com/user-attachments/assets/db745634-b6fd-4518-a056-d5eeca9131f6" />
+<img width="30%" vspace="20" src="https://github.com/user-attachments/assets/dc4ef25d-448d-4f35-b788-23db615784ba" />
+
+
+
+
+
+
+
 ## Features
 
 | Tool | What it does |
