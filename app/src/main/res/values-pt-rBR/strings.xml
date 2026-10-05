@@ -361,12 +361,14 @@
     <string name="device_field_services">Serviços anunciados (mDNS)</string>
     <string name="device_field_detection">Detectado por</string>
     <string name="device_hostname_unresolved">Não resolvido</string>
-    <string name="device_mac_unavailable_sub">O Android não deixa apps lerem a tabela ARP. O MAC só aparece quando o próprio dispositivo o anuncia (NetBIOS, mDNS).</string>
+    <string name="device_mac_unavailable_sub">O Android não deixa apps lerem a tabela ARP. O MAC só aparece quando o próprio dispositivo o anuncia (NetBIOS, mDNS, MNDP, descoberta Ubiquiti).</string>
     <string name="device_mac_self_sub">O Android usa um MAC privado diferente em cada rede e não o revela aos apps.</string>
     <string name="device_vendor_unknown_sub">Sem MAC conhecido não há como consultar o fabricante na base OUI.</string>
     <string name="device_source_dns">via DNS reverso</string>
     <string name="device_source_mdns">via mDNS</string>
     <string name="device_source_netbios">via NetBIOS</string>
+    <string name="device_source_mndp">anunciado via MNDP (MikroTik)</string>
+    <string name="device_source_ubiquiti">anunciado via descoberta Ubiquiti</string>
     <string name="device_source_upnp">declarado pelo dispositivo (UPnP)</string>
     <string name="device_source_oui">Prefixo OUI %1$s</string>
     <string name="device_source_oui_generic">via base OUI (IEEE)</string>
@@ -375,6 +377,8 @@
     <string name="device_detection_mdns">Anúncio mDNS</string>
     <string name="device_detection_ssdp">Resposta SSDP (UPnP)</string>
     <string name="device_detection_netbios">Resposta NetBIOS</string>
+    <string name="device_detection_mndp">Anúncio MikroTik (MNDP)</string>
+    <string name="device_detection_ubiquiti">Resposta da descoberta Ubiquiti</string>
     <string name="device_hostname_copied">Hostname copiado</string>
     <string name="device_vendor_copied">Fabricante copiado</string>
     <string name="device_not_found">Este dispositivo não está mais na lista. Escaneie de novo.</string>
@@ -768,4 +772,38 @@
     <string name="knock_form_verify_sup">Opcional, TCP</string>
     <string name="knock_form_no_steps">Adicione pelo menos uma batida</string>
     <string name="knock_form_too_many_steps">Batidas demais (limite: %1$d)</string>
+
+    <!-- Neighbor discovery (MikroTik MNDP and Ubiquiti) -->
+    <string name="tool_neighbors">Descoberta de vizinhos</string>
+    <string name="tool_neighbors_desc">Dispositivos MikroTik (MNDP) e Ubiquiti por perto</string>
+    <string name="neighbors_listening">Escutando…</string>
+    <string name="neighbors_stopped">Parado</string>
+    <string name="neighbors_clear">Limpar lista</string>
+    <string name="neighbors_searching">Procurando dispositivos MikroTik e Ubiquiti. O RouterOS responde em segundos quando a descoberta de vizinhos está ativa na interface voltada para esta rede, e também se anuncia mais ou menos a cada minuto.</string>
+    <string name="neighbors_none">Nenhum dispositivo encontrado. No RouterOS, confira IP → Neighbors → Discovery Settings: a interface voltada para esta rede precisa estar na lista de interfaces de descoberta. Dispositivos Ubiquiti precisam do serviço de descoberta ligado.</string>
+    <string name="neighbors_no_lan">Conecte-se a uma rede Wi-Fi ou Ethernet: a descoberta só alcança dispositivos na mesma rede local.</string>
+    <string name="neighbors_port_busy">Outro app está usando a porta UDP %1$d, então os anúncios MikroTik não podem ser recebidos. A descoberta Ubiquiti continua funcionando.</string>
+    <string name="neighbors_section_mikrotik">MikroTik</string>
+    <string name="neighbors_section_ubiquiti">Ubiquiti</string>
+    <string name="neighbors_l2_note">CDP e LLDP não são suportados: são quadros de camada 2, e o Android só deixa apps lerem esses quadros com root.</string>
+    <string name="neighbors_seen_seconds">há %1$d s</string>
+    <string name="neighbors_routeros">RouterOS %1$s</string>
+    <string name="neighbors_protocol_mndp">MikroTik · MNDP</string>
+    <string name="neighbors_protocol_ubiquiti">Descoberta Ubiquiti</string>
+    <string name="neighbors_action_browser">Abrir no navegador</string>
+    <string name="neighbors_announced">Anunciado pelo dispositivo</string>
+    <string name="neighbors_field_identity">Identity</string>
+    <string name="neighbors_field_ipv4">Endereço IPv4</string>
+    <string name="neighbors_field_source">Enviado de</string>
+    <string name="neighbors_field_ipv6">Endereço IPv6</string>
+    <string name="neighbors_field_board">Placa (board)</string>
+    <string name="neighbors_field_routeros">Versão do RouterOS</string>
+    <string name="neighbors_field_version">Versão</string>
+    <string name="neighbors_field_firmware">Firmware</string>
+    <string name="neighbors_field_platform">Plataforma</string>
+    <string name="neighbors_field_software_id">Software ID</string>
+    <string name="neighbors_field_interface">Interface</string>
+    <string name="neighbors_field_essid">Rede sem fio (ESSID)</string>
+    <string name="neighbors_field_uptime">Tempo ligado</string>
+    <string name="neighbors_uptime">%1$dd %2$02d:%3$02d:%4$02d</string>
 </resources>

@@ -11,7 +11,8 @@ Available in English and Brazilian Portuguese.
 | **Current network** | Local IP, gateway and public IP at a glance; a details sheet with network name, signal, band, channel, BSSID, mask/CIDR, DNS and IPv6, with one-tap copy. The public IP is only looked up when you ask for it (or always, if you turn that on in Settings). |
 | **Ping** | Real-time replies with seq, TTL and time, count or continuous mode, latency chart and statistics (loss, min/avg/max, jitter). |
 | **Traceroute** | Hop-by-hop route with reverse DNS and the latency of each router. |
-| **Devices** | Finds the devices on your local network (ping + TCP probing, mDNS, NetBIOS and UPnP), with vendor, hostname and quick actions. |
+| **Devices** | Finds the devices on your local network (ping + TCP probing, mDNS, NetBIOS, UPnP, MNDP and Ubiquiti discovery), with vendor, hostname and quick actions. |
+| **Neighbor Discovery** | Finds MikroTik routers via MNDP (identity, board, RouterOS version, MAC, interface, uptime) and Ubiquiti devices via their discovery protocol, with quick actions. The Devices scan uses the same announcements to fill in names, MACs and models. |
 | **Wi-Fi** | Nearby networks with security, channel, width and signal quality, plus a 2.4/5/6 GHz spectrum chart. |
 | **Port Scanner** | TCP and UDP scans of a single host or a whole network (up to /22), with Top 100/Top 1000/custom port lists and service names. |
 | **MAC/OUI Lookup** | Vendor of a MAC address from the offline IEEE database (MA-L, MA-M and MA-S), updatable from the official files. |

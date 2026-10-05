@@ -21,6 +21,7 @@ import com.netrik.feature.devices.DevicesViewModel
 import com.netrik.feature.hub.HubScreen
 import com.netrik.feature.knock.KnockFormScreen
 import com.netrik.feature.knock.KnockListScreen
+import com.netrik.feature.neighbors.NeighborsScreen
 import com.netrik.feature.oui.OuiScreen
 import com.netrik.feature.ping.PingScreen
 import com.netrik.feature.portscan.PortScanScreen
@@ -94,6 +95,13 @@ fun NetrikNavHost(navController: NavHostController, modifier: Modifier = Modifie
         composable<PingRoute> { PingScreen(onBack = { navController.popBackStack() }) }
         composable<TracerouteRoute> { TracerouteScreen(onBack = { navController.popBackStack() }) }
         composable<PortScanRoute> { PortScanScreen(onBack = { navController.popBackStack() }) }
+        composable<NeighborsRoute> { entry ->
+            val origin = entry.toRoute<NeighborsRoute>().origin
+            NeighborsScreen(
+                onBack = { navController.popBackStack() },
+                onAction = { tool, target -> navController.openTool(tool, origin, target) },
+            )
+        }
         composable<KnockRoute> { entry ->
             val origin = entry.toRoute<KnockRoute>().origin
             KnockListScreen(
@@ -156,6 +164,7 @@ fun NavController.openTool(tool: NetrikTool, origin: TopLevelDestination, target
         tool == NetrikTool.Traceroute -> navigate(TracerouteRoute(origin = origin, target = target))
         tool == NetrikTool.PortScanner -> navigate(PortScanRoute(origin = origin, target = target))
         tool == NetrikTool.PortKnock -> navigate(KnockRoute(origin = origin))
+        tool == NetrikTool.Neighbors -> navigate(NeighborsRoute(origin = origin))
         else -> navigate(ToolRoute(tool = tool, origin = origin, target = target))
     }
 }
@@ -168,6 +177,7 @@ fun NavBackStackEntry.topLevelDestination(): TopLevelDestination? {
     if (destination.hasRoute<TracerouteRoute>()) return toRoute<TracerouteRoute>().origin
     if (destination.hasRoute<PortScanRoute>()) return toRoute<PortScanRoute>().origin
     if (destination.hasRoute<KnockRoute>()) return toRoute<KnockRoute>().origin
+    if (destination.hasRoute<NeighborsRoute>()) return toRoute<NeighborsRoute>().origin
     if (destination.hasRoute<KnockFormRoute>()) return toRoute<KnockFormRoute>().origin
     return TopLevelDestination.entries.firstOrNull { tab ->
         destination.hierarchy.any { it.hasRoute(tab.graphClass) }

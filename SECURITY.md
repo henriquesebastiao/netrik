@@ -87,7 +87,7 @@ All data lives in the app's private storage on your device. Netrik has **no acco
 | IEEE vendor (OUI) database | App database | Public data |
 | App lock PIN | Never stored; only a keyed verifier (see below) | HMAC-SHA256 with an Android Keystore key |
 | Settings (theme, language, terminal font size, network options) | DataStore / preferences | Private app storage |
-| Device scan, Wi-Fi scan and port scan results | Memory only | Gone when the app process ends |
+| Device scan, neighbor discovery, Wi-Fi scan and port scan results | Memory only | Gone when the app process ends |
 | SSH session output (terminal scrollback) | Memory only | Gone when the session closes |
 
 "Private app storage" means other apps can't read it on a normal (non-rooted) Android device. Uninstalling Netrik deletes all of it, including the Keystore key.
@@ -137,14 +137,15 @@ Netrik only sends traffic as a direct result of something you do:
 | Tapping **Update** in MAC/OUI Lookup | `standards-oui.ieee.org` (HTTPS) | Downloads of the public IEEE registries, with the `Netrik/<version>` user agent |
 | Ping, Traceroute | The target you typed | ICMP echo requests (via the system `ping` tool) |
 | Port Scanner | The host or network you typed | TCP connections / UDP probes to the chosen ports |
-| Devices scan | Your local subnet | Ping, TCP connections to common ports, mDNS, NetBIOS and SSDP/UPnP queries |
+| Devices scan | Your local subnet | Ping, TCP connections to common ports, mDNS, NetBIOS, SSDP/UPnP, MNDP and Ubiquiti discovery queries |
+| Neighbor Discovery (while the screen is open) | Broadcast on your local network | Empty MNDP requests (UDP 5678) and Ubiquiti discovery probes (UDP 10001), every 2 s at first, then every 10 s; Netrik also listens on UDP 5678 for MikroTik announcements |
 | SSH | The host you saved or typed | An SSH connection |
 | Port Knocking | The host of the knock you tap | The sequence you saved: TCP SYNs (a connection attempt closed right away), empty UDP datagrams and ICMP echo requests; then, if set, one TCP connection to the port to test |
 | **Report a bug** in Settings | `github.com` (in your browser) | Opens the issues page |
 
 There are no background network requests, update checks, telemetry or ads.
 
-Local network discovery also *receives* data from devices that answer (names, services, sometimes MAC addresses). That data is treated as untrusted input: replies are size-limited, device description files are only fetched from the same IP that answered, and nothing received is executed.
+Local network discovery also *receives* data from devices that answer (names, services, sometimes MAC addresses, MikroTik/Ubiquiti identity, model and version). That data is treated as untrusted input: replies are size-limited, device description files are only fetched from the same IP that answered, and nothing received is executed.
 
 ## Permissions
 

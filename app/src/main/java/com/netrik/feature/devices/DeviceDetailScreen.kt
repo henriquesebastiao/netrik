@@ -199,6 +199,8 @@ private fun sourceLabel(source: InfoSource): String = stringResource(
         InfoSource.Netbios -> R.string.device_source_netbios
         InfoSource.Upnp -> R.string.device_source_upnp
         InfoSource.Oui -> R.string.device_source_oui_generic
+        InfoSource.Mndp -> R.string.device_source_mndp
+        InfoSource.Ubiquiti -> R.string.device_source_ubiquiti
     },
 )
 
@@ -209,6 +211,8 @@ private fun detectionLabel(detection: Detection): String = when (detection) {
     Detection.Mdns -> stringResource(R.string.device_detection_mdns)
     Detection.Ssdp -> stringResource(R.string.device_detection_ssdp)
     Detection.Netbios -> stringResource(R.string.device_detection_netbios)
+    Detection.Mndp -> stringResource(R.string.device_detection_mndp)
+    Detection.Ubiquiti -> stringResource(R.string.device_detection_ubiquiti)
 }
 
 /** Below 1 ms the RTT becomes "<1 ms", as in the design. */

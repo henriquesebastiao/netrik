@@ -2,6 +2,10 @@ package com.netrik.core.lan
 
 import android.content.Context
 import android.net.wifi.WifiManager
+import com.netrik.core.neighbor.Neighbor
+import com.netrik.core.neighbor.NeighborDiscovery
+import com.netrik.core.neighbor.NeighborEvent
+import com.netrik.core.neighbor.NeighborProtocol
 import com.netrik.core.network.ping.HostResolver
 import com.netrik.core.oui.MacAddresses
 import com.netrik.core.oui.OuiRepository
@@ -25,7 +29,8 @@ sealed interface ScanEvent {
 
 /**
  * Discovers devices on the subnet: concurrent probing (ping + TCP) of each IP and, in parallel,
- * mDNS and SSDP. For each active host it looks up reverse DNS and NetBIOS. Cancelling the collection stops everything.
+ * mDNS, SSDP and MikroTik/Ubiquiti neighbor discovery. For each active host it looks up reverse DNS and NetBIOS.
+ * Cancelling the collection stops everything.
  */
 class LanScanner @Inject constructor(
     @param:ApplicationContext private val context: Context,
@@ -35,6 +40,7 @@ class LanScanner @Inject constructor(
     private val ssdp: SsdpClient,
     private val mdns: MdnsBrowser,
     private val oui: OuiRepository,
+    private val neighbors: NeighborDiscovery,
 ) {
 
     fun scan(range: ScanRange): Flow<ScanEvent> = channelFlow {
@@ -76,6 +82,12 @@ class LanScanner @Inject constructor(
             val discovery = launch {
                 launch { mdns.browse().collect { if (it.ip in inRange) { enrich(it); lookupNames(it.ip) } } }
                 launch { ssdp.discover().collect { if (it.ip in inRange) { enrich(it); lookupNames(it.ip) } } }
+                launch {
+                    neighbors.discover().collect { event ->
+                        val update = (event as? NeighborEvent.Found)?.neighbor?.toDeviceUpdate() ?: return@collect
+                        if (update.ip in inRange) { enrich(update); lookupNames(update.ip) }
+                    }
+                }
             }
 
             val semaphore = Semaphore(MAX_CONCURRENT_PROBES)
@@ -109,4 +121,16 @@ class LanScanner @Inject constructor(
         const val MAX_CONCURRENT_PROBES = 32
         const val LINGER_MILLIS = 3_000L
     }
+}
+
+/** What a MikroTik/Ubiquiti announcement tells about the host: the name the admin gave it, its MAC and model. */
+internal fun Neighbor.toDeviceUpdate(): DeviceUpdate {
+    val source = if (protocol == NeighborProtocol.Mndp) InfoSource.Mndp else InfoSource.Ubiquiti
+    return DeviceUpdate(
+        ip = address,
+        detection = if (protocol == NeighborProtocol.Mndp) Detection.Mndp else Detection.Ubiquiti,
+        hostname = identity?.let { Sourced(it, source) },
+        mac = mac?.let { Sourced(it, source) },
+        model = model,
+    )
 }

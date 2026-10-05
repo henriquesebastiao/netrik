@@ -1,7 +1,7 @@
 package com.netrik.core.lan
 
 /** Where each piece of information came from: shown on the details screen, so nothing looks made up. */
-enum class InfoSource { Dns, Mdns, Netbios, Upnp, Oui }
+enum class InfoSource { Dns, Mdns, Netbios, Upnp, Oui, Mndp, Ubiquiti }
 
 /** How the host was detected. */
 sealed interface Detection {
@@ -10,6 +10,8 @@ sealed interface Detection {
     data object Mdns : Detection
     data object Ssdp : Detection
     data object Netbios : Detection
+    data object Mndp : Detection
+    data object Ubiquiti : Detection
 }
 
 data class Sourced(val value: String, val source: InfoSource)
@@ -43,8 +45,11 @@ data class DeviceUpdate(
     val services: Set<String> = emptySet(),
 )
 
-/** Name priority: the network DNS is the most reliable; the UPnP friendly name is the last resort. */
-private val NAME_PRIORITY = listOf(InfoSource.Dns, InfoSource.Mdns, InfoSource.Netbios, InfoSource.Upnp)
+/**
+ * Name priority: the network DNS is the most reliable; then the name the admin gave the device (MNDP identity,
+ * Ubiquiti hostname); the UPnP friendly name is the last resort.
+ */
+private val NAME_PRIORITY = listOf(InfoSource.Dns, InfoSource.Mndp, InfoSource.Ubiquiti, InfoSource.Mdns, InfoSource.Netbios, InfoSource.Upnp)
 
 /** Vendor from the OUI (of the MAC) wins over the one declared by the device itself via UPnP. */
 private val VENDOR_PRIORITY = listOf(InfoSource.Oui, InfoSource.Upnp)

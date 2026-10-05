@@ -65,6 +65,10 @@ data class SshFormRoute(
 /** Full-screen SSH terminal, with the tabs of the open sessions (inside the SSH tab). */
 @Serializable data object SshTerminalRoute
 
+/** MikroTik (MNDP) and Ubiquiti neighbor discovery. */
+@Serializable
+data class NeighborsRoute(val origin: TopLevelDestination)
+
 /** Port Knocking: saved sequences by group. */
 @Serializable
 data class KnockRoute(val origin: TopLevelDestination)

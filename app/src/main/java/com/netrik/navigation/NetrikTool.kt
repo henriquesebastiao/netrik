@@ -26,6 +26,7 @@ enum class NetrikTool(
     Ping(R.string.tool_ping, R.string.tool_ping_desc, R.drawable.ic_network_ping, ToolGroup.Diagnostics),
     Traceroute(R.string.tool_traceroute, R.string.tool_traceroute_desc, R.drawable.ic_route, ToolGroup.Diagnostics),
     Devices(R.string.tab_devices, R.string.tool_devices_desc, R.drawable.ic_lan, ToolGroup.Discovery, TopLevelDestination.Devices),
+    Neighbors(R.string.tool_neighbors, R.string.tool_neighbors_desc, R.drawable.ic_router, ToolGroup.Discovery),
     PortScanner(R.string.tool_port_scanner, R.string.tool_port_scanner_desc, R.drawable.ic_radar, ToolGroup.Discovery),
     Wifi(R.string.tab_wifi, R.string.tool_wifi_desc, R.drawable.ic_wifi, ToolGroup.Discovery, TopLevelDestination.Wifi),
     Oui(R.string.tool_oui, R.string.tool_oui_desc, R.drawable.ic_manage_search, ToolGroup.Discovery),
