@@ -418,8 +418,9 @@ gh secret set NETRIK_KEY_PASSWORD
 Optionally, pin the certificate so the workflow refuses to publish an APK signed with anything else:
 
 ```bash
-keytool -list -v -keystore netrik-release.jks -alias netrik | grep SHA256
-gh variable set NETRIK_CERT_SHA256 --body "<the SHA256 value>"
+# Prints only the fingerprint (e.g. D5:D0:25:...), without the "SHA256:" label.
+keytool -list -v -keystore netrik-release.jks -alias netrik | sed -n 's/^[[:space:]]*SHA256: //p'
+gh variable set NETRIK_CERT_SHA256 --body "<the fingerprint printed above>"
 ```
 
 Publish the same fingerprint in [SECURITY.md](SECURITY.md#verifying-a-release).

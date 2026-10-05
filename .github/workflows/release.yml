@@ -91,12 +91,23 @@ jobs:
           # "V3.0 Signer: certificate SHA-256 digest: <hex>" (older build tools: "Signer #1 certificate ...").
           CERT=$("$APKSIGNER" verify --print-certs "$APK" | sed -n 's/^.*[Ss]igner.* certificate SHA-256 digest: //p' | head -n 1)
           echo "Signing certificate SHA-256: $CERT"
+          if [ -z "$CERT" ]; then
+            echo "::error::Couldn't read the signing certificate from apksigner."
+            exit 1
+          fi
           if [ -n "$EXPECTED_CERT_SHA256" ]; then
-            EXPECTED=$(echo "$EXPECTED_CERT_SHA256" | tr -d ': ' | tr '[:upper:]' '[:lower:]')
-            if [ "$CERT" != "$EXPECTED" ]; then
-              echo "::error::The APK was signed with an unexpected certificate."
+            # Accepts the fingerprint as keytool prints it ("SHA256: D5:D0:..."), with or without the label,
+            # colons or spaces: drops the label, then keeps only the hex digits.
+            EXPECTED=$(echo "$EXPECTED_CERT_SHA256" | sed -E 's/^[[:space:]]*SHA-?256[[:space:]]*:?//I' | tr -cd '0-9A-Fa-f' | tr '[:upper:]' '[:lower:]')
+            if [ "${#EXPECTED}" -ne 64 ]; then
+              echo "::error::Variable NETRIK_CERT_SHA256 isn't a SHA-256 fingerprint (64 hex digits)."
               exit 1
             fi
+            if [ "$CERT" != "$EXPECTED" ]; then
+              echo "::error::The APK was signed with an unexpected certificate (expected $EXPECTED)."
+              exit 1
+            fi
+            echo "Signing certificate matches NETRIK_CERT_SHA256."
           fi
           "$ANDROID_HOME/build-tools/$BUILD_TOOLS/zipalign" -c -P 16 4 "$APK"
 
