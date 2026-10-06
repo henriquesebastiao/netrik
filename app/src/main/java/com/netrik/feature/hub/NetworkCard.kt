@@ -3,6 +3,7 @@ package com.netrik.feature.hub
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -33,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.netrik.R
 import com.netrik.core.designsystem.component.IconAvatar
 import com.netrik.core.designsystem.component.StatusChip
@@ -238,26 +240,43 @@ private fun CardHeader(
     }
 }
 
+/**
+ * Signal, band, channel and width side by side, each with its label: one line of
+ * "−54 dBm · 5 GHz · Channel 149 · 80 MHz" wrapped on a phone.
+ */
 @Composable
 private fun SignalLine(signal: WifiSignal) {
-    val rssi = signal.rssiDbm?.let(::formatDbm)
-    val text = when {
-        rssi != null && signal.band != null && signal.channel != null && signal.widthMhz != null ->
-            stringResource(R.string.network_signal_wifi_width, rssi, signal.band.label, signal.channel, signal.widthMhz)
-        rssi != null && signal.band != null && signal.channel != null ->
-            stringResource(R.string.network_signal_wifi, rssi, signal.band.label, signal.channel)
-        rssi != null && signal.band != null -> stringResource(R.string.network_signal_wifi_no_channel, rssi, signal.band.label)
-        rssi != null -> stringResource(R.string.network_signal_rssi_only, rssi)
-        else -> return
-    }
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Icon(
-            painter = painterResource(signalIcon(signal.rssiDbm)),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(18.dp),
-        )
-        Text(text, style = NetrikTheme.dataTypography.dataSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    val rssi = signal.rssiDbm ?: return
+    val items = listOfNotNull(
+        stringResource(R.string.field_signal) to stringResource(R.string.wifi_dbm, formatDbm(rssi)),
+        signal.band?.let { stringResource(R.string.field_band) to stringResource(R.string.wifi_band, it.label) },
+        signal.channel?.let { stringResource(R.string.field_channel) to it.toString() },
+        signal.widthMhz?.let { stringResource(R.string.network_signal_width) to "$it MHz" },
+    )
+    // Each column as wide as its content, spread over the card; on a very narrow screen whole columns wrap.
+    FlowRow(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        items.forEachIndexed { i, (label, value) ->
+            Column(modifier = Modifier.padding(end = if (i < items.lastIndex) 12.dp else 0.dp)) {
+                Text(
+                    label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    if (i == 0) {
+                        Icon(
+                            painter = painterResource(signalIcon(rssi)),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
+                    Text(value, style = NetrikTheme.dataTypography.dataSmall.copy(fontSize = 13.sp), maxLines = 1, softWrap = false)
+                }
+            }
+        }
     }
 }
 

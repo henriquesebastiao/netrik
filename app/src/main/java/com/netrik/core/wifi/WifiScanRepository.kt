@@ -94,6 +94,7 @@ class AndroidWifiScanRepository @Inject constructor(
             security = WifiSecurity.fromCapabilities(capabilities.orEmpty()),
             bssidLocal = MacAddresses.isLocallyAdministered(hex),
             rttResponder = AndroidWifiRttRanger.isResponder(this),
+            wps = WifiSecurity.wpsFromCapabilities(capabilities.orEmpty()),
         )
     }
 

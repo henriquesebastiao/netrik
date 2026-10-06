@@ -53,7 +53,7 @@ class SocketBannerGrabber @Inject constructor(
             if (length > 0) return@use BannerParser.greeting(buffer, length, port)?.let { ServiceBanner(it) }
         }
         socket.soTimeout = RESPONSE_WAIT_MS
-        ServiceBanner(httpProbe(socket, ip) ?: return@use null)
+        httpProbe(socket, ip)?.let { (text, http) -> ServiceBanner(text, web = if (http) WebScheme.Http else null) }
     }
 
     private fun tls(ip: String, port: Int, timeoutMs: Int): ServiceBanner? {
@@ -73,16 +73,19 @@ class SocketBannerGrabber @Inject constructor(
                 it.startHandshake()
             } catch (_: SSLException) {
                 // Untrusted (self-signed, expired...) or not TLS at all: report the certificate when there was one.
-                return@use recorder.chain?.let { ServiceBanner(null, TlsInfo(null, subject(), trusted = false)) }
+                // No HTTP goes over it, but on an HTTPS port the browser can still open it (and show its own warning).
+                return@use recorder.chain?.let {
+                    ServiceBanner(null, TlsInfo(null, subject(), trusted = false), web = if (port in HTTPS_PORTS) WebScheme.Https else null)
+                }
             }
             val info = TlsInfo(it.session.protocol, subject(), trusted = true)
-            val text = if (port in HTTPS_PORTS) {
-                httpProbe(it, ip)
+            if (port in HTTPS_PORTS) {
+                val answer = httpProbe(it, ip)
+                ServiceBanner(answer?.first, info, web = if (answer?.second == true) WebScheme.Https else null)
             } else {
                 val buffer = ByteArray(MAX_READ)
-                readSome(it.inputStream, buffer).takeIf { n -> n > 0 }?.let { n -> BannerParser.greeting(buffer, n, port) }
+                ServiceBanner(readSome(it.inputStream, buffer).takeIf { n -> n > 0 }?.let { n -> BannerParser.greeting(buffer, n, port) }, info)
             }
-            ServiceBanner(text, info)
         }
     }
 
@@ -95,7 +98,8 @@ class SocketBannerGrabber @Inject constructor(
         }
     }
 
-    private fun httpProbe(socket: Socket, ip: String): String? {
+    /** The answer as one line, and whether it was an HTTP status line. */
+    private fun httpProbe(socket: Socket, ip: String): Pair<String?, Boolean>? {
         val request = "HEAD / HTTP/1.0\r\nHost: $ip\r\nUser-Agent: Netrik\r\nAccept: */*\r\n\r\n"
         socket.getOutputStream().apply {
             write(request.toByteArray(Charsets.US_ASCII))
@@ -105,7 +109,8 @@ class SocketBannerGrabber @Inject constructor(
         val length = readSome(socket.getInputStream(), buffer)
         if (length <= 0) return null
         val response = String(buffer, 0, length, Charsets.ISO_8859_1)
-        return BannerParser.http(response) ?: BannerParser.greeting(buffer, length, 0)
+        BannerParser.http(response)?.let { return it to true }
+        return BannerParser.greeting(buffer, length, 0)?.let { it to false }
     }
 
     /** One read (what arrived first); 0 on timeout or end of stream. */

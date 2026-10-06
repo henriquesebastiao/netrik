@@ -398,7 +398,7 @@ private fun SelectedNetworkCard(network: WifiNetwork, color: Color, onClick: () 
                     }
                 }
                 Text("${network.bssid} · ${network.security.label}", style = NetrikTheme.dataTypography.dataSmall, color = colors.onSurfaceVariant)
-                Text(channelLine(network), style = NetrikTheme.dataTypography.dataSmall, color = colors.onSurfaceVariant)
+                ChannelLine(network)
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(stringResource(R.string.wifi_dbm, formatDbm(network.rssiDbm)), style = NetrikTheme.dataTypography.dataMedium.copy(fontSize = 17.sp))

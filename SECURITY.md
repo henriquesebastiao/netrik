@@ -147,7 +147,7 @@ Netrik only sends traffic as a direct result of something you do:
 | Tapping **Update** in MAC/OUI Lookup | `standards-oui.ieee.org` (HTTPS) | Downloads of the public IEEE registries, with the `Netrik/<version>` user agent |
 | Ping, Traceroute | The target you typed | ICMP echo requests (via the system `ping` tool) |
 | Port Scanner | The host or network you typed | TCP connections / UDP probes to the chosen ports; with "Capture banners" on (TCP, default), a second connection to each open port that reads its greeting and may send `HEAD / HTTP/1.0` and do a TLS handshake (the certificate is validated normally; the HTTP request only goes over a trusted connection) |
-| Devices scan | Your local subnet | Ping, TCP connections to common ports, mDNS, NetBIOS, SSDP/UPnP, MNDP and Ubiquiti discovery queries |
+| Devices scan | Your local subnet | Ping, TCP connections to common ports, mDNS, NetBIOS, SSDP/UPnP, MNDP and Ubiquiti discovery queries; with "Identify devices by their ports" on (Settings → Network, default), TCP connections to the Top 100 ports and a few device signature ports (RTSP, JetDirect, Cast...) of each device found, to pick its icon |
 | Neighbor Discovery (while the screen is open) | Broadcast on your local network | Empty MNDP requests (UDP 5678) and Ubiquiti discovery probes (UDP 10001), every 2 s at first, then every 10 s; Netrik also listens on UDP 5678 for MikroTik announcements |
 | SSH | The host you saved or typed | An SSH connection |
 | Port Knocking | The host of the knock you tap | The sequence you saved: TCP SYNs (a connection attempt closed right away), empty UDP datagrams and ICMP echo requests; then, if set, one TCP connection to the port to test |
@@ -206,7 +206,7 @@ Being honest about what Netrik doesn't do:
 
 ## Responsible use
 
-Netrik includes tools (port scanning, network discovery) that can be used to attack networks. **Only scan and connect to networks and systems you own or are explicitly authorized to test.** Unauthorized scanning may be illegal where you live and may violate your network provider's terms. The app reminds you of this on the Port Scanner screen.
+Netrik includes tools (port scanning, network discovery) that can be used to attack networks. **Only scan and connect to networks and systems you own or are explicitly authorized to test.** The Devices tab also checks the ports of each device it finds; turn off Settings → Network → "Identify devices by their ports" on networks where port scans aren't allowed. Unauthorized scanning may be illegal where you live and may violate your network provider's terms. The app reminds you of this on the Port Scanner screen.
 
 ## Third-party components
 

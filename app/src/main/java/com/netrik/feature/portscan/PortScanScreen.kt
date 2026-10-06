@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -34,6 +35,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -78,6 +80,7 @@ import com.netrik.core.ui.RunFailure
 import com.netrik.core.ui.RunPhase
 import com.netrik.core.ui.failureText
 import com.netrik.core.ui.rememberCopyAction
+import com.netrik.core.ui.rememberOpenUrl
 import com.netrik.core.ui.rememberLocalNetworkPermissionRequest
 import com.netrik.core.ui.targetErrorText
 import java.text.NumberFormat
@@ -323,6 +326,7 @@ private fun Summary(state: PortScanUiState) {
 @Composable
 private fun Results(state: PortScanUiState, viewModel: PortScanViewModel) {
     val copy = rememberCopyAction()
+    val openUrl = rememberOpenUrl()
     val requestLocalNetwork = rememberLocalNetworkPermissionRequest(onGranted = viewModel::onStart)
     val visible = if (state.onlyOpen) state.hosts.filter { it.open > 0 } else state.hosts
     val hidden = state.hosts.size - visible.size
@@ -363,7 +367,7 @@ private fun Results(state: PortScanUiState, viewModel: PortScanViewModel) {
             }
         }
         items(visible, key = { it.ip }) { host ->
-            HostCard(host, state, copy, expanded = host.ip in state.expanded, onToggle = { viewModel.onToggleHost(host.ip) })
+            HostCard(host, state, copy, openUrl, expanded = host.ip in state.expanded, onToggle = { viewModel.onToggleHost(host.ip) })
         }
         if (state.phase == RunPhase.Done && state.hosts.isEmpty()) {
             item(key = "nohosts") {
@@ -445,35 +449,52 @@ private fun ResultsHeader(state: PortScanUiState, onStop: () -> Unit, onNew: () 
             }
             if (state.failure == null) {
                 val ports = state.hosts.flatMap { it.ports.values }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Kpi(stringResource(R.string.ports_kpi_hosts), state.hosts.size.toString(), colors.onSurface, Modifier.weight(1f))
-                    Kpi(stringResource(R.string.ports_kpi_open), ports.count { it == PortState.Open }.toString(), NetrikTheme.extendedColors.success, Modifier.weight(1f))
-                    Kpi(
-                        stringResource(R.string.ports_kpi_filtered),
-                        ports.count { it == PortState.Filtered || it == PortState.OpenFiltered }.toString(),
-                        NetrikTheme.extendedColors.warning,
-                        Modifier.weight(1f),
-                    )
-                    val risky = state.hosts.sumOf { it.risky(spec?.protocol ?: Protocol.Tcp) }
-                    Kpi(stringResource(R.string.ports_kpi_risky), risky.toString(), if (risky > 0) colors.error else colors.onSurface, Modifier.weight(1f))
+                val risky = state.hosts.sumOf { it.risky(spec?.protocol ?: Protocol.Tcp) }
+                // 2×2: four labels side by side ("Active hosts", "Filtered") wrap on a phone.
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Kpi(stringResource(R.string.ports_kpi_hosts), nf(state.hosts.size), colors.onSurface, Modifier.weight(1f))
+                        Kpi(stringResource(R.string.ports_kpi_open), nf(ports.count { it == PortState.Open }), NetrikTheme.extendedColors.success, Modifier.weight(1f))
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Kpi(
+                            stringResource(R.string.ports_kpi_filtered),
+                            nf(ports.count { it == PortState.Filtered || it == PortState.OpenFiltered }),
+                            NetrikTheme.extendedColors.warning,
+                            Modifier.weight(1f),
+                        )
+                        Kpi(stringResource(R.string.ports_kpi_risky), nf(risky), if (risky > 0) colors.error else colors.onSurface, Modifier.weight(1f))
+                    }
                 }
             }
         }
     }
 }
 
+/** Label on the left, number on the right: one line each, whatever the language. */
 @Composable
 private fun Kpi(label: String, value: String, color: Color, modifier: Modifier) {
     Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.surface, modifier = modifier) {
-        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-            Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(value, style = NetrikTheme.dataTypography.dataMedium.copy(fontSize = 18.sp, lineHeight = 26.sp), color = color)
+        Row(
+            modifier = Modifier.heightIn(min = 44.dp).padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            Text(value, style = NetrikTheme.dataTypography.dataMedium.copy(fontSize = 18.sp, lineHeight = 26.sp), color = color, maxLines = 1)
         }
     }
 }
 
 @Composable
-private fun HostCard(host: HostResult, state: PortScanUiState, copy: CopyAction, expanded: Boolean, onToggle: () -> Unit) {
+private fun HostCard(host: HostResult, state: PortScanUiState, copy: CopyAction, openUrl: (String) -> Unit, expanded: Boolean, onToggle: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     val proto = state.spec?.protocol ?: Protocol.Tcp
     Surface(shape = RoundedCornerShape(16.dp), color = colors.surfaceContainer, modifier = Modifier.fillMaxWidth()) {
@@ -485,8 +506,16 @@ private fun HostCard(host: HostResult, state: PortScanUiState, copy: CopyAction,
                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                 ) {
                     IconAvatar(icon = R.drawable.ic_devices_other, containerColor = colors.surfaceContainerHighest, contentColor = colors.onSurfaceVariant)
+                    val risky = host.risky(proto)
+                    val openChip = @Composable {
+                        StatusChip(
+                            pluralStringResource(R.plurals.ports_open_count, host.open, host.open),
+                            if (host.open > 0) StatusTone.Success else StatusTone.Neutral,
+                            size = StatusChipSize.Small,
+                        )
+                    }
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(host.ip, style = NetrikTheme.dataTypography.dataMedium.copy(fontSize = 15.sp))
+                        Text(host.ip, style = NetrikTheme.dataTypography.dataMedium.copy(fontSize = 15.sp), maxLines = 1, softWrap = false)
                         Text(
                             state.hostnames[host.ip] ?: stringResource(R.string.ports_no_hostname),
                             style = MaterialTheme.typography.bodySmall,
@@ -494,16 +523,19 @@ private fun HostCard(host: HostResult, state: PortScanUiState, copy: CopyAction,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
+                        // Two chips beside the IP squeeze it onto two lines: with the risk chip, both go below.
+                        if (risky > 0) {
+                            FlowRow(
+                                modifier = Modifier.padding(top = 6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp),
+                            ) {
+                                StatusChip(pluralStringResource(R.plurals.ports_risky_count, risky, risky), StatusTone.Error, icon = R.drawable.ic_warning_filled, size = StatusChipSize.Small)
+                                openChip()
+                            }
+                        }
                     }
-                    val risky = host.risky(proto)
-                    if (risky > 0) {
-                        StatusChip(pluralStringResource(R.plurals.ports_risky_count, risky, risky), StatusTone.Error, icon = R.drawable.ic_warning_filled, size = StatusChipSize.Small)
-                    }
-                    StatusChip(
-                        pluralStringResource(R.plurals.ports_open_count, host.open, host.open),
-                        if (host.open > 0) StatusTone.Success else StatusTone.Neutral,
-                        size = StatusChipSize.Small,
-                    )
+                    if (risky == 0) openChip()
                     Icon(painterResource(if (expanded) R.drawable.ic_expand_less else R.drawable.ic_expand_more), contentDescription = null, tint = colors.onSurfaceVariant)
                 }
             }
@@ -533,7 +565,10 @@ private fun HostCard(host: HostResult, state: PortScanUiState, copy: CopyAction,
                         }
                         if (portState == PortState.Open) {
                             PortRisks.of(proto, port)?.let { RiskLine(it) }
-                            host.banners[port]?.let { BannerLine(it, copy) }
+                            host.banners[port]?.let { banner ->
+                                BannerLine(banner, copy)
+                                banner.webUrl(host.ip, port)?.let { url -> OpenInBrowser(url, openUrl) }
+                            }
                         }
                     }
                 }
@@ -641,6 +676,19 @@ private fun BannerLine(banner: ServiceBanner, copy: CopyAction) {
             Icon(painterResource(R.drawable.ic_info), contentDescription = stringResource(R.string.ports_banner), tint = colors.onSurfaceVariant, modifier = Modifier.size(16.dp).padding(top = 1.dp))
             Text(text, style = NetrikTheme.dataTypography.dataSmall.copy(fontSize = 12.sp, lineHeight = 17.sp), color = colors.onSurface, maxLines = 3, overflow = TextOverflow.Ellipsis)
         }
+    }
+}
+
+/** The port answered HTTP (or showed a certificate on an HTTPS port): opens it in the browser. */
+@Composable
+private fun OpenInBrowser(url: String, openUrl: (String) -> Unit) {
+    TextButton(
+        onClick = { openUrl(url) },
+        contentPadding = PaddingValues(start = 8.dp, end = 12.dp),
+        modifier = Modifier.padding(bottom = 4.dp).offset(x = (-8).dp),
+    ) {
+        Icon(painterResource(R.drawable.ic_open_in_new), contentDescription = null, modifier = Modifier.size(18.dp))
+        Text(stringResource(R.string.ports_open_browser), modifier = Modifier.padding(start = 8.dp))
     }
 }
 

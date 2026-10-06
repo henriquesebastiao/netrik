@@ -37,6 +37,8 @@ import com.netrik.core.designsystem.component.StatusTone
 import com.netrik.core.designsystem.component.groupedItemShape
 import com.netrik.core.designsystem.theme.NetrikTheme
 import com.netrik.core.lan.Detection
+import com.netrik.core.lan.DeviceKind
+import com.netrik.core.lan.KindEvidence
 import com.netrik.core.lan.InfoSource
 import com.netrik.core.lan.LanDevice
 import com.netrik.core.oui.MacAddresses
@@ -82,7 +84,7 @@ fun DeviceDetailScreen(
                     }
                 }
             }
-            item(key = "info") { InfoSection(device) }
+            item(key = "info") { InfoSection(device, state) }
         }
     }
 }
@@ -122,10 +124,18 @@ private fun ActionTile(action: Action, modifier: Modifier, onClick: () -> Unit) 
     }
 }
 
-private data class InfoRow(val label: String, val value: String, val sub: String?, val mono: Boolean, val copied: String?, val muted: Boolean = false)
+private data class InfoRow(
+    val label: String,
+    val value: String,
+    val sub: String?,
+    val mono: Boolean,
+    val copied: String?,
+    val muted: Boolean = false,
+    val copyValue: String = value,
+)
 
 @Composable
-private fun InfoSection(device: LanDevice) {
+private fun InfoSection(device: LanDevice, state: DevicesUiState) {
     val copy = rememberCopyAction()
     val rows = buildList {
         add(InfoRow(stringResource(R.string.device_field_ip), device.ip, null, true, stringResource(R.string.devices_ip_copied)))
@@ -153,6 +163,34 @@ private fun InfoSection(device: LanDevice) {
             add(InfoRow(stringResource(R.string.device_field_hostname), host.value, sourceLabel(host.source), true, stringResource(R.string.device_hostname_copied)))
         } else {
             add(InfoRow(stringResource(R.string.device_field_hostname), stringResource(R.string.device_hostname_unresolved), null, false, null, muted = true))
+        }
+        if (!device.isSelf && !device.isGateway) {
+            device.kind?.let { guess ->
+                add(InfoRow(stringResource(R.string.device_field_kind), kindLabel(guess.kind), evidenceText(guess.evidence, state.serviceNames), false, null))
+            }
+        }
+        if (state.checkingPorts && !device.isSelf) {
+            val open = device.openPorts
+            val sub = stringResource(R.string.device_open_ports_sub)
+            when {
+                open == null && state.running -> add(InfoRow(stringResource(R.string.device_field_open_ports), stringResource(R.string.device_open_ports_checking), sub, false, null, muted = true))
+                open == null -> add(InfoRow(stringResource(R.string.device_field_open_ports), stringResource(R.string.device_open_ports_not_checked), null, false, null, muted = true))
+                open.isEmpty() -> add(InfoRow(stringResource(R.string.device_field_open_ports), stringResource(R.string.device_open_ports_none), sub, false, null, muted = true))
+                else -> {
+                    val entries = open.sorted().map { port -> state.serviceNames[port]?.let { "$port $it" } ?: port.toString() }
+                    // No-break space inside each entry: lines only break between "8081 sunproxyadmin" and the next.
+                    add(
+                        InfoRow(
+                            stringResource(R.string.device_field_open_ports),
+                            entries.joinToString(" · ") { it.replace(' ', '\u00A0') },
+                            sub,
+                            true,
+                            stringResource(R.string.device_open_ports_copied),
+                            copyValue = entries.joinToString(", "),
+                        ),
+                    )
+                }
+            }
         }
         device.model?.let { add(InfoRow(stringResource(R.string.device_field_model), it, null, false, null)) }
         if (device.services.isNotEmpty()) {
@@ -182,13 +220,38 @@ private fun InfoSection(device: LanDevice) {
                 }
                 val shape = groupedItemShape(i, rows.size)
                 if (row.copied != null) {
-                    Surface(onClick = { copy.copy(row.value, row.copied) }, shape = shape, color = MaterialTheme.colorScheme.surfaceContainer, modifier = Modifier.fillMaxWidth()) { content() }
+                    Surface(onClick = { copy.copy(row.copyValue, row.copied) }, shape = shape, color = MaterialTheme.colorScheme.surfaceContainer, modifier = Modifier.fillMaxWidth()) { content() }
                 } else {
                     Surface(shape = shape, color = MaterialTheme.colorScheme.surfaceContainer, modifier = Modifier.fillMaxWidth()) { content() }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun kindLabel(kind: DeviceKind): String = stringResource(
+    when (kind) {
+        DeviceKind.Camera -> R.string.device_kind_camera
+        DeviceKind.Printer -> R.string.device_kind_printer
+        DeviceKind.Speaker -> R.string.device_kind_speaker
+        DeviceKind.Tv -> R.string.device_kind_tv
+        DeviceKind.Cast -> R.string.device_kind_cast
+        DeviceKind.Iphone -> R.string.device_kind_iphone
+        DeviceKind.Router -> R.string.device_kind_router
+        DeviceKind.VoipPhone -> R.string.device_kind_voip
+        DeviceKind.Nas -> R.string.device_kind_nas
+        DeviceKind.SmartHome -> R.string.device_kind_smart_home
+        DeviceKind.Computer -> R.string.device_kind_computer
+    },
+)
+
+/** Says what the guess is based on, so the icon isn't taken as something the device declared. */
+@Composable
+private fun evidenceText(evidence: KindEvidence, serviceNames: Map<Int, String>): String = when (evidence) {
+    is KindEvidence.Port -> serviceNames[evidence.port]?.let { stringResource(R.string.device_kind_by_port, evidence.port, it) }
+        ?: stringResource(R.string.device_kind_by_port_unnamed, evidence.port)
+    is KindEvidence.Service -> stringResource(R.string.device_kind_by_service, evidence.type)
 }
 
 @Composable

@@ -35,6 +35,9 @@ enum class WifiSecurity(val label: String, val weak: Boolean) {
                 else -> Open
             }
         }
+
+        /** WPS announced in the beacon ("[WPS]"): its PIN method is open to brute force on routers that don't lock it. */
+        fun wpsFromCapabilities(capabilities: String): Boolean = "[WPS]" in capabilities.uppercase()
     }
 }
 
@@ -77,6 +80,8 @@ data class WifiNetwork(
     val bssidLocal: Boolean = false,
     /** Answers Wi-Fi RTT ranging (802.11mc, or 802.11az on Android 15+): the distance can be measured. */
     val rttResponder: Boolean = false,
+    /** Wi-Fi Protected Setup announced by the access point. */
+    val wps: Boolean = false,
 ) {
     val quality: SignalQuality get() = SignalQuality.of(rssiDbm)
 }

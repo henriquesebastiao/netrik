@@ -29,8 +29,16 @@ data class LanDevice(
     val services: Set<String> = emptySet(),
     val isGateway: Boolean = false,
     val isSelf: Boolean = false,
+    /** Open TCP ports from the quick check (Top 100 + signature ports); null while not checked. */
+    val openPorts: Set<Int>? = null,
 ) {
     val ipValue: Long get() = ip.split('.').fold(0L) { acc, part -> (acc shl 8) or (part.toLongOrNull() ?: 0L) }
+
+    /**
+     * Probable kind of device; an inference from the quick port check and mDNS services. The sweep's TCP port
+     * doesn't count: a refused connection (RST) also proves the host is up.
+     */
+    val kind: KindGuess? get() = DeviceClassifier.classify(openPorts.orEmpty(), services)
 }
 
 /** Partial update coming from one of the discovery sources. */
@@ -43,6 +51,7 @@ data class DeviceUpdate(
     val vendor: Sourced? = null,
     val model: String? = null,
     val services: Set<String> = emptySet(),
+    val openPorts: Set<Int>? = null,
 )
 
 /**
@@ -73,6 +82,7 @@ fun LanDevice?.merge(update: DeviceUpdate): LanDevice {
         vendor = base.vendor.better(update.vendor, VENDOR_PRIORITY),
         model = base.model ?: update.model,
         services = base.services + update.services,
+        openPorts = if (base.openPorts == null || update.openPorts == null) base.openPorts ?: update.openPorts else base.openPorts + update.openPorts,
     )
 }
 
@@ -87,11 +97,4 @@ fun LanDevice.matches(query: String): Boolean {
         (macPlain != null && qPlain.length >= 2 && macPlain.contains(qPlain)) ||
         vendor?.value?.lowercase()?.contains(q) == true ||
         hostname?.value?.lowercase()?.contains(q) == true
-}
-
-enum class DeviceSort { Ip, Vendor }
-
-fun List<LanDevice>.sortedFor(sort: DeviceSort): List<LanDevice> = when (sort) {
-    DeviceSort.Ip -> sortedBy { it.ipValue }
-    DeviceSort.Vendor -> sortedWith(compareBy<LanDevice>({ it.vendor == null }, { it.vendor?.value?.lowercase() }, { it.ipValue }))
 }

@@ -28,6 +28,16 @@ class BannerAndRiskTest {
     }
 
     @Test
+    fun `web url only for services that answered HTTP or showed a certificate on an HTTPS port`() {
+        assertEquals("http://192.168.0.1/", ServiceBanner("HTTP 200", web = WebScheme.Http).webUrl("192.168.0.1", 80))
+        assertEquals("http://192.168.0.1:8080/", ServiceBanner("HTTP 401", web = WebScheme.Http).webUrl("192.168.0.1", 8080))
+        assertEquals("https://10.0.0.2/", ServiceBanner(null, TlsInfo(null, "router", false), WebScheme.Https).webUrl("10.0.0.2", 443))
+        assertEquals("https://10.0.0.2:8443/", ServiceBanner("HTTP 200", TlsInfo("TLSv1.3", "x", true), WebScheme.Https).webUrl("10.0.0.2", 8443))
+        assertEquals("http://[fe80::1]:8000/", ServiceBanner("HTTP 200", web = WebScheme.Http).webUrl("fe80::1", 8000))
+        assertNull(ServiceBanner("SSH-2.0-OpenSSH_9.6").webUrl("192.168.0.1", 22))
+    }
+
+    @Test
     fun `control characters are removed and the length is limited`() {
         assertEquals("Hello world", BannerParser.clean("He\u0007llo\tworld\u001b"))
         assertEquals(BannerParser.MAX_LENGTH, BannerParser.clean("x".repeat(500))!!.length)

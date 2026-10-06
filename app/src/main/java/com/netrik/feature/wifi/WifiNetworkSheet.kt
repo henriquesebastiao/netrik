@@ -93,6 +93,7 @@ fun WifiNetworkSheet(
                     add(stringResource(R.string.field_bssid) to network.bssid)
                     add(stringResource(R.string.wifi_detail_vendor) to vendorLabel(network))
                     add(stringResource(R.string.wifi_detail_security) to network.security.label)
+                    add(stringResource(R.string.wifi_detail_wps) to stringResource(if (network.wps) R.string.wifi_detail_wps_yes else R.string.wifi_detail_wps_no))
                     network.band?.let { add(stringResource(R.string.field_band) to stringResource(R.string.wifi_band, it.label)) }
                     network.channel?.let { add(stringResource(R.string.field_channel) to it.toString()) }
                     add(stringResource(R.string.field_frequency) to "${network.frequencyMhz} MHz")

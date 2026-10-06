@@ -59,10 +59,7 @@
     <string name="network_status_connected">Connected</string>
     <string name="network_status_no_internet">No internet</string>
     <string name="network_status_offline">Offline</string>
-    <string name="network_signal_wifi">%1$s dBm · %2$s GHz · Channel %3$d</string>
-    <string name="network_signal_wifi_width">%1$s dBm · %2$s GHz · Channel %3$d · %4$d MHz</string>
-    <string name="network_signal_wifi_no_channel">%1$s dBm · %2$s GHz</string>
-    <string name="network_signal_rssi_only">%1$s dBm</string>
+    <string name="network_signal_width">Width</string>
 
     <string name="field_local_ip">Local IP</string>
     <string name="field_gateway">Gateway</string>
@@ -270,8 +267,7 @@
     </plurals>
     <string name="wifi_hidden">Hidden network</string>
     <string name="wifi_security_open">Open</string>
-    <string name="wifi_channel_line">Channel %1$d · %2$d MHz · %3$d MHz</string>
-    <string name="wifi_channel_line_unknown">%1$d MHz · %2$d MHz</string>
+    <string name="wifi_channel_n">Channel %1$d</string>
     <string name="wifi_dbm">%1$s dBm</string>
     <string name="wifi_vendor_unknown">Unknown vendor</string>
     <string name="wifi_vendor_local">Local BSSID (virtual AP)</string>
@@ -313,11 +309,10 @@
     <string name="devices_progress">%1$d / %2$d hosts · %3$d found</string>
     <string name="devices_eta">~%1$d s</string>
     <string name="devices_naming">Looking up names…</string>
+    <string name="devices_identifying">Checking device ports · %1$d of %2$d</string>
     <string name="devices_done_line">%1$d hosts in %2$s s</string>
     <string name="devices_stopped_line">%1$d of %2$d hosts</string>
     <string name="devices_truncated">The network is larger than /22: only this device\'s /24 is scanned.</string>
-    <string name="devices_sort_ip">IP</string>
-    <string name="devices_sort_vendor">Vendor</string>
     <plurals name="devices_count">
         <item quantity="one">%1$d device</item>
         <item quantity="other">%1$d devices</item>
@@ -360,6 +355,27 @@
     <string name="device_field_model">Model</string>
     <string name="device_field_services">Advertised services (mDNS)</string>
     <string name="device_field_detection">Detected by</string>
+    <string name="device_field_kind">Probable type</string>
+    <string name="device_kind_camera">Security camera / DVR</string>
+    <string name="device_kind_printer">Printer</string>
+    <string name="device_kind_speaker">Speaker</string>
+    <string name="device_kind_tv">TV / streaming box</string>
+    <string name="device_kind_cast">Google Cast device</string>
+    <string name="device_kind_iphone">iPhone or iPad</string>
+    <string name="device_kind_router">Router / access point</string>
+    <string name="device_kind_voip">VoIP phone</string>
+    <string name="device_kind_nas">NAS / file server</string>
+    <string name="device_kind_smart_home">Smart home device</string>
+    <string name="device_kind_computer">Computer</string>
+    <string name="device_kind_by_port">Guessed from port %1$d (%2$s), which is open</string>
+    <string name="device_kind_by_port_unnamed">Guessed from port %1$d, which is open</string>
+    <string name="device_kind_by_service">Guessed from the %1$s service it announces via mDNS</string>
+    <string name="device_field_open_ports">Open ports</string>
+    <string name="device_open_ports_sub">Top 100 TCP ports and a few device signatures, checked during the scan</string>
+    <string name="device_open_ports_none">None of the ports checked</string>
+    <string name="device_open_ports_checking">Checking…</string>
+    <string name="device_open_ports_not_checked">Not checked (the scan was stopped)</string>
+    <string name="device_open_ports_copied">Open ports copied</string>
     <string name="device_hostname_unresolved">Not resolved</string>
     <string name="device_mac_unavailable_sub">Android doesn\'t let apps read the ARP table. The MAC only shows when the device itself announces it (NetBIOS, mDNS, MNDP, Ubiquiti discovery).</string>
     <string name="device_mac_self_sub">Android uses a different private MAC on each network and doesn\'t reveal it to apps.</string>
@@ -660,6 +676,8 @@
     <string name="settings_always_public_ip_sub">Looks up your public IP on api.ipify.org whenever the network changes, which reveals your IP to that service</string>
     <string name="settings_hide_hidden_wifi">Hide hidden networks</string>
     <string name="settings_hide_hidden_wifi_sub">Networks that don\'t broadcast their name aren\'t listed in the Wi-Fi tab</string>
+    <string name="settings_identify_devices">Identify devices by their ports</string>
+    <string name="settings_identify_devices_sub">The Devices scan checks the 100 most common ports of each device to pick its icon. Turn off on networks where you aren\'t allowed to scan ports</string>
     <string name="settings_section_security">Security</string>
     <string name="settings_app_lock">App lock</string>
     <string name="settings_app_lock_on">Asks for your PIN when you open Netrik and after the device locks</string>
@@ -927,6 +945,7 @@
     <string name="ports_banners_sub">Connects again to each open port to read what the service says: SSH/FTP/SMTP greetings, the HTTP Server header and the TLS certificate (sends a HEAD request to web ports).</string>
     <string name="ports_banner">Banner</string>
     <string name="ports_banner_copied">Banner copied</string>
+    <string name="ports_open_browser">Open in browser</string>
     <string name="ports_tls">%1$s · certificate %2$s</string>
     <string name="ports_tls_untrusted">TLS · certificate %1$s (not trusted)</string>
     <string name="ports_tls_no_name">without a name</string>
@@ -1004,6 +1023,10 @@
     <string name="wifi_detail_rtt_yes">Supported by the access point</string>
     <string name="wifi_detail_rtt_no">Not announced by the access point</string>
     <string name="wifi_rtt_chip">RTT</string>
+    <string name="wifi_wps_chip">WPS</string>
+    <string name="wifi_detail_wps">WPS</string>
+    <string name="wifi_detail_wps_yes">Enabled (the WPS PIN can be brute-forced unless the router locks it)</string>
+    <string name="wifi_detail_wps_no">Not announced</string>
     <string name="wifi_rtt_title">Distance to the access point</string>
     <string name="wifi_rtt_start">Measure distance</string>
     <string name="wifi_rtt_measuring">Measuring…</string>

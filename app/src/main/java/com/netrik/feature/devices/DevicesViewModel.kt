@@ -2,7 +2,6 @@ package com.netrik.feature.devices
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.netrik.core.lan.DeviceSort
 import com.netrik.core.lan.Detection
 import com.netrik.core.lan.DeviceUpdate
 import com.netrik.core.lan.LanDevice
@@ -11,9 +10,11 @@ import com.netrik.core.lan.ScanEvent
 import com.netrik.core.lan.ScanRange
 import com.netrik.core.lan.matches
 import com.netrik.core.lan.merge
-import com.netrik.core.lan.sortedFor
 import com.netrik.core.network.CurrentNetwork
 import com.netrik.core.network.NetworkInfoRepository
+import com.netrik.core.portscan.PortCatalog
+import com.netrik.core.portscan.Protocol
+import com.netrik.core.settings.NetworkPreferences
 import com.netrik.core.ui.RunPhase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -55,14 +56,21 @@ data class DevicesUiState(
     /** The IP sweep ended and the name sources are filling in the data. */
     val sweepDone: Boolean = false,
     val devices: Map<String, LanDevice> = emptyMap(),
-    val sort: DeviceSort = DeviceSort.Ip,
+    /** This scan also checks the ports of each device (Settings → Network). */
+    val checkingPorts: Boolean = false,
+    /** TCP service names, for the open ports on the details screen. */
+    val serviceNames: Map<Int, String> = emptyMap(),
     val query: String = "",
     val searchOpen: Boolean = false,
     /** CIDR of the last scan (to warn if the network changed). */
     val scannedCidr: String? = null,
 ) {
     val running: Boolean get() = phase == RunPhase.Running
-    val visible: List<LanDevice> get() = devices.values.filter { it.matches(query) }.sortedFor(sort)
+    val visible: List<LanDevice> get() = devices.values.filter { it.matches(query) }.sortedBy { it.ipValue }
+
+    /** Devices whose ports are being checked, and how many there are to check. */
+    val portsPending: Int get() = if (checkingPorts) devices.values.count { !it.isSelf && it.openPorts == null } else 0
+    val portsTotal: Int get() = if (checkingPorts) devices.values.count { !it.isSelf } else 0
 }
 
 /** "Find on network" from the OUI lookup: search to apply when the Devices tab opens. */
@@ -76,6 +84,8 @@ class DevicesViewModel @Inject constructor(
     private val scanner: LanScanner,
     networkInfo: NetworkInfoRepository,
     private val pendingSearch: PendingDeviceSearch,
+    private val preferences: NetworkPreferences,
+    private val portCatalog: PortCatalog,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -126,7 +136,6 @@ class DevicesViewModel @Inject constructor(
         }
     }
 
-    fun onSortChange(sort: DeviceSort) = state.update { it.copy(sort = sort) }
     fun onSearchOpen() = state.update { it.copy(searchOpen = true) }
     fun onSearchClose() = state.update { it.copy(searchOpen = false, query = "") }
     fun onQueryChange(q: String) = state.update { it.copy(query = q) }
@@ -138,11 +147,17 @@ class DevicesViewModel @Inject constructor(
         state.update {
             it.copy(
                 phase = RunPhase.Running, scanned = 0, total = network.range.hosts.size, startedAt = now, elapsedMillis = 0,
-                sweepDone = false, devices = mapOf(self.ip to self), scannedCidr = network.range.cidr,
+                sweepDone = false, devices = mapOf(self.ip to self), scannedCidr = network.range.cidr, checkingPorts = false,
             )
         }
         scanJob = viewModelScope.launch {
-            scanner.scan(network.range).collect { event ->
+            val checkPorts = preferences.identifyDevicesByPorts.first()
+            if (checkPorts && state.value.serviceNames.isEmpty()) {
+                val names = portCatalog.serviceNames(Protocol.Tcp)
+                state.update { it.copy(serviceNames = names) }
+            }
+            state.update { it.copy(checkingPorts = checkPorts) }
+            scanner.scan(network.range, checkPorts, skipPorts = setOf(network.selfIp)).collect { event ->
                 when (event) {
                     is ScanEvent.Progress -> state.update { it.copy(scanned = event.scanned, total = event.total) }
                     is ScanEvent.Found -> state.update { it.copy(devices = it.devices.apply(event.update, network)) }

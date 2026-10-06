@@ -32,6 +32,9 @@ interface NetworkPreferences {
 
     /** Leave networks that don't broadcast their name out of the Wi-Fi tab. */
     val hideHiddenWifi: Flow<Boolean>
+
+    /** Devices tab: check the Top 100 ports of each device found, to tell what kind of device it is. */
+    val identifyDevicesByPorts: Flow<Boolean>
 }
 
 private val Context.settingsStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
@@ -50,9 +53,11 @@ class SettingsRepository @Inject constructor(@param:ApplicationContext private v
 
     override val alwaysShowPublicIp: Flow<Boolean> = context.settingsStore.data.map { it[ALWAYS_PUBLIC_IP] ?: false }
     override val hideHiddenWifi: Flow<Boolean> = context.settingsStore.data.map { it[HIDE_HIDDEN_WIFI] ?: false }
+    override val identifyDevicesByPorts: Flow<Boolean> = context.settingsStore.data.map { it[IDENTIFY_DEVICES] ?: true }
 
     suspend fun setAlwaysShowPublicIp(enabled: Boolean) = context.settingsStore.edit { it[ALWAYS_PUBLIC_IP] = enabled }
     suspend fun setHideHiddenWifi(enabled: Boolean) = context.settingsStore.edit { it[HIDE_HIDDEN_WIFI] = enabled }
+    suspend fun setIdentifyDevicesByPorts(enabled: Boolean) = context.settingsStore.edit { it[IDENTIFY_DEVICES] = enabled }
 
     suspend fun setThemeMode(mode: ThemeMode) = context.settingsStore.edit { it[THEME_MODE] = mode.name }
     suspend fun setDynamicColor(enabled: Boolean) = context.settingsStore.edit { it[DYNAMIC_COLOR] = enabled }
@@ -64,5 +69,6 @@ class SettingsRepository @Inject constructor(@param:ApplicationContext private v
         val AMOLED = booleanPreferencesKey("amoled")
         val ALWAYS_PUBLIC_IP = booleanPreferencesKey("always_public_ip")
         val HIDE_HIDDEN_WIFI = booleanPreferencesKey("hide_hidden_wifi")
+        val IDENTIFY_DEVICES = booleanPreferencesKey("identify_devices_by_ports")
     }
 }

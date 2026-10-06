@@ -105,7 +105,7 @@ class LanLogicTest {
     }
 
     @Test
-    fun `search and sorting`() {
+    fun `search and order by IP`() {
         val devices = listOf(
             LanDevice("192.168.0.23", Detection.Icmp, hostname = Sourced("nas.lan", InfoSource.Dns), mac = Sourced("00:11:32:8C:4D:10", InfoSource.Netbios), vendor = Sourced("Synology", InfoSource.Oui)),
             LanDevice("192.168.0.7", Detection.Icmp, vendor = Sourced("Dell", InfoSource.Upnp)),
@@ -118,8 +118,7 @@ class LanLogicTest {
         assertTrue(devices[1].matches("0.7"))
         assertFalse(devices[2].matches("dell"))
 
-        assertEquals(listOf("192.168.0.7", "192.168.0.23", "192.168.0.100"), devices.sortedFor(DeviceSort.Ip).map { it.ip })
-        assertEquals(listOf("192.168.0.7", "192.168.0.23", "192.168.0.100"), devices.sortedFor(DeviceSort.Vendor).map { it.ip })
+        assertEquals(listOf("192.168.0.7", "192.168.0.23", "192.168.0.100"), devices.sortedBy { it.ipValue }.map { it.ip })
     }
 
     /** Real NBSTAT reply in format: header, name, type 0x21, 2 names and MAC. */

@@ -3,11 +3,25 @@ package com.netrik.core.portscan
 /** TLS details of a service: [protocol] is null when the handshake didn't finish (certificate not trusted). */
 data class TlsInfo(val protocol: String?, val subject: String?, val trusted: Boolean)
 
+/** How a browser reaches the service. */
+enum class WebScheme { Http, Https }
+
 /**
  * What an open service said about itself: its greeting ("SSH-2.0-OpenSSH_9.6"), its HTTP answer
  * ("HTTP 200 · nginx/1.24.0") and/or its TLS certificate. Untrusted text, already cleaned.
+ * [web] is set when the port answered with an HTTP status, or presented a certificate on an HTTPS port.
  */
-data class ServiceBanner(val text: String?, val tls: TlsInfo? = null)
+data class ServiceBanner(val text: String?, val tls: TlsInfo? = null, val web: WebScheme? = null) {
+
+    /** "http://192.168.0.1:8080/" to open in the browser; the default port is left out. */
+    fun webUrl(ip: String, port: Int): String? {
+        val scheme = web ?: return null
+        val host = if (':' in ip) "[$ip]" else ip
+        val default = if (scheme == WebScheme.Http) 80 else 443
+        val name = if (scheme == WebScheme.Http) "http" else "https"
+        return if (port == default) "$name://$host/" else "$name://$host:$port/"
+    }
+}
 
 /** Pure parsing of what services send back. */
 object BannerParser {

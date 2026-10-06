@@ -27,6 +27,7 @@ class SettingsViewModel @Inject constructor(
 
     val alwaysShowPublicIp: StateFlow<Boolean> = settings.alwaysShowPublicIp.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
     val hideHiddenWifi: StateFlow<Boolean> = settings.hideHiddenWifi.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+    val identifyDevicesByPorts: StateFlow<Boolean> = settings.identifyDevicesByPorts.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
 
     fun setAlwaysShowPublicIp(enabled: Boolean) {
         viewModelScope.launch { settings.setAlwaysShowPublicIp(enabled) }
@@ -34,6 +35,10 @@ class SettingsViewModel @Inject constructor(
 
     fun setHideHiddenWifi(enabled: Boolean) {
         viewModelScope.launch { settings.setHideHiddenWifi(enabled) }
+    }
+
+    fun setIdentifyDevicesByPorts(enabled: Boolean) {
+        viewModelScope.launch { settings.setIdentifyDevicesByPorts(enabled) }
     }
 
     val appearance: StateFlow<AppearanceSettings> =

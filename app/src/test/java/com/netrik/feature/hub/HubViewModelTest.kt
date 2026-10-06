@@ -44,6 +44,7 @@ class HubViewModelTest {
     private val prefs = object : NetworkPreferences {
         override val alwaysShowPublicIp = this@HubViewModelTest.alwaysShowPublicIp
         override val hideHiddenWifi = flowOf(false)
+        override val identifyDevicesByPorts = flowOf(true)
     }
     private val publicIpRepo = object : PublicIpRepository {
         override suspend fun fetchPublicIp(): Result<String> {

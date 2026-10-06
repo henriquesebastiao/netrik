@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -26,7 +25,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -63,7 +61,7 @@ import com.netrik.core.designsystem.component.SearchTopBar
 import com.netrik.core.designsystem.component.StatusTone
 import com.netrik.core.designsystem.component.groupedItemShape
 import com.netrik.core.designsystem.theme.NetrikTheme
-import com.netrik.core.lan.DeviceSort
+import com.netrik.core.lan.DeviceKind
 import com.netrik.core.lan.LanDevice
 import com.netrik.core.network.LocalNetworkAccess
 import com.netrik.core.ui.CopyAction
@@ -182,32 +180,18 @@ fun DevicesScreen(viewModel: DevicesViewModel, onOpenDevice: (String) -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item(key = "subnet") { SubnetCard(state, network, viewModel::onScanClick) }
-            item(key = "sort") {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DeviceSort.entries.forEach { sort ->
-                        val selected = state.sort == sort
-                        FilterChip(
-                            selected = selected,
-                            onClick = { viewModel.onSortChange(sort) },
-                            label = { Text(stringResource(if (sort == DeviceSort.Ip) R.string.devices_sort_ip else R.string.devices_sort_vendor)) },
-                            leadingIcon = if (selected) {
-                                { Icon(painterResource(R.drawable.ic_check), contentDescription = null, modifier = Modifier.size(18.dp)) }
-                            } else {
-                                null
-                            },
-                        )
-                    }
-                    Spacer(Modifier.weight(1f))
-                    Text(
-                        if (state.query.isNotBlank()) {
-                            stringResource(R.string.devices_count_filtered, visible.size, state.devices.size)
-                        } else {
-                            pluralStringResource(R.plurals.devices_count, state.devices.size, state.devices.size)
-                        },
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+            // Always by IP: without the ARP table there's rarely a MAC, so rarely a vendor to sort by.
+            item(key = "count") {
+                Text(
+                    if (state.query.isNotBlank()) {
+                        stringResource(R.string.devices_count_filtered, visible.size, state.devices.size)
+                    } else {
+                        pluralStringResource(R.plurals.devices_count, state.devices.size, state.devices.size)
+                    },
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                )
             }
             item(key = "list") {
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -280,7 +264,16 @@ private fun SubnetCard(state: DevicesUiState, network: LocalNetwork, onScan: () 
                 }
                 state.running -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                    Text(stringResource(R.string.devices_naming), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                    val pending = state.portsPending
+                    Text(
+                        if (pending > 0) {
+                            stringResource(R.string.devices_identifying, state.portsTotal - pending, state.portsTotal)
+                        } else {
+                            stringResource(R.string.devices_naming)
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant,
+                    )
                 }
                 state.phase == RunPhase.Done -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     StatusChip(stringResource(R.string.run_done), StatusTone.Success)
@@ -329,15 +322,10 @@ private fun DeviceRow(device: LanDevice, shape: Shape, copy: CopyAction, onClick
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                // Chips wrap to the next line when they don't fit (e.g. "MAC unavailable").
+                // The MAC only shows when a protocol announced it; "unavailable" on almost every row said nothing.
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     CopyChip("IP", device.ip, onClick = { copy.copy(device.ip, ipCopied) })
-                    val mac = device.mac?.value
-                    if (mac != null) {
-                        CopyChip("MAC", mac, onClick = { copy.copy(mac, macCopied) })
-                    } else {
-                        CopyChip("MAC", stringResource(if (device.isSelf) R.string.devices_mac_private else R.string.devices_mac_unavailable), onClick = null)
-                    }
+                    device.mac?.value?.let { mac -> CopyChip("MAC", mac, onClick = { copy.copy(mac, macCopied) }) }
                 }
             }
             Icon(
@@ -351,28 +339,21 @@ private fun DeviceRow(device: LanDevice, shape: Shape, copy: CopyAction, onClick
 }
 
 @Composable
-private fun CopyChip(label: String, value: String, onClick: (() -> Unit)?) {
+private fun CopyChip(label: String, value: String, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
-    val content: @Composable () -> Unit = {
+    Surface(onClick = onClick, shape = RoundedCornerShape(6.dp), color = colors.surface) {
         Row(modifier = Modifier.height(30.dp).padding(start = 8.dp, end = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(label, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
             Text(
                 value,
-                style = if (onClick != null) NetrikTheme.dataTypography.dataMedium.copy(fontSize = 13.sp) else MaterialTheme.typography.bodySmall,
-                color = if (onClick != null) colors.onSurface else colors.onSurfaceVariant,
+                style = NetrikTheme.dataTypography.dataMedium.copy(fontSize = 13.sp),
+                color = colors.onSurface,
                 maxLines = 1,
                 softWrap = false,
                 overflow = TextOverflow.Ellipsis,
             )
-            if (onClick != null) {
-                Icon(painterResource(R.drawable.ic_content_copy), contentDescription = null, tint = colors.outline, modifier = Modifier.size(14.dp))
-            }
+            Icon(painterResource(R.drawable.ic_content_copy), contentDescription = null, tint = colors.outline, modifier = Modifier.size(14.dp))
         }
-    }
-    if (onClick != null) {
-        Surface(onClick = onClick, shape = RoundedCornerShape(6.dp), color = colors.surface) { content() }
-    } else {
-        Surface(shape = RoundedCornerShape(6.dp), color = colors.surface) { content() }
     }
 }
 
@@ -402,22 +383,31 @@ fun badge(device: LanDevice): String? = when {
     else -> null
 }
 
-/** Icon from the role on the network or from the services the device itself announces. */
+/** Icon from the role on the network, or from the kind guessed by its open ports and announced services. */
 @Composable
 fun deviceIcon(device: LanDevice): Triple<Int, Color, Color> {
     val c = MaterialTheme.colorScheme
     return when {
         device.isGateway -> Triple(R.drawable.ic_router, c.tertiaryContainer, c.onTertiaryContainer)
         device.isSelf -> Triple(R.drawable.ic_smartphone, c.primaryContainer, c.onPrimaryContainer)
-        device.services.any { it.startsWith("_ipp") || it.startsWith("_printer") || it.startsWith("_pdl") } ->
-            Triple(R.drawable.ic_print, c.surfaceContainerHighest, c.onSurfaceVariant)
-        device.services.any { it.startsWith("_googlecast") || it.startsWith("_airplay") || it.startsWith("_raop") } ->
-            Triple(R.drawable.ic_tv, c.surfaceContainerHighest, c.onSurfaceVariant)
-        device.services.any { it.startsWith("_workstation") || it.startsWith("_smb") || it.startsWith("_companion") } ->
-            Triple(R.drawable.ic_computer, c.surfaceContainerHighest, c.onSurfaceVariant)
-        else -> Triple(R.drawable.ic_devices_other, c.surfaceContainerHighest, c.onSurfaceVariant)
+        else -> Triple(device.kind?.kind?.icon ?: R.drawable.ic_devices_other, c.surfaceContainerHighest, c.onSurfaceVariant)
     }
 }
+
+val DeviceKind.icon: Int
+    get() = when (this) {
+        DeviceKind.Camera -> R.drawable.ic_videocam
+        DeviceKind.Printer -> R.drawable.ic_print
+        DeviceKind.Speaker -> R.drawable.ic_speaker
+        DeviceKind.Tv -> R.drawable.ic_tv
+        DeviceKind.Cast -> R.drawable.ic_cast
+        DeviceKind.Iphone -> R.drawable.ic_smartphone
+        DeviceKind.Router -> R.drawable.ic_router
+        DeviceKind.VoipPhone -> R.drawable.ic_deskphone
+        DeviceKind.Nas -> R.drawable.ic_hard_drive
+        DeviceKind.SmartHome -> R.drawable.ic_home_iot_device
+        DeviceKind.Computer -> R.drawable.ic_computer
+    }
 
 /** ETA from the average speed so far. */
 private fun etaSeconds(state: DevicesUiState): Int? {

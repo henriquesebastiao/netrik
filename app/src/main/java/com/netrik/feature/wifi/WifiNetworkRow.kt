@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -70,46 +71,48 @@ fun WifiNetworkRow(
                 ) {
                     Box(contentAlignment = Alignment.Center) { Icon(painterResource(signalIcon(network.quality)), contentDescription = null) }
                 }
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Column {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = network.ssid ?: stringResource(R.string.wifi_hidden),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontStyle = if (network.ssid == null) FontStyle.Italic else FontStyle.Normal,
+                        color = if (network.ssid == null) colors.onSurfaceVariant else colors.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    // Vendor on its own line above the BSSID, so a long name isn't cut off by the address.
+                    if (network.vendor != null || network.bssidLocal) {
                         Text(
-                            text = network.ssid ?: stringResource(R.string.wifi_hidden),
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontStyle = if (network.ssid == null) FontStyle.Italic else FontStyle.Normal,
-                            color = if (network.ssid == null) colors.onSurfaceVariant else colors.onSurface,
+                            vendorLabel(network),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
-                        // Vendor on its own line above the BSSID, so a long name isn't cut off by the address.
-                        if (network.vendor != null || network.bssidLocal) {
-                            Text(
-                                vendorLabel(network),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = colors.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                        Text(
-                            network.bssid,
-                            style = NetrikTheme.dataTypography.dataSmall,
-                            color = colors.onSurfaceVariant,
-                            modifier = Modifier
-                                .clickable { copy.copy(network.bssid, bssidCopied) }
-                                .padding(vertical = 2.dp),
-                        )
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        SecurityChip(network.security)
-                        network.band?.let { AttributeChip(stringResource(R.string.wifi_band, it.label)) }
-                        if (network.rttResponder) AttributeChip(stringResource(R.string.wifi_rtt_chip))
-                    }
-                    Text(channelLine(network), style = NetrikTheme.dataTypography.dataSmall, color = colors.onSurfaceVariant)
+                    Text(
+                        network.bssid,
+                        style = NetrikTheme.dataTypography.dataSmall,
+                        color = colors.onSurfaceVariant,
+                        modifier = Modifier
+                            .clickable { copy.copy(network.bssid, bssidCopied) }
+                            .padding(vertical = 2.dp),
+                    )
                 }
                 Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(stringResource(R.string.wifi_dbm, formatDbm(network.rssiDbm)), style = NetrikTheme.dataTypography.dataMedium.copy(fontSize = 17.sp))
                     Text(qualityLabel(network.quality), style = MaterialTheme.typography.labelSmall, color = qualityColor)
                 }
+            }
+            // Chips and channel line use the full width below (not squeezed beside the dBm column), aligned with the text.
+            Column(modifier = Modifier.padding(start = 54.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    SecurityChip(network.security)
+                    network.band?.let { AttributeChip(stringResource(R.string.wifi_band, it.label)) }
+                    if (network.wps) WpsChip()
+                    if (network.rttResponder) AttributeChip(stringResource(R.string.wifi_rtt_chip))
+                }
+                ChannelLine(network)
             }
         }
     }
@@ -150,6 +153,18 @@ private fun AttributeChip(text: String) {
     }
 }
 
+/** WPS in warning colors, like weak security: its PIN can be brute-forced on routers that don't lock it. */
+@Composable
+private fun WpsChip() {
+    val ext = NetrikTheme.extendedColors
+    Surface(shape = RoundedCornerShape(6.dp), color = ext.warningContainer, contentColor = ext.onWarningContainer, modifier = Modifier.height(24.dp)) {
+        Row(modifier = Modifier.padding(start = 6.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Icon(painterResource(R.drawable.ic_warning_filled), contentDescription = null, modifier = Modifier.size(14.dp))
+            Text(stringResource(R.string.wifi_wps_chip), style = MaterialTheme.typography.labelMedium)
+        }
+    }
+}
+
 @Composable
 fun vendorLabel(network: WifiNetwork): String = when {
     network.vendor != null -> network.vendor
@@ -157,10 +172,26 @@ fun vendorLabel(network: WifiNetwork): String = when {
     else -> stringResource(R.string.wifi_vendor_unknown)
 }
 
+/** "Channel 149 · 5745 MHz · 80 MHz"; when it doesn't fit, it wraps only between the parts, never inside one. */
 @Composable
-fun channelLine(network: WifiNetwork): String = network.channel?.let {
-    stringResource(R.string.wifi_channel_line, it, network.frequencyMhz, network.widthMhz)
-} ?: stringResource(R.string.wifi_channel_line_unknown, network.frequencyMhz, network.widthMhz)
+fun ChannelLine(network: WifiNetwork, modifier: Modifier = Modifier) {
+    val parts = listOfNotNull(
+        network.channel?.let { stringResource(R.string.wifi_channel_n, it) },
+        "${network.frequencyMhz} MHz",
+        "${network.widthMhz} MHz",
+    )
+    FlowRow(modifier = modifier) {
+        parts.forEachIndexed { i, part ->
+            Text(
+                if (i < parts.lastIndex) "$part · " else part,
+                style = NetrikTheme.dataTypography.dataSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                softWrap = false,
+            )
+        }
+    }
+}
 
 @Composable
 fun qualityColor(quality: SignalQuality): Color = when (quality) {

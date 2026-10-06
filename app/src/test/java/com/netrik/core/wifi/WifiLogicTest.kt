@@ -25,6 +25,14 @@ class WifiLogicTest {
     }
 
     @Test
+    fun `wps from real capabilities`() {
+        assertTrue(WifiSecurity.wpsFromCapabilities("[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS][WPS]"))
+        assertTrue(WifiSecurity.wpsFromCapabilities("[WPA2-PSK-CCMP][WPS][ESS]"))
+        assertFalse(WifiSecurity.wpsFromCapabilities("[RSN-SAE-CCMP][ESS][MFPR][MFPC]"))
+        assertFalse(WifiSecurity.wpsFromCapabilities(""))
+    }
+
+    @Test
     fun `quality bands from the design`() {
         assertEquals(SignalQuality.Excellent, SignalQuality.of(-48))
         assertEquals(SignalQuality.Excellent, SignalQuality.of(-60))

@@ -86,6 +86,7 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
     val lock by viewModel.lock.collectAsStateWithLifecycle()
     val alwaysShowPublicIp by viewModel.alwaysShowPublicIp.collectAsStateWithLifecycle()
     val hideHiddenWifi by viewModel.hideHiddenWifi.collectAsStateWithLifecycle()
+    val identifyDevices by viewModel.identifyDevicesByPorts.collectAsStateWithLifecycle()
     var pinFlow by rememberSaveable { mutableStateOf<PinFlow?>(null) }
     val snackbar = LocalSnackbarHostState.current
     val scope = rememberCoroutineScope()
@@ -143,7 +144,7 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                         checked = alwaysShowPublicIp,
                         onCheckedChange = viewModel::setAlwaysShowPublicIp,
                         index = 0,
-                        count = 2,
+                        count = 3,
                     )
                     SwitchRow(
                         icon = R.drawable.ic_wifi_off,
@@ -152,7 +153,16 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                         checked = hideHiddenWifi,
                         onCheckedChange = viewModel::setHideHiddenWifi,
                         index = 1,
-                        count = 2,
+                        count = 3,
+                    )
+                    SwitchRow(
+                        icon = R.drawable.ic_radar,
+                        title = stringResource(R.string.settings_identify_devices),
+                        subtitle = stringResource(R.string.settings_identify_devices_sub),
+                        checked = identifyDevices,
+                        onCheckedChange = viewModel::setIdentifyDevicesByPorts,
+                        index = 2,
+                        count = 3,
                     )
                 }
             }
