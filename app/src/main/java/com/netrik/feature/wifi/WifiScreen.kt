@@ -39,6 +39,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -73,12 +74,13 @@ import com.netrik.core.designsystem.theme.NetrikTheme
 import com.netrik.core.network.WifiBand
 import com.netrik.core.ui.LocalSnackbarHostState
 import com.netrik.core.ui.rememberCopyAction
+import com.netrik.core.wifi.ChannelAdvisor
 import com.netrik.core.wifi.WifiNetwork
 import com.netrik.core.wifi.WifiSort
 import com.netrik.core.wifi.nearby
 
 @Composable
-fun WifiScreen(viewModel: WifiViewModel = hiltViewModel()) {
+fun WifiScreen(onOpenMeter: () -> Unit = {}, viewModel: WifiViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val resources = LocalResources.current
@@ -131,6 +133,9 @@ fun WifiScreen(viewModel: WifiViewModel = hiltViewModel()) {
             NetrikTopAppBar(
                 title = stringResource(R.string.tab_wifi),
                 actions = {
+                    IconButton(onClick = onOpenMeter) {
+                        Icon(painterResource(R.drawable.ic_speed), contentDescription = stringResource(R.string.wifi_meter_open))
+                    }
                     if (state.ready) {
                         IconButton(onClick = viewModel::onRefresh) {
                             Icon(painterResource(R.drawable.ic_refresh), contentDescription = stringResource(R.string.wifi_refresh))
@@ -168,15 +173,25 @@ fun WifiScreen(viewModel: WifiViewModel = hiltViewModel()) {
                     actionLabel = stringResource(R.string.location_off_action),
                     onAction = { context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) },
                 )
-                else -> ScanContent(state, viewModel)
+                else -> ScanContent(state, viewModel, onOpenMeter)
             }
         }
     }
 }
 
 @Composable
-private fun ScanContent(state: WifiUiState, viewModel: WifiViewModel) {
+private fun ScanContent(state: WifiUiState, viewModel: WifiViewModel, onOpenMeter: () -> Unit) {
     val copy = rememberCopyAction()
+    state.networks.firstOrNull { it.bssid == state.detailBssid }?.let { network ->
+        WifiNetworkSheet(
+            network = network,
+            rttSupport = state.rttSupport,
+            rtt = state.rtt,
+            onStartRanging = { viewModel.onStartRanging(network.bssid) },
+            onStopRanging = viewModel::onStopRanging,
+            onDismiss = viewModel::onCloseDetail,
+        )
+    }
     val palette = chartPalette()
     LazyColumn(
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
@@ -191,17 +206,17 @@ private fun ScanContent(state: WifiUiState, viewModel: WifiViewModel) {
                         shape = SegmentedButtonDefaults.itemShape(i, WifiView.entries.size),
                         icon = {
                             SegmentedButtonDefaults.Icon(active = state.view == view) {
-                                Icon(painterResource(if (view == WifiView.List) R.drawable.ic_list else R.drawable.ic_ssid_chart), contentDescription = null, modifier = Modifier.size(18.dp))
+                                Icon(painterResource(viewIcon(view)), contentDescription = null, modifier = Modifier.size(18.dp))
                             }
                         },
-                    ) { Text(stringResource(if (view == WifiView.List) R.string.wifi_view_list else R.string.wifi_view_spectrum)) }
+                    ) { Text(viewLabel(view), maxLines = 1) }
                 }
             }
         }
         item(key = "filters") {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 state.bands.forEach { band ->
-                    val selected = if (state.view == WifiView.Spectrum) state.spectrumBand == band else band in state.listBands
+                    val selected = if (state.view != WifiView.List) state.spectrumBand == band else band in state.listBands
                     FilterChip(
                         selected = selected,
                         onClick = { viewModel.onBandClick(band) },
@@ -253,7 +268,15 @@ private fun ScanContent(state: WifiUiState, viewModel: WifiViewModel) {
         if (state.view == WifiView.List) {
             val connected = state.connectedNetwork?.takeIf { it.band in state.listBands }
             if (connected != null) {
-                item(key = "connected") { WifiNetworkRow(connected, RoundedCornerShape(16.dp), copy, highlighted = true) }
+                item(key = "connected") {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        WifiNetworkRow(connected, RoundedCornerShape(16.dp), copy, highlighted = true, onClick = { viewModel.onOpenDetail(connected.bssid) })
+                        TextButton(onClick = onOpenMeter, modifier = Modifier.align(Alignment.End)) {
+                            Icon(painterResource(R.drawable.ic_speed), contentDescription = null, modifier = Modifier.size(18.dp))
+                            Text(stringResource(R.string.wifi_meter_open), modifier = Modifier.padding(start = 8.dp))
+                        }
+                    }
+                }
             }
             val nearby = state.networks.nearby(state.listBands, state.sort)
             item(key = "nearby-header") {
@@ -269,10 +292,15 @@ private fun ScanContent(state: WifiUiState, viewModel: WifiViewModel) {
             } else {
                 item(key = "nearby") {
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        nearby.forEachIndexed { i, n -> WifiNetworkRow(n, groupedItemShape(i, nearby.size), copy) }
+                        nearby.forEachIndexed { i, n -> WifiNetworkRow(n, groupedItemShape(i, nearby.size), copy, onClick = { viewModel.onOpenDetail(n.bssid) }) }
                     }
                 }
             }
+        } else if (state.view == WifiView.Channels) {
+            val inBand = state.networks.filter { it.band == state.spectrumBand }
+            val advice = ChannelAdvisor.advise(state.networks, state.spectrumBand)
+            item(key = "advice") { ChannelAdviceCard(advice, networksInBand = inBand.count { !it.connected }) }
+            item(key = "ranking") { ChannelRanking(advice) }
         } else {
             val inBand = state.networks.filter { it.band == state.spectrumBand }
             val colors = assignColors(inBand, palette)
@@ -314,7 +342,7 @@ private fun ScanContent(state: WifiUiState, viewModel: WifiViewModel) {
                 }
             }
             inBand.firstOrNull { it.bssid == selected }?.let { sel ->
-                item(key = "selected") { SelectedNetworkCard(sel, colors[sel.bssid] ?: MaterialTheme.colorScheme.primary) }
+                item(key = "selected") { SelectedNetworkCard(sel, colors[sel.bssid] ?: MaterialTheme.colorScheme.primary, onClick = { viewModel.onOpenDetail(sel.bssid) }) }
             }
             item(key = "legend") {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -348,9 +376,9 @@ private fun ScanContent(state: WifiUiState, viewModel: WifiViewModel) {
 }
 
 @Composable
-private fun SelectedNetworkCard(network: WifiNetwork, color: Color) {
+private fun SelectedNetworkCard(network: WifiNetwork, color: Color, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
-    Surface(shape = RoundedCornerShape(16.dp), color = colors.surfaceContainer, modifier = Modifier.fillMaxWidth()) {
+    Surface(onClick = onClick, shape = RoundedCornerShape(16.dp), color = colors.surfaceContainer, modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(Modifier.padding(top = 6.dp).size(12.dp).background(color, RoundedCornerShape(3.dp)))
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -457,3 +485,18 @@ private fun wifiSettingsIntent(): Intent =
 
 private fun appSettingsIntent(packageName: String): Intent =
     Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null))
+
+private fun viewIcon(view: WifiView): Int = when (view) {
+    WifiView.List -> R.drawable.ic_list
+    WifiView.Spectrum -> R.drawable.ic_ssid_chart
+    WifiView.Channels -> R.drawable.ic_bar_chart
+}
+
+@Composable
+private fun viewLabel(view: WifiView): String = stringResource(
+    when (view) {
+        WifiView.List -> R.string.wifi_view_list
+        WifiView.Spectrum -> R.string.wifi_view_spectrum
+        WifiView.Channels -> R.string.wifi_view_channels
+    },
+)

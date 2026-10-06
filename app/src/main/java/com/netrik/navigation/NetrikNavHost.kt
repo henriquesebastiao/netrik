@@ -27,6 +27,7 @@ import com.netrik.feature.oui.OuiScreen
 import com.netrik.feature.ping.PingScreen
 import com.netrik.feature.portscan.PortScanScreen
 import com.netrik.feature.traceroute.TracerouteScreen
+import com.netrik.feature.wifi.WifiMeterScreen
 import com.netrik.feature.wifi.WifiScreen
 import com.netrik.feature.settings.SettingsScreen
 import com.netrik.feature.ssh.SshFormScreen
@@ -65,7 +66,8 @@ fun NetrikNavHost(navController: NavHostController, modifier: Modifier = Modifie
             }
         }
         navigation<WifiGraph>(startDestination = WifiRoute) {
-            composable<WifiRoute> { WifiScreen() }
+            composable<WifiRoute> { WifiScreen(onOpenMeter = { navController.navigate(WifiMeterRoute) }) }
+            composable<WifiMeterRoute> { WifiMeterScreen(onBack = { navController.popBackStack() }) }
         }
         navigation<SshGraph>(startDestination = SshRoute) {
             // List, form and terminal share the graph ViewModel (ongoing connection, dialogs, sessions).

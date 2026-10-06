@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
@@ -42,6 +43,7 @@ fun WifiNetworkRow(
     copy: CopyAction,
     modifier: Modifier = Modifier,
     highlighted: Boolean = false,
+    onClick: (() -> Unit)? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     val qualityColor = qualityColor(network.quality)
@@ -50,7 +52,7 @@ fun WifiNetworkRow(
         shape = shape,
         color = colors.surfaceContainer,
         border = if (highlighted) BorderStroke(2.dp, colors.primary) else null,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().then(if (onClick != null) Modifier.clip(shape).clickable(onClick = onClick) else Modifier),
     ) {
         Column(modifier = Modifier.padding(start = 14.dp, end = 12.dp, top = 12.dp, bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (highlighted) {
@@ -100,6 +102,7 @@ fun WifiNetworkRow(
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         SecurityChip(network.security)
                         network.band?.let { AttributeChip(stringResource(R.string.wifi_band, it.label)) }
+                        if (network.rttResponder) AttributeChip(stringResource(R.string.wifi_rtt_chip))
                     }
                     Text(channelLine(network), style = NetrikTheme.dataTypography.dataSmall, color = colors.onSurfaceVariant)
                 }

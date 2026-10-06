@@ -166,6 +166,7 @@ Each permission is requested only when the related feature is used, with an expl
 | `INTERNET`, `ACCESS_NETWORK_STATE` | Network tools and current network details |
 | `ACCESS_WIFI_STATE`, `CHANGE_WIFI_STATE`, `CHANGE_WIFI_MULTICAST_STATE` | Wi-Fi details, Wi-Fi scans, receiving mDNS/SSDP replies |
 | `ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION` | Android only gives the Wi-Fi network list and the network name to apps with precise location. **Netrik never reads, stores or sends your location.** |
+| `NEARBY_WIFI_DEVICES` (Android 13+) | Measuring the distance to a Wi-Fi access point with RTT (802.11mc). Asked only when you tap **Measure distance**; the measurement uses Wi-Fi ranging frames with that access point and nothing is stored or sent. |
 | `ACCESS_LOCAL_NETWORK` (Android 17+, "Nearby devices") | Talking to devices on your local network |
 | `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `POST_NOTIFICATIONS` | Keeping SSH sessions alive in the background, with a visible notification |
 

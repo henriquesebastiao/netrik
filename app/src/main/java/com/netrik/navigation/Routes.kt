@@ -7,6 +7,9 @@ import kotlinx.serialization.Serializable
 @Serializable data object WifiRoute
 @Serializable data object SshRoute
 
+/** Live signal meter of the connected Wi-Fi network (inside the Wi-Fi tab). */
+@Serializable data object WifiMeterRoute
+
 /**
  * Tool without its own tab, opened on top of the origin tab. [origin] keeps that tab
  * highlighted in the bar; [target] carries the target (IP/host) when opened from another screen.

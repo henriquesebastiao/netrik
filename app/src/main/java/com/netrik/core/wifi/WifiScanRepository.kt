@@ -93,6 +93,7 @@ class AndroidWifiScanRepository @Inject constructor(
             centerMhz = WifiChannelWidth.center(frequency, width, centerFreq0),
             security = WifiSecurity.fromCapabilities(capabilities.orEmpty()),
             bssidLocal = MacAddresses.isLocallyAdministered(hex),
+            rttResponder = AndroidWifiRttRanger.isResponder(this),
         )
     }
 

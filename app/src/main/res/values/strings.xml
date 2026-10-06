@@ -958,4 +958,61 @@
     <string name="ports_risk_mqtt">MQTT broker without TLS, often without authentication</string>
     <string name="ports_risk_nfs">NFS/rpcbind: shared folders that may be mountable without authentication</string>
     <string name="ports_risk_winrm">Windows remote management over plain HTTP</string>
+
+    <!-- Wi-Fi: signal meter, channel advice and RTT distance -->
+    <string name="wifi_view_channels">Channels</string>
+    <string name="wifi_meter_open">Signal meter</string>
+    <string name="wifi_meter_title">Signal meter</string>
+    <string name="wifi_meter_network">Connected Wi-Fi</string>
+    <string name="wifi_meter_waiting">Reading…</string>
+    <string name="wifi_meter_sound_on">Turn on beeps</string>
+    <string name="wifi_meter_sound_off">Turn off beeps</string>
+    <string name="wifi_meter_disconnected_title">Not connected to Wi-Fi</string>
+    <string name="wifi_meter_disconnected_body">The meter shows the signal of the network the phone is connected to. Connect to a Wi-Fi network and come back.</string>
+    <string name="wifi_meter_history">Last 2 minutes</string>
+    <string name="wifi_meter_min">Min</string>
+    <string name="wifi_meter_avg">Average</string>
+    <string name="wifi_meter_max">Max</string>
+    <string name="wifi_meter_link">Link</string>
+    <string name="wifi_meter_tx">Transmit speed</string>
+    <string name="wifi_meter_rx">Receive speed</string>
+    <string name="wifi_meter_standard">Standard</string>
+    <string name="wifi_meter_generation">Wi-Fi %1$d</string>
+    <string name="wifi_meter_frequency">%1$d MHz · channel %2$d</string>
+    <string name="wifi_meter_note">Walk slowly: Android refreshes the signal every 1–3 seconds. The meter only follows the connected network; other networks depend on scans, which Android limits to 4 every 2 minutes. The screen stays on while the meter is open.</string>
+    <string name="wifi_channels_best">Best channel on %1$s GHz</string>
+    <string name="wifi_channels_free">no networks overlapping</string>
+    <plurals name="wifi_channels_networks">
+        <item quantity="one">%1$d network overlapping</item>
+        <item quantity="other">%1$d networks overlapping</item>
+    </plurals>
+    <string name="wifi_channels_dfs">DFS (may move because of radar)</string>
+    <string name="wifi_channels_empty_band">No other networks seen on %1$s GHz here: any channel is free.</string>
+    <string name="wifi_channels_current_good">Your network is on channel %1$d (%2$s): already a good choice.</string>
+    <string name="wifi_channels_current_change">Your network is on channel %1$d (%2$s). Channel %3$d is less congested: you can change it in the router settings.</string>
+    <string name="wifi_channels_note_24">On 2.4 GHz only 1, 6 and 11 don\'t overlap each other. The advice reflects what this phone hears where it is; the router\'s spot may differ.</string>
+    <string name="wifi_channels_note">The advice reflects what this phone hears where it is; the router\'s spot may differ. Strong networks weigh more than weak ones.</string>
+    <string name="wifi_channels_ranking">Congestion per channel</string>
+    <string name="wifi_channels_ranking_note">Shorter bar = less congested. The number is how many networks overlap the channel.</string>
+    <string name="wifi_channels_mark_best">best</string>
+    <string name="wifi_channels_mark_current">yours</string>
+    <string name="wifi_detail_section">Network</string>
+    <string name="wifi_detail_vendor">Vendor</string>
+    <string name="wifi_detail_security">Security</string>
+    <string name="wifi_detail_center">Channel center</string>
+    <string name="wifi_detail_rtt">Distance measurement (RTT)</string>
+    <string name="wifi_detail_rtt_yes">Supported by the access point</string>
+    <string name="wifi_detail_rtt_no">Not announced by the access point</string>
+    <string name="wifi_rtt_chip">RTT</string>
+    <string name="wifi_rtt_title">Distance to the access point</string>
+    <string name="wifi_rtt_start">Measure distance</string>
+    <string name="wifi_rtt_measuring">Measuring…</string>
+    <string name="wifi_rtt_distance">%1$s m ± %2$s m</string>
+    <string name="wifi_rtt_measurements">%1$d of %2$d measurements succeeded · updated every second</string>
+    <string name="wifi_rtt_phone_unsupported">This phone doesn\'t support Wi-Fi RTT (802.11mc), so it can\'t measure the distance.</string>
+    <string name="wifi_rtt_ap_unsupported">This access point doesn\'t answer distance measurement requests (802.11mc/az). Most home routers don\'t.</string>
+    <string name="wifi_rtt_unavailable">Wi-Fi RTT is off right now: turn on Wi-Fi and location.</string>
+    <string name="wifi_rtt_failed">No measurement this time: the access point didn\'t answer. Trying again…</string>
+    <string name="wifi_rtt_not_in_scan">The access point isn\'t in the latest scan. Refresh the list and try again.</string>
+    <string name="wifi_rtt_permission">Distance needs the location and Nearby devices permissions.</string>
 </resources>

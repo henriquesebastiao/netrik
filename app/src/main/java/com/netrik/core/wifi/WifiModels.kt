@@ -75,6 +75,8 @@ data class WifiNetwork(
     val vendor: String? = null,
     /** Locally administered BSSID (virtual AP, random MAC): has no IEEE vendor. */
     val bssidLocal: Boolean = false,
+    /** Answers Wi-Fi RTT ranging (802.11mc, or 802.11az on Android 15+): the distance can be measured. */
+    val rttResponder: Boolean = false,
 ) {
     val quality: SignalQuality get() = SignalQuality.of(rssiDbm)
 }

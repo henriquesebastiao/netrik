@@ -974,4 +974,62 @@
     <string name="ports_risk_mqtt">Broker MQTT sem TLS, muitas vezes sem autenticação</string>
     <string name="ports_risk_nfs">NFS/rpcbind: pastas compartilhadas que podem ser montadas sem autenticação</string>
     <string name="ports_risk_winrm">Gerência remota do Windows por HTTP sem criptografia</string>
+
+    <!-- Wi-Fi: signal meter, channel advice and RTT distance -->
+    <string name="wifi_view_channels">Canais</string>
+    <string name="wifi_meter_open">Medidor de sinal</string>
+    <string name="wifi_meter_title">Medidor de sinal</string>
+    <string name="wifi_meter_network">Wi-Fi conectado</string>
+    <string name="wifi_meter_waiting">Lendo…</string>
+    <string name="wifi_meter_sound_on">Ligar bipes</string>
+    <string name="wifi_meter_sound_off">Desligar bipes</string>
+    <string name="wifi_meter_disconnected_title">Sem conexão Wi-Fi</string>
+    <string name="wifi_meter_disconnected_body">O medidor mostra o sinal da rede em que o celular está conectado. Conecte-se a uma rede Wi-Fi e volte.</string>
+    <string name="wifi_meter_history">Últimos 2 minutos</string>
+    <string name="wifi_meter_min">Mín</string>
+    <string name="wifi_meter_avg">Média</string>
+    <string name="wifi_meter_max">Máx</string>
+    <string name="wifi_meter_link">Link</string>
+    <string name="wifi_meter_tx">Velocidade de envio</string>
+    <string name="wifi_meter_rx">Velocidade de recebimento</string>
+    <string name="wifi_meter_standard">Padrão</string>
+    <string name="wifi_meter_generation">Wi-Fi %1$d</string>
+    <string name="wifi_meter_frequency">%1$d MHz · canal %2$d</string>
+    <string name="wifi_meter_note">Ande devagar: o Android atualiza o sinal a cada 1–3 segundos. O medidor acompanha só a rede conectada; as outras redes dependem de varreduras, que o Android limita a 4 a cada 2 minutos. A tela fica acesa enquanto o medidor estiver aberto.</string>
+    <string name="wifi_channels_best">Melhor canal em %1$s GHz</string>
+    <string name="wifi_channels_free">nenhuma rede sobreposta</string>
+    <plurals name="wifi_channels_networks">
+        <item quantity="one">%1$d rede sobreposta</item>
+        <item quantity="many">%1$d redes sobrepostas</item>
+        <item quantity="other">%1$d redes sobrepostas</item>
+    </plurals>
+    <string name="wifi_channels_dfs">DFS (pode mudar por causa de radar)</string>
+    <string name="wifi_channels_empty_band">Nenhuma outra rede em %1$s GHz por aqui: qualquer canal está livre.</string>
+    <string name="wifi_channels_current_good">Sua rede está no canal %1$d (%2$s): já é uma boa escolha.</string>
+    <string name="wifi_channels_current_change">Sua rede está no canal %1$d (%2$s). O canal %3$d está menos congestionado: dá para trocar nas configurações do roteador.</string>
+    <string name="wifi_channels_note_24">Em 2,4 GHz só os canais 1, 6 e 11 não se sobrepõem. A recomendação reflete o que este celular capta onde está; no lugar do roteador pode ser diferente.</string>
+    <string name="wifi_channels_note">A recomendação reflete o que este celular capta onde está; no lugar do roteador pode ser diferente. Redes fortes pesam mais que as fracas.</string>
+    <string name="wifi_channels_ranking">Congestionamento por canal</string>
+    <string name="wifi_channels_ranking_note">Barra menor = menos congestionado. O número é quantas redes sobrepõem o canal.</string>
+    <string name="wifi_channels_mark_best">melhor</string>
+    <string name="wifi_channels_mark_current">sua</string>
+    <string name="wifi_detail_section">Rede</string>
+    <string name="wifi_detail_vendor">Fabricante</string>
+    <string name="wifi_detail_security">Segurança</string>
+    <string name="wifi_detail_center">Centro do canal</string>
+    <string name="wifi_detail_rtt">Medição de distância (RTT)</string>
+    <string name="wifi_detail_rtt_yes">Suportada pelo ponto de acesso</string>
+    <string name="wifi_detail_rtt_no">Não anunciada pelo ponto de acesso</string>
+    <string name="wifi_rtt_chip">RTT</string>
+    <string name="wifi_rtt_title">Distância até o ponto de acesso</string>
+    <string name="wifi_rtt_start">Medir distância</string>
+    <string name="wifi_rtt_measuring">Medindo…</string>
+    <string name="wifi_rtt_distance">%1$s m ± %2$s m</string>
+    <string name="wifi_rtt_measurements">%1$d de %2$d medições ok · atualiza a cada segundo</string>
+    <string name="wifi_rtt_phone_unsupported">Este celular não suporta Wi-Fi RTT (802.11mc), então não consegue medir a distância.</string>
+    <string name="wifi_rtt_ap_unsupported">Este ponto de acesso não responde a pedidos de medição de distância (802.11mc/az). A maioria dos roteadores domésticos não responde.</string>
+    <string name="wifi_rtt_unavailable">O Wi-Fi RTT está desligado agora: ligue o Wi-Fi e a localização.</string>
+    <string name="wifi_rtt_failed">Sem medição desta vez: o ponto de acesso não respondeu. Tentando de novo…</string>
+    <string name="wifi_rtt_not_in_scan">O ponto de acesso não está na última varredura. Atualize a lista e tente de novo.</string>
+    <string name="wifi_rtt_permission">A distância precisa das permissões de localização e de Dispositivos próximos.</string>
 </resources>

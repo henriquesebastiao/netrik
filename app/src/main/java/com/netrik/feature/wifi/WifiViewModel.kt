@@ -1,16 +1,21 @@
 package com.netrik.feature.wifi
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.netrik.core.network.CurrentNetwork
 import com.netrik.core.network.NetworkInfoRepository
 import com.netrik.core.settings.NetworkPreferences
 import com.netrik.core.network.WifiBand
+import com.netrik.core.wifi.RttReading
+import com.netrik.core.wifi.RttSupport
 import com.netrik.core.wifi.ScanThrottle
 import com.netrik.core.wifi.WifiNetwork
 import com.netrik.core.wifi.withoutHidden
 import com.netrik.core.wifi.WifiScanRepository
 import com.netrik.core.wifi.WifiSort
+import com.netrik.core.wifi.WifiRttRanger
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -44,7 +49,7 @@ enum class LocationPermission {
     Granted,
 }
 
-enum class WifiView { List, Spectrum }
+enum class WifiView { List, Spectrum, Channels }
 
 data class WifiUiState(
     val permission: LocationPermission = LocationPermission.NotGranted,
@@ -61,11 +66,19 @@ data class WifiUiState(
     val secondsToRefresh: Int = 0,
     /** Android's scan limit was reached. */
     val throttled: Boolean = false,
+    /** Network whose details sheet is open. */
+    val detailBssid: String? = null,
+    val rttSupport: RttSupport = RttSupport.Unsupported,
+    /** Distance measurement running for the open network; null = not measuring. */
+    val rtt: RttUi? = null,
 ) {
     val ready: Boolean get() = permission == LocationPermission.Granted && wifiEnabled && locationEnabled
     val bands: List<WifiBand> get() = if (supports6Ghz) WifiBand.entries else listOf(WifiBand.GHz2_4, WifiBand.GHz5)
     val connectedNetwork: WifiNetwork? get() = networks.firstOrNull { it.connected }
 }
+
+/** Live distance to [bssid]; [reading] null until the first answer. */
+data class RttUi(val bssid: String, val reading: RttReading? = null)
 
 sealed interface WifiMessage {
     data class Throttled(val seconds: Int) : WifiMessage
@@ -76,6 +89,7 @@ sealed interface WifiMessage {
 @HiltViewModel
 class WifiViewModel @Inject constructor(
     private val scanner: WifiScanRepository,
+    private val ranger: WifiRttRanger,
     networkInfo: NetworkInfoRepository,
     private val clock: Clock,
     networkPreferences: NetworkPreferences,
@@ -84,6 +98,7 @@ class WifiViewModel @Inject constructor(
     private val throttle = ScanThrottle()
     private val local = MutableStateFlow(WifiUiState(supports6Ghz = scanner.supports6Ghz))
     private var nextAutoScanAt = 0L
+    private var rangingJob: Job? = null
 
     private val _messages = Channel<WifiMessage>(Channel.BUFFERED)
     val messages: Flow<WifiMessage> = _messages.receiveAsFlow()
@@ -139,9 +154,9 @@ class WifiViewModel @Inject constructor(
 
     fun onViewChange(view: WifiView) = local.update { it.copy(view = view, selectedBssid = null) }
 
-    /** List: the bands are independent filters. Spectrum: one band at a time. */
+    /** List: the bands are independent filters. Spectrum and Channels: one band at a time. */
     fun onBandClick(band: WifiBand) = local.update { s ->
-        if (s.view == WifiView.Spectrum) {
+        if (s.view != WifiView.List) {
             s.copy(spectrumBand = band, selectedBssid = null)
         } else {
             val bands = if (band in s.listBands) s.listBands - band else s.listBands + band
@@ -154,6 +169,28 @@ class WifiViewModel @Inject constructor(
     }
 
     fun onSelectNetwork(bssid: String?) = local.update { it.copy(selectedBssid = bssid) }
+
+    fun onOpenDetail(bssid: String) = local.update { it.copy(detailBssid = bssid, rttSupport = ranger.support()) }
+
+    fun onCloseDetail() {
+        onStopRanging()
+        local.update { it.copy(detailBssid = null) }
+    }
+
+    /** Starts measuring the distance to [bssid] (permissions already granted by the screen). */
+    fun onStartRanging(bssid: String) {
+        rangingJob?.cancel()
+        local.update { it.copy(rtt = RttUi(bssid), rttSupport = ranger.support()) }
+        rangingJob = viewModelScope.launch {
+            ranger.range(bssid).collect { reading -> local.update { s -> s.copy(rtt = s.rtt?.copy(reading = reading)) } }
+        }
+    }
+
+    fun onStopRanging() {
+        rangingJob?.cancel()
+        rangingJob = null
+        local.update { it.copy(rtt = null) }
+    }
 
     /** Manual refresh: honors the limit and says how long is left. */
     fun onRefresh() {

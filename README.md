@@ -26,7 +26,7 @@ Netrik is available on GitHub Releases page.
 | **Traceroute** | Hop-by-hop route with reverse DNS and the latency of each router. |
 | **Devices** | Finds the devices on your local network (ping + TCP probing, mDNS, NetBIOS, UPnP, MNDP and Ubiquiti discovery), with vendor, hostname and quick actions. |
 | **Neighbor Discovery** | Finds MikroTik routers via MNDP (identity, board, RouterOS version, MAC, interface, uptime) and Ubiquiti devices via their discovery protocol, with quick actions. The Devices scan uses the same announcements to fill in names, MACs and models. |
-| **Wi-Fi** | Nearby networks with security, channel, width and signal quality, plus a 2.4/5/6 GHz spectrum chart. |
+| **Wi-Fi** | Nearby networks with security, channel, width and signal quality, plus a 2.4/5/6 GHz spectrum chart. A live signal meter to walk around with (optional beeps), the least congested channel per band, and the distance to access points that support Wi-Fi RTT (802.11mc). |
 | **Port Scanner** | TCP and UDP scans of a single host or a whole network (up to /22), with Top 100/Top 1000/custom port lists and service names. Reads what each open service says (SSH/FTP/SMTP greetings, HTTP Server header, TLS certificate) and flags services that are risky when exposed (Telnet, SMB, RDP, VNC, UPnP, unauthenticated databases...). |
 | **MAC/OUI Lookup** | Vendor of a MAC address from the offline IEEE database (MA-L, MA-M and MA-S), updatable from the official files. |
 | **Port Knocking** | Saved knock sequences (TCP, UDP and ICMP steps) in groups, with a delay between knocks, an optional check that the port opened, and JSON export/import. |
