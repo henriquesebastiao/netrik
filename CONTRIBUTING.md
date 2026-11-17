@@ -428,9 +428,10 @@ Publish the same fingerprint in [SECURITY.md](SECURITY.md#verifying-a-release).
 ### Each release
 
 1. In `app/build.gradle.kts`, set `versionName = "1.2.3"` and `versionCode = 1002003` (major × 1,000,000 + minor × 1,000 + patch). Keep them as plain literals: F-Droid reads them from that file. The build fails if the code doesn't match the name.
-2. Make sure `main` builds, tests pass and the release APK works (see below), and commit the bump.
-3. On GitHub, create a release with the tag `v1.2.3` (same version as `versionName`) and publish it.
-4. The workflow runs the unit tests, builds `assembleRelease` (it fails if the tag doesn't match `versionName`), checks the signature and attaches `netrik-release.apk` and `netrik-release.apk.sha256` to the release.
+2. Write the release notes in `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt` and `pt-BR/changelogs/<versionCode>.txt` (plain text, at most 500 characters; F-Droid shows them on the app page).
+3. Make sure `main` builds, tests pass and the release APK works (see below), and commit the bump and the notes.
+4. On GitHub, create a release with the tag `v1.2.3` (same version as `versionName`) and publish it.
+5. The workflow runs the unit tests, builds `assembleRelease` (it fails if the tag doesn't match `versionName`), checks the signature and attaches `netrik-release.apk` and `netrik-release.apk.sha256` to the release.
 
 ### A signed release build on your computer
 

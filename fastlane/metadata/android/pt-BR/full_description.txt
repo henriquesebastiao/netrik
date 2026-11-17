@@ -1,0 +1,29 @@
+<p><b>Netrik</b> é um kit de ferramentas de rede para analistas de rede, pentesters e curiosos sobre a rede em que estão. Funciona inteiramente no celular, sem root, e não rastreia você.</p>
+
+<p><b>Ferramentas</b></p>
+<ul>
+<li><b>Rede atual</b>: IP local, gateway e IP público num relance, além de uma folha de detalhes com sinal, banda, canal, BSSID, máscara, DNS e IPv6.</li>
+<li><b>Ping</b>: respostas em tempo real, gráfico de latência e estatísticas (perda, mín/méd/máx, jitter).</li>
+<li><b>Traceroute</b>: rota salto a salto com DNS reverso.</li>
+<li><b>Dispositivos</b>: encontra os aparelhos da sua rede local (ping e sondagem TCP, mDNS, NetBIOS, UPnP, descoberta MNDP e Ubiquiti) e diferencia câmeras, impressoras, TVs, NAS e outros pelas portas abertas.</li>
+<li><b>Descoberta de vizinhos</b>: roteadores MikroTik (MNDP) e aparelhos Ubiquiti por perto.</li>
+<li><b>Wi-Fi</b>: redes próximas com segurança (WPS sinalizado), canal e sinal, gráfico de espectro 2,4/5/6 GHz, medidor de sinal em tempo real, o canal menos congestionado e distância via Wi-Fi RTT.</li>
+<li><b>Port Scanner</b>: scan TCP e UDP de um host ou de uma rede inteira, listas Top 100/Top 1000/personalizada, banners dos serviços e certificados TLS, e marcas para serviços arriscados quando expostos.</li>
+<li><b>Consulta MAC/OUI</b>: fabricante de um endereço MAC pela base offline do IEEE.</li>
+<li><b>Port Knocking</b>: sequências de batidas TCP, UDP e ICMP salvas, com exportação e importação em JSON.</li>
+<li><b>Calculadora de sub-rede</b>: IPv4 e IPv6, divisão em partes iguais, VLSM e sumarização de rotas.</li>
+<li><b>SSH</b>: hosts salvos em grupos, autenticação por senha ou chave (Ed25519, RSA, ECDSA), verificação da chave do host e terminal xterm com abas, teclas extras e sessões em segundo plano.</li>
+</ul>
+
+<p>Nas Configurações você pode bloquear o app com PIN ou digital, escolher o tema, usar as cores do papel de parede, ativar o preto puro para telas AMOLED e escolher o idioma (inglês ou português do Brasil).</p>
+
+<p><b>Privacidade</b></p>
+<ul>
+<li>Sem anúncios, sem analytics, sem rastreamento.</li>
+<li>O app só acessa a internet quando você pede: a consulta do IP público (api.ipify.org, ao tocar ou automaticamente se você ativar), a atualização da base OUI (standards-oui.ieee.org) e os hosts que você pinga, escaneia ou acessa.</li>
+<li>Senhas e chaves privadas SSH são criptografadas com uma chave guardada no Android Keystore.</li>
+</ul>
+
+<p><b>Limites honestos</b>: o Android não deixa apps lerem a tabela ARP, então o endereço MAC de um aparelho só aparece quando o próprio aparelho o anuncia. O Netrik avisa em vez de inventar.</p>
+
+<p>Escaneie apenas hosts e redes que você tem permissão para testar.</p>

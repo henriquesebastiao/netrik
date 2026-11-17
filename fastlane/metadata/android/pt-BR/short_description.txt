@@ -1,0 +1,1 @@
+Kit de rede: ping, traceroute, scan de LAN e Wi-Fi, port scanner e SSH

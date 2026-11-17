@@ -51,7 +51,7 @@ android {
         targetSdk = 37
         // Bumped by hand before each release, as literals: F-Droid reads them from this file to detect
         // updates. versionCode = major * 1_000_000 + minor * 1_000 + patch (checked below).
-        versionCode = 2000
+        versionCode = 2001
         versionName = "0.2.0"
     }
 

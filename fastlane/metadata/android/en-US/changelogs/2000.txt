@@ -1,0 +1,6 @@
+• Subnet calculator: IPv4/IPv6, equal split, VLSM and route summarization
+• Port Scanner: reads service banners (SSH, FTP, SMTP, HTTP, TLS certificate), flags risky exposed services and opens web services in the browser
+• Wi-Fi: live signal meter, best channel per band and distance to access points with Wi-Fi RTT
+• Devices: identifies cameras, printers, TVs, NAS and more by their open ports (can be turned off in Settings)
+• Wi-Fi: networks with WPS are flagged
+• Layout fixes on small screens

@@ -1,0 +1,29 @@
+<p><b>Netrik</b> is a network toolkit for network analysts, pentesters and anyone curious about the network they're on. It runs entirely on the phone, without root, and doesn't track you.</p>
+
+<p><b>Tools</b></p>
+<ul>
+<li><b>Current network</b>: local IP, gateway and public IP at a glance, plus a details sheet with signal, band, channel, BSSID, mask, DNS and IPv6.</li>
+<li><b>Ping</b>: real-time replies, latency chart and statistics (loss, min/avg/max, jitter).</li>
+<li><b>Traceroute</b>: hop-by-hop route with reverse DNS.</li>
+<li><b>Devices</b>: finds the devices on your local network (ping and TCP probing, mDNS, NetBIOS, UPnP, MNDP and Ubiquiti discovery) and tells cameras, printers, TVs, NAS and other devices apart by their open ports.</li>
+<li><b>Neighbor Discovery</b>: MikroTik routers (MNDP) and Ubiquiti devices nearby.</li>
+<li><b>Wi-Fi</b>: nearby networks with security (WPS flagged), channel and signal, a 2.4/5/6 GHz spectrum chart, a live signal meter, the least congested channel and Wi-Fi RTT distance.</li>
+<li><b>Port Scanner</b>: TCP and UDP scans of a host or a whole network, Top 100/Top 1000/custom lists, service banners and TLS certificates, and marks for services that are risky when exposed.</li>
+<li><b>MAC/OUI Lookup</b>: vendor of a MAC address from the offline IEEE database.</li>
+<li><b>Port Knocking</b>: saved TCP, UDP and ICMP knock sequences, with JSON export and import.</li>
+<li><b>Subnet Calculator</b>: IPv4 and IPv6, equal split, VLSM and route summarization.</li>
+<li><b>SSH</b>: saved hosts in groups, password or key authentication (Ed25519, RSA, ECDSA), host key verification and an xterm terminal with tabs, extra keys and background sessions.</li>
+</ul>
+
+<p>Settings let you lock the app with a PIN or your fingerprint, pick the theme, use your wallpaper colors, enable pure black for AMOLED screens and choose the language (English or Brazilian Portuguese).</p>
+
+<p><b>Privacy</b></p>
+<ul>
+<li>No ads, no analytics, no tracking.</li>
+<li>The app only reaches the internet when you ask it to: the public IP lookup (api.ipify.org, on tap or automatically if you turn that on), the OUI database update (standards-oui.ieee.org) and the hosts you ping, scan or connect to.</li>
+<li>SSH passwords and private keys are encrypted with a key kept in the Android Keystore.</li>
+</ul>
+
+<p><b>Honest limits</b>: Android doesn't let apps read the ARP table, so a device's MAC address only shows up when the device announces it itself. Netrik says so instead of guessing.</p>
+
+<p>Only scan hosts and networks you are allowed to test.</p>

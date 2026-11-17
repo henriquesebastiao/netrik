@@ -1,0 +1,6 @@
+• Calculadora de sub-rede: IPv4/IPv6, divisão igual, VLSM e sumarização
+• Port Scanner: lê banners (SSH, FTP, SMTP, HTTP, certificado TLS), marca serviços arriscados e abre serviços web no navegador
+• Wi-Fi: medidor de sinal, melhor canal por banda e distância via Wi-Fi RTT
+• Dispositivos: identifica câmeras, impressoras, TVs, NAS e outros pelas portas abertas (desligável nas Configurações)
+• Wi-Fi: redes com WPS são sinalizadas
+• Correções de layout em telas pequenas
