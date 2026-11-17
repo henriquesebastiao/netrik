@@ -55,13 +55,6 @@ android {
     bundle {
         language { enableSplit = false }
     }
-    packaging {
-        jniLibs {
-            // Termux JNI (TerminalSession opens a local shell): the app only uses the emulator and the
-            // renderer, in pure Java. The lib also isn't 16 KB aligned (Android 15+).
-            excludes += "**/libtermux.so"
-        }
-    }
     namespace = "com.netrik"
     compileSdk = 37
 
@@ -153,8 +146,9 @@ dependencies {
     // SSH: JSch (maintained fork, BSD) + BouncyCastle for Ed25519/X25519 without replacing Android's provider
     implementation(libs.jsch)
     implementation(libs.bouncycastle.prov)
-    // Terminal: Termux xterm emulation and renderer (Apache 2.0); the View and the SSH session are ours
-    implementation(libs.termux.terminal.view)
+    // Terminal: Termux xterm emulation and renderer (Apache 2.0, built from source in :termux-terminal);
+    // the View and the SSH session are ours
+    implementation(project(":termux-terminal"))
     // Preferences (settings and terminal font size)
     implementation(libs.androidx.datastore.preferences)
     // App lock: fingerprint/face unlock through the system BiometricPrompt

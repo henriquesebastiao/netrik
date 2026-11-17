@@ -214,7 +214,7 @@ Security issues in these libraries are tracked upstream; Netrik updates them whe
 
 - [JSch (mwiede fork)](https://github.com/mwiede/jsch) — SSH protocol (BSD).
 - [Bouncy Castle](https://www.bouncycastle.org/) — cryptography (MIT).
-- [Termux terminal-emulator / terminal-view](https://github.com/termux/termux-app) — terminal emulation and rendering (Apache 2.0). Only the Java emulator and renderer are used; Termux's native library isn't included.
+- [Termux terminal-emulator / terminal-view](https://github.com/termux/termux-app) — terminal emulation and rendering (Apache 2.0). Only the Java emulator and renderer are used, built from source in the `termux-terminal` module; Termux's native library isn't included.
 - AndroidX (Compose, Room, DataStore, Navigation), Hilt, Kotlin coroutines and kotlinx.serialization (Apache 2.0).
 
 Dependency versions are listed in [`gradle/libs.versions.toml`](gradle/libs.versions.toml).

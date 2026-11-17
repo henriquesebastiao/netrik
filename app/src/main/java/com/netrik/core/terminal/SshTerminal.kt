@@ -4,7 +4,6 @@ import com.jcraft.jsch.ChannelShell
 import com.netrik.core.ssh.SshSession
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalOutput
-import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -162,13 +161,6 @@ class SshTerminal internal constructor(
 
     /** The Termux emulator requires a session client; nothing is logged here. */
     private object SilentClient : TerminalSessionClient {
-        override fun onTextChanged(changedSession: TerminalSession) = Unit
-        override fun onTitleChanged(changedSession: TerminalSession) = Unit
-        override fun onSessionFinished(finishedSession: TerminalSession) = Unit
-        override fun onCopyTextToClipboard(session: TerminalSession, text: String?) = Unit
-        override fun onPasteTextFromClipboard(session: TerminalSession?) = Unit
-        override fun onBell(session: TerminalSession) = Unit
-        override fun onColorsChanged(session: TerminalSession) = Unit
         override fun onTerminalCursorStateChange(state: Boolean) = Unit
         override fun getTerminalCursorStyle(): Int? = null
         override fun logError(tag: String?, message: String?) = Unit

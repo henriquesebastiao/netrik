@@ -17,12 +17,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // Only the Termux terminal modules (terminal-emulator/terminal-view, Apache 2.0), published by JitPack.
-        maven("https://jitpack.io") {
-            content { includeGroup("com.github.termux.termux-app") }
-        }
     }
 }
 
 rootProject.name = "Netrik"
 include(":app")
+// Termux terminal emulator and renderer, built from source (see termux-terminal/README.md).
+include(":termux-terminal")
