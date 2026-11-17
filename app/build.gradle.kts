@@ -37,19 +37,6 @@ if (providers.gradleProperty("netrik.requireSigning").orNull == "true" && !relea
     )
 }
 
-/**
- * Version from the release tag: `-Pnetrik.version=1.2.3` (or `v1.2.3`) gives versionName 1.2.3 and
- * versionCode 1002003 (major * 1_000_000 + minor * 1_000 + patch). Without it, the defaults below.
- */
-val releaseVersion: Pair<String, Int>? = providers.gradleProperty("netrik.version").orNull?.let { raw ->
-    val match = Regex("""^v?(\d+)\.(\d{1,3})\.(\d{1,3})$""").matchEntire(raw.trim())
-        ?: throw GradleException("netrik.version must look like 1.2.3 or v1.2.3, got \"$raw\".")
-    val (major, minor, patch) = match.destructured
-    val code = major.toInt() * 1_000_000 + minor.toInt() * 1_000 + patch.toInt()
-    if (code <= 0 || major.toInt() > 2_000) throw GradleException("netrik.version out of range: \"$raw\".")
-    "$major.$minor.$patch" to code
-}
-
 android {
     // The app language can be changed in Settings: every language must ship in the APK/bundle.
     bundle {
@@ -62,8 +49,10 @@ android {
         applicationId = "com.henriquesebastiao.netrik"
         minSdk = 26
         targetSdk = 37
-        versionCode = releaseVersion?.second ?: 1
-        versionName = releaseVersion?.first ?: "0.2.0"
+        // Bumped by hand before each release, as literals: F-Droid reads them from this file to detect
+        // updates. versionCode = major * 1_000_000 + minor * 1_000 + patch (checked below).
+        versionCode = 2000
+        versionName = "0.2.0"
     }
 
     signingConfigs {
@@ -113,6 +102,31 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+}
+
+/**
+ * The versionCode must follow the versionName, and a release build given the tag
+ * (`-Pnetrik.version=v1.2.3`, CI) must match it: a forgotten bump fails the build instead of publishing
+ * an APK that can't update the previous one.
+ */
+run {
+    val name = checkNotNull(android.defaultConfig.versionName)
+    val code = checkNotNull(android.defaultConfig.versionCode)
+    val match = Regex("""^(\d+)\.(\d{1,3})\.(\d{1,3})$""").matchEntire(name)
+        ?: throw GradleException("versionName must look like 1.2.3, got \"$name\".")
+    val (major, minor, patch) = match.destructured.toList().map(String::toInt)
+    val expected = major * 1_000_000 + minor * 1_000 + patch
+    if (code != expected) {
+        throw GradleException("versionCode $code doesn't match versionName $name (expected $expected).")
+    }
+    providers.gradleProperty("netrik.version").orNull?.let { tag ->
+        if (tag.trim().removePrefix("v") != name) {
+            throw GradleException(
+                "Release tag \"$tag\" doesn't match versionName $name: bump versionName and versionCode " +
+                    "in app/build.gradle.kts first.",
+            )
+        }
     }
 }
 

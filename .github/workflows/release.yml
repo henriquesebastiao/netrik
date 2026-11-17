@@ -9,7 +9,8 @@
 # Optional repository variable:
 #   NETRIK_CERT_SHA256        expected SHA-256 of the signing certificate; the build fails on a mismatch.
 #
-# The release tag must look like v1.2.3: it becomes versionName 1.2.3 and versionCode 1002003.
+# The release tag must look like v1.2.3 and match versionName in app/build.gradle.kts (the build fails
+# otherwise): bump versionName and versionCode there before tagging.
 name: Release APK
 
 on:

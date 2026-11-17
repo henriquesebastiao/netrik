@@ -427,9 +427,10 @@ Publish the same fingerprint in [SECURITY.md](SECURITY.md#verifying-a-release).
 
 ### Each release
 
-1. Make sure `main` builds, tests pass and the release APK works (see below).
-2. On GitHub, create a release with a new tag in the form `v1.2.3` and publish it.
-3. The workflow runs the unit tests, builds `assembleRelease` with versionName `1.2.3` and versionCode `1002003`, checks the signature and attaches `netrik-release.apk` and `netrik-release.apk.sha256` to the release.
+1. In `app/build.gradle.kts`, set `versionName = "1.2.3"` and `versionCode = 1002003` (major × 1,000,000 + minor × 1,000 + patch). Keep them as plain literals: F-Droid reads them from that file. The build fails if the code doesn't match the name.
+2. Make sure `main` builds, tests pass and the release APK works (see below), and commit the bump.
+3. On GitHub, create a release with the tag `v1.2.3` (same version as `versionName`) and publish it.
+4. The workflow runs the unit tests, builds `assembleRelease` (it fails if the tag doesn't match `versionName`), checks the signature and attaches `netrik-release.apk` and `netrik-release.apk.sha256` to the release.
 
 ### A signed release build on your computer
 
@@ -442,7 +443,7 @@ keyAlias=netrik
 keyPassword=...
 ```
 
-Then `./gradlew assembleRelease -Pnetrik.version=1.2.3`. Without signing configured, the release APK is built unsigned. R8 shrinks and obfuscates the release build: test it on a device or emulator (SSH, Port Knocking import, OUI lookup) before publishing, because code found by reflection can break only there.
+Then `./gradlew assembleRelease` (add `-Pnetrik.version=v1.2.3` to also check that a tag matches `versionName`). Without signing configured, the release APK is built unsigned. R8 shrinks and obfuscates the release build: test it on a device or emulator (SSH, Port Knocking import, OUI lookup) before publishing, because code found by reflection can break only there.
 
 ## Glossary
 
