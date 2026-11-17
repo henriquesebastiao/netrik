@@ -1,0 +1,3 @@
+• The SSH terminal emulator (from Termux) is now built from source as part of the app
+• Builds are reproducible: the APK on GitHub and the one built by F-Droid are identical
+• Store listing with screenshots for F-Droid

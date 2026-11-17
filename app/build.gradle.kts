@@ -42,6 +42,14 @@ android {
     bundle {
         language { enableSplit = false }
     }
+    packaging {
+        jniLibs {
+            // Reproducible builds: AGP strips the prebuilt AndroidX .so files only when an NDK is installed
+            // (the GitHub runner has one, F-Droid's build server doesn't), which made the APKs differ. Never
+            // strip, so every environment packages the same bytes.
+            keepDebugSymbols += "**/*.so"
+        }
+    }
     namespace = "com.netrik"
     compileSdk = 37
 
@@ -52,7 +60,7 @@ android {
         // Bumped by hand before each release, as literals: F-Droid reads them from this file to detect
         // updates. versionCode = major * 1_000_000 + minor * 1_000 + patch (checked below).
         versionCode = 2001
-        versionName = "0.2.0"
+        versionName = "0.2.1"
     }
 
     signingConfigs {

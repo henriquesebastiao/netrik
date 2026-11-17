@@ -1,0 +1,3 @@
+• O emulador de terminal do SSH (do Termux) agora é compilado a partir do código-fonte junto com o app
+• Builds reproduzíveis: o APK do GitHub e o compilado pela F-Droid são idênticos
+• Página da loja com capturas de tela para a F-Droid
